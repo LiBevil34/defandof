@@ -1,0 +1,27 @@
+{
+	"id": "event_rebellion_food_riot",
+	"event_category": "REBELLION",
+	"min_stage": 1,
+	"max_stage": 6,
+	"title": "식량 창고 약탈 반란!",
+	"description": "민심 붕괴 속에서 군중이 영주 직속 창고로 몰려들어 식량과 자재를 탈취하려 하고 있습니다.",
+	"option_a": {
+		"text": "창고 절반을 즉시 분배하고 세금을 감면해 인심을 되돌린다",
+		"deltas": {
+			"food": -26,
+			"gold": -20,
+			"morale": 20,
+			"unrest": -5
+		}
+	},
+	"option_b": {
+		"text": "창고 문을 걸어 잠그고 반란 주동자를 처형한다 (성채 방어력 손실)",
+		"deltas": {
+			"food": -10,
+			"materials": -15,
+			"wall_hp": -18,
+			"morale": -14,
+			"unrest": -2
+		}
+	}
+}

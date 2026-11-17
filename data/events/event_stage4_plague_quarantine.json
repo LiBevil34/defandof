@@ -1,0 +1,27 @@
+{
+	"id": "event_stage4_plague_quarantine",
+	"event_category": "NORMAL",
+	"min_stage": 4,
+	"max_stage": 6,
+	"title": "외곽 전염병 격리와 비상 약제 배급",
+	"description": "성벽 외곽 구역에 의문의 열병이 번지고 있습니다. 즉각 봉쇄할지 막대한 자원을 투입해 치료할지 결단해야 합니다.",
+	"option_a": {
+		"text": "비축 식량과 자금을 풀어 구호소를 열고 전원 치료한다",
+		"deltas": {
+			"food": -18,
+			"materials": -8,
+			"gold": -25,
+			"morale": 14,
+			"unrest": -1
+		}
+	},
+	"option_b": {
+		"text": "감염 구역을 강제 봉쇄하고 물자 유출을 차단한다",
+		"deltas": {
+			"food": 12,
+			"materials": 14,
+			"morale": -16,
+			"unrest": 2
+		}
+	}
+}

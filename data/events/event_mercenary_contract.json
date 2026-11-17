@@ -1,0 +1,24 @@
+{
+	"id": "event_mercenary_contract",
+	"event_category": "NORMAL",
+	"min_stage": 3,
+	"max_stage": 6,
+	"title": "떠돌이 용병단의 협상",
+	"description": "지나가던 무장 용병단이 식량과 숙소를 제공하면 방위군 훈련을 돕겠다고 제안했습니다.",
+	"option_a": {
+		"text": "식량을 제공해 방위 훈련을 실시한다 (사기·자재 상승)",
+		"deltas": {
+			"food": -14,
+			"materials": 10,
+			"morale": 14
+		}
+	},
+	"option_b": {
+		"text": "거래를 거절하고 소량의 통행 물자만 받는다",
+		"deltas": {
+			"food": 8,
+			"materials": 6,
+			"morale": -5
+		}
+	}
+}

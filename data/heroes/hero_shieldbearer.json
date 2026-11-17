@@ -1,0 +1,22 @@
+{
+    "id":  "hero_shieldbearer",
+    "name":  "방패병",
+    "rarity":  "R",
+    "role_category":  "전위",
+    "job_class":  "탱커",
+    "element":  "EARTH",
+    "max_hp":  85,
+    "atk":  12,
+    "def":  25,
+    "heal_power":  0,
+    "speed":  8,
+    "dmg_bonus":  0.0,
+    "crit_rate":  0.05,
+    "crit_dmg":  1.5,
+    "armor_pen":  0.0,
+    "final_dmg_mult":  1.0,
+    "offense_rank":  "전열",
+    "defense_zone":  "성벽밖",
+    "skill_id":  "skill_shield_bash",
+    "skill_description":  "방패 강타로 적을 기절시키고 자신에게 보호막을 생성하는 전열 탱커입니다."
+}

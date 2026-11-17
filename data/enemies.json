@@ -1,0 +1,240 @@
+{
+    "version":  1,
+    "enemies":  [
+                    {
+                        "id":  "enemy_goblin_raider",
+                        "name":  "고블린 약탈자",
+                        "description":  "빠른 속도로 성벽과 전열을 교란하는 기본 약탈자입니다.",
+                        "element":  "WIND",
+                        "enemy_type":  "NORMAL",
+                        "max_hp":  46,
+                        "atk":  12,
+                        "def":  5,
+                        "speed":  14,
+                        "attack_interval":  1.0,
+                        "passive_skill_ids":  [
+
+                                              ],
+                        "active_skill_ids":  [
+
+                                             ],
+                        "allowed_seasons":  [
+                                                "ALL"
+                                            ]
+                    },
+                    {
+                        "id":  "enemy_thorny_orc",
+                        "name":  "가시갑옷 오크",
+                        "description":  "가시 갑옷으로 근접 공격자에게 피해를 반사하는 튼튼한 오크 전사입니다.",
+                        "element":  "EARTH",
+                        "enemy_type":  "NORMAL",
+                        "max_hp":  72,
+                        "atk":  15,
+                        "def":  14,
+                        "speed":  10,
+                        "attack_interval":  1.15,
+                        "passive_skill_ids":  [
+                                                  "skill_enemy_thorns"
+                                              ],
+                        "active_skill_ids":  [
+                                                 "skill_enemy_cleave"
+                                             ],
+                        "allowed_seasons":  [
+                                                "ALL"
+                                            ]
+                    },
+                    {
+                        "id":  "enemy_bomb_imp",
+                        "name":  "화약 자폭 임프",
+                        "description":  "사망 시 불안정한 마력 핵이 폭발해 주변에 큰 피해를 입힙니다.",
+                        "element":  "FIRE",
+                        "enemy_type":  "NORMAL",
+                        "max_hp":  40,
+                        "atk":  16,
+                        "def":  4,
+                        "speed":  16,
+                        "attack_interval":  1.0,
+                        "passive_skill_ids":  [
+                                                  "skill_enemy_volatile"
+                                              ],
+                        "active_skill_ids":  [
+
+                                             ],
+                        "allowed_seasons":  [
+                                                "ALL"
+                                            ]
+                    },
+                    {
+                        "id":  "enemy_shadow_acolyte",
+                        "name":  "심연 주술사",
+                        "description":  "아군 후열과 광역으로 디버프를 흩뿌리는 원거리 술사입니다.",
+                        "element":  "DARK",
+                        "enemy_type":  "NORMAL",
+                        "max_hp":  52,
+                        "atk":  18,
+                        "def":  7,
+                        "speed":  15,
+                        "attack_interval":  1.1,
+                        "passive_skill_ids":  [
+
+                                              ],
+                        "active_skill_ids":  [
+                                                 "skill_aoe_pierce_col"
+                                             ],
+                        "allowed_seasons":  [
+                                                "ALL"
+                                            ]
+                    },
+                    {
+                        "id":  "enemy_summer_salamander",
+                        "name":  "열파 샐러맨더",
+                        "description":  "여름철 작열하는 열기와 함께 출현해 화상 공격을 퍼붓는 화염 마수입니다.",
+                        "element":  "FIRE",
+                        "enemy_type":  "ELITE",
+                        "max_hp":  105,
+                        "atk":  22,
+                        "def":  11,
+                        "speed":  16,
+                        "attack_interval":  0.95,
+                        "passive_skill_ids":  [
+                                                  "skill_enemy_warcry_aura"
+                                              ],
+                        "active_skill_ids":  [
+                                                 "skill_fire_slash"
+                                             ],
+                        "allowed_seasons":  [
+                                                "SUMMER",
+                                                "AUTUMN"
+                                            ]
+                    },
+                    {
+                        "id":  "enemy_winter_wraith",
+                        "name":  "빙결 망령 기사",
+                        "description":  "겨울철 혹한 속에서 등장하며 높은 방어력과 서리 감속 스킬을 사용합니다.",
+                        "element":  "ICE",
+                        "enemy_type":  "ELITE",
+                        "max_hp":  128,
+                        "atk":  20,
+                        "def":  22,
+                        "speed":  13,
+                        "attack_interval":  1.05,
+                        "passive_skill_ids":  [
+                                                  "skill_enemy_thorns"
+                                              ],
+                        "active_skill_ids":  [
+                                                 "skill_frost_nova"
+                                             ],
+                        "allowed_seasons":  [
+                                                "WINTER"
+                                            ]
+                    },
+                    {
+                        "id":  "enemy_siege_ram",
+                        "name":  "공성 철갑 거신",
+                        "description":  "높은 방어 관통력으로 전열과 성벽 내구도를 집중 파괴하는 공성 유닛입니다.",
+                        "element":  "LIGHTNING",
+                        "enemy_type":  "SIEGE",
+                        "max_hp":  145,
+                        "atk":  24,
+                        "def":  18,
+                        "speed":  8,
+                        "attack_interval":  1.25,
+                        "passive_skill_ids":  [
+                                                  "skill_enemy_pierce_fang"
+                                              ],
+                        "active_skill_ids":  [
+                                                 "skill_enemy_cleave"
+                                             ],
+                        "allowed_seasons":  [
+                                                "ALL"
+                                            ]
+                    },
+                    {
+                        "id":  "enemy_abyss_overlord",
+                        "name":  "심연의 군주 (BOSS)",
+                        "description":  "외곽 보스방과 심층 던전을 지배하는 군주입니다. 아군 오라와 십자 폭발을 구사합니다.",
+                        "element":  "DARK",
+                        "enemy_type":  "BOSS",
+                        "max_hp":  180,
+                        "atk":  26,
+                        "def":  20,
+                        "speed":  16,
+                        "attack_interval":  1.0,
+                        "passive_skill_ids":  [
+                                                  "skill_enemy_warcry_aura",
+                                                  "skill_enemy_pierce_fang"
+                                              ],
+                        "active_skill_ids":  [
+                                                 "skill_enemy_abyss_cross",
+                                                 "skill_aoe_meteor_2x2"
+                                             ],
+                        "allowed_seasons":  [
+                                                "ALL"
+                                            ]
+                    },
+                    {
+                        "id":  "enemy_hook_chain_raider",
+                        "name":  "사슬 갈고리 사냥꾼",
+                        "description":  "긴 사슬 갈고리로 아군 후열의 마법사와 힐러를 전열로 끌어당기는 교란형 적입니다.",
+                        "element":  "WIND",
+                        "enemy_type":  "NORMAL",
+                        "max_hp":  54,
+                        "atk":  15,
+                        "def":  7,
+                        "speed":  16,
+                        "attack_interval":  1,
+                        "passive_skill_ids":  [
+                                                  "skill_enemy_pierce_fang"
+                                              ],
+                        "active_skill_ids":  [
+                                                 "skill_enemy_hook_pull"
+                                             ],
+                        "allowed_seasons":  [
+                                                "ALL"
+                                            ]
+                    },
+                    {
+                        "id":  "enemy_siege_ram_juggernaut",
+                        "name":  "강철 충각 돌격수 (ELITE)",
+                        "description":  "강력한 돌진으로 아군 전열 탱커를 뒤로 밀어내어 후열을 노출시키는 정예 적입니다.",
+                        "element":  "EARTH",
+                        "enemy_type":  "ELITE",
+                        "max_hp":  118,
+                        "atk":  22,
+                        "def":  18,
+                        "speed":  11,
+                        "attack_interval":  1.2,
+                        "passive_skill_ids":  [
+                                                  "skill_enemy_thorns"
+                                              ],
+                        "active_skill_ids":  [
+                                                 "skill_enemy_ram_push"
+                                             ],
+                        "allowed_seasons":  [
+                                                "ALL"
+                                            ]
+                    },
+                    {
+                        "id":  "enemy_void_disruptor",
+                        "name":  "왜곡의 심연 술사 (ELITE)",
+                        "description":  "왜곡의 포효로 아군의 3x3 진형 배치를 통째로 뒤섞어버리는 정예 마술사입니다.",
+                        "element":  "DARK",
+                        "enemy_type":  "ELITE",
+                        "max_hp":  92,
+                        "atk":  23,
+                        "def":  11,
+                        "speed":  15,
+                        "attack_interval":  1.05,
+                        "passive_skill_ids":  [
+                                                  "skill_enemy_warcry_aura"
+                                              ],
+                        "active_skill_ids":  [
+                                                 "skill_enemy_chaos_howl",
+                                                 "skill_enemy_abyss_cross"
+                                             ],
+                        "allowed_seasons":  [
+                                                "ALL"
+                                            ]
+                    }
+                ]
+}

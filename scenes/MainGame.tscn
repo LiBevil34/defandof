@@ -1,0 +1,233 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/MainGame.gd" id="1_main_game"]
+[ext_resource type="PackedScene" path="res://scenes/management/ManagementScene.tscn" id="2_mgmt"]
+[ext_resource type="PackedScene" path="res://scenes/management/TownPhaseScene.tscn" id="3_town"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/DungeonMapScene.tscn" id="4_dmap"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/OffenseScene.tscn" id="5_offense"]
+[ext_resource type="PackedScene" path="res://scenes/defense/DefenseScene.tscn" id="6_defense"]
+
+[node name="MainGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main_game")
+
+[node name="RootVBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="TopBar" type="PanelContainer" parent="RootVBox"]
+layout_mode = 2
+
+[node name="TopMargin" type="MarginContainer" parent="RootVBox/TopBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 8
+
+[node name="TopHBox" type="HBoxContainer" parent="RootVBox/TopBar/TopMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="DateLabel" type="Label" parent="RootVBox/TopBar/TopMargin/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "1년차 봄 (1월) 1일 [총 1일]"
+
+[node name="DayTypeLabel" type="Label" parent="RootVBox/TopBar/TopMargin/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "[평일]"
+
+[node name="PhaseLabel" type="Label" parent="RootVBox/TopBar/TopMargin/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "페이즈: 내정"
+
+[node name="ResourceLabel" type="Label" parent="RootVBox/TopBar/TopMargin/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "식량 50 | 자재 40 | 골드 100 | 사기 70 | 성벽 100/100"
+horizontal_alignment = 2
+
+[node name="SaveButton" type="Button" parent="RootVBox/TopBar/TopMargin/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "저장"
+
+[node name="TitleButton" type="Button" parent="RootVBox/TopBar/TopMargin/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "타이틀로"
+
+[node name="ResetGameButton" type="Button" parent="RootVBox/TopBar/TopMargin/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "새 게임"
+
+[node name="SceneContainer" type="Control" parent="RootVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ManagementScene" parent="RootVBox/SceneContainer" instance=ExtResource("2_mgmt")]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="TownPhaseScene" parent="RootVBox/SceneContainer" instance=ExtResource("3_town")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="DungeonMapScene" parent="RootVBox/SceneContainer" instance=ExtResource("4_dmap")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+managed_externally = true
+
+[node name="OffenseScene" parent="RootVBox/SceneContainer" instance=ExtResource("5_offense")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+embedded_in_map = true
+
+[node name="DefenseScene" parent="RootVBox/SceneContainer" instance=ExtResource("6_defense")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="SettlementPanel" type="CenterContainer" parent="RootVBox/SceneContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="RootVBox/SceneContainer/SettlementPanel"]
+custom_minimum_size = Vector2(740, 0)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="RootVBox/SceneContainer/SettlementPanel/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 24
+
+[node name="VBoxContainer" type="VBoxContainer" parent="RootVBox/SceneContainer/SettlementPanel/PanelContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="SettlementTitleLabel" type="Label" parent="RootVBox/SceneContainer/SettlementPanel/PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "하루 정산"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="RootVBox/SceneContainer/SettlementPanel/PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="SettlementSummaryLabel" type="Label" parent="RootVBox/SceneContainer/SettlementPanel/PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "정산 내역"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="SettlementNextDayButton" type="Button" parent="RootVBox/SceneContainer/SettlementPanel/PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "다음 날로 넘어가기"
+
+[node name="GameOverOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.05, 0.02, 0.03, 0.86)
+
+[node name="CenterContainer" type="CenterContainer" parent="GameOverOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GameOverPanel" type="PanelContainer" parent="GameOverOverlay/CenterContainer"]
+custom_minimum_size = Vector2(680, 0)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="GameOverOverlay/CenterContainer/GameOverPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 28
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GameOverOverlay/CenterContainer/GameOverPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="GameOverTitle" type="Label" parent="GameOverOverlay/CenterContainer/GameOverPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.35, 1)
+theme_override_font_sizes/font_size = 32
+text = "GAME OVER"
+horizontal_alignment = 1
+
+[node name="GameOverReasonLabel" type="Label" parent="GameOverOverlay/CenterContainer/GameOverPanel/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "패배 사유"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="GameOverRecordLabel" type="Label" parent="GameOverOverlay/CenterContainer/GameOverPanel/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "생존 기록"
+horizontal_alignment = 1
+
+[node name="GameOverRestartButton" type="Button" parent="GameOverOverlay/CenterContainer/GameOverPanel/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "처음부터 다시 시작"
+
+[node name="GameOverTitleButton" type="Button" parent="GameOverOverlay/CenterContainer/GameOverPanel/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "메인 타이틀로 돌아가기"

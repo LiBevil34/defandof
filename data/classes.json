@@ -1,0 +1,47 @@
+{
+	"version": 1,
+	"classes": [
+		{
+			"id": "원거리딜러",
+			"name": "정찰/궁수/원거리딜러",
+			"move_fatigue_cost": 3,
+			"battle_fatigue_cost": 8,
+			"description": "가벼운 무장과 높은 기동력으로 장기 던전 탐사에 유리합니다."
+		},
+		{
+			"id": "탱커",
+			"name": "전사/방패병/중장갑",
+			"move_fatigue_cost": 6,
+			"battle_fatigue_cost": 12,
+			"description": "무거운 갑옷으로 이동 피로도가 높지만 단기 돌파와 저지에 강합니다."
+		},
+		{
+			"id": "근접딜러",
+			"name": "전사/기사/근접딜러",
+			"move_fatigue_cost": 6,
+			"battle_fatigue_cost": 12,
+			"description": "전열에서 직접 교전하며 높은 기동 부하를 감수합니다."
+		},
+		{
+			"id": "마법사",
+			"name": "마법사 계열",
+			"move_fatigue_cost": 5,
+			"battle_fatigue_cost": 15,
+			"description": "전투 중 마력 소모가 커서 전투당 피로도 증가량이 높습니다."
+		},
+		{
+			"id": "힐러",
+			"name": "사제/힐러 계열",
+			"move_fatigue_cost": 5,
+			"battle_fatigue_cost": 15,
+			"description": "치유와 축복 마법 운용으로 전투당 피로도가 크게 쌓입니다."
+		},
+		{
+			"id": "특수",
+			"name": "특수/연금술사 계열",
+			"move_fatigue_cost": 4,
+			"battle_fatigue_cost": 11,
+			"description": "전술 지원과 상태이상 운용에 균형 잡힌 피로도 소모를 보입니다."
+		}
+	]
+}

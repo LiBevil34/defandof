@@ -1,0 +1,22 @@
+{
+    "id":  "hero_archer",
+    "name":  "궁수",
+    "rarity":  "R",
+    "role_category":  "후위",
+    "job_class":  "원거리딜러",
+    "element":  "LIGHTNING",
+    "max_hp":  35,
+    "atk":  24,
+    "def":  5,
+    "heal_power":  0,
+    "speed":  18,
+    "dmg_bonus":  0.1,
+    "crit_rate":  0.3,
+    "crit_dmg":  1.8,
+    "armor_pen":  0.15,
+    "final_dmg_mult":  1.0,
+    "offense_rank":  "후열",
+    "defense_zone":  "성벽위",
+    "skill_id":  "skill_snipe_back",
+    "skill_description":  "전선을 넘어 적 후열을 직접 저격하는 치명타 특화 원거리딜러입니다."
+}

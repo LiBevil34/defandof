@@ -1,0 +1,91 @@
+{
+	"version": 1,
+	"researches": [
+		{
+			"id": "res_precision_ballista",
+			"name": "성벽 정밀 발리스타 공학",
+			"description": "고관통·방어력 파쇄 탄두를 발사하는 [철갑 파쇄 발리스타] 커스텀 타워의 제작 설계를 해금합니다.",
+			"cost": {
+				"gold": 25,
+				"materials": 15
+			},
+			"prerequisite_id": "",
+			"unlock_tower_ids": [
+				"tower_ballista_pierce"
+			],
+			"unlock_equip_ids": []
+		},
+		{
+			"id": "res_frost_arcane_tower",
+			"name": "서리 결빙 오벨리스크 공학",
+			"description": "냉기 소형 광역 타격과 적 감속 효과를 지닌 [서리 결빙 오벨리스크] 타워의 제작을 해금합니다.",
+			"cost": {
+				"gold": 35,
+				"materials": 20
+			},
+			"prerequisite_id": "",
+			"unlock_tower_ids": [
+				"tower_frost_obelisk"
+			],
+			"unlock_equip_ids": []
+		},
+		{
+			"id": "res_forging_steel_craft",
+			"name": "강철 중장비 단조술",
+			"description": "대장간에서 SR 등급 전투 장비 [성벽 수호 흉갑], [광전사의 혈도끼]를 제작할 수 있도록 해금합니다.",
+			"cost": {
+				"gold": 30,
+				"materials": 18
+			},
+			"prerequisite_id": "",
+			"unlock_tower_ids": [],
+			"unlock_equip_ids": [
+				"eq_steel_bulwark",
+				"eq_berserk_axe"
+			]
+		},
+		{
+			"id": "res_siege_flame_mortar",
+			"name": "고화력 화염 박격포 공학",
+			"description": "대형 광역 화상 포격을 가하는 상위 커스텀 타워 [작렬 화염 박격포]의 제작 설계를 해금합니다.",
+			"cost": {
+				"gold": 50,
+				"materials": 30
+			},
+			"prerequisite_id": "res_precision_ballista",
+			"unlock_tower_ids": [
+				"tower_flame_mortar"
+			],
+			"unlock_equip_ids": []
+		},
+		{
+			"id": "res_storm_beacon_tech",
+			"name": "천공 폭풍 첨탑 마도공학",
+			"description": "전장 전체 적을 타격하는 최상위 방어 타워 [천둥 폭풍 첨탑]의 제작 설계를 해금합니다.",
+			"cost": {
+				"gold": 70,
+				"materials": 40
+			},
+			"prerequisite_id": "res_frost_arcane_tower",
+			"unlock_tower_ids": [
+				"tower_storm_beacon"
+			],
+			"unlock_equip_ids": []
+		},
+		{
+			"id": "res_masterwork_arms",
+			"name": "명장 룬 무구 주조술",
+			"description": "대장간에서 고급 마법·강철 무구 [룬 강철 대검], [대현자의 마력 서클릿]을 제작할 수 있도록 해금합니다.",
+			"cost": {
+				"gold": 60,
+				"materials": 35
+			},
+			"prerequisite_id": "res_forging_steel_craft",
+			"unlock_tower_ids": [],
+			"unlock_equip_ids": [
+				"eq_rune_greatsword",
+				"eq_archmage_circlet"
+			]
+		}
+	]
+}

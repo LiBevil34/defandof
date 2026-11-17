@@ -1,0 +1,24 @@
+{
+	"id": "event_blacksmith_guild",
+	"event_category": "NORMAL",
+	"min_stage": 2,
+	"max_stage": 6,
+	"title": "대장장이 조합의 특주 요청",
+	"description": "대장장이 조합장이 성벽 방어와 무기 제작 효율을 높일 새로운 화로를 제안했습니다.",
+	"option_a": {
+		"text": "예산(식량)을 들여 대형 화로를 지원한다 (자재 대폭 증가)",
+		"deltas": {
+			"food": -8,
+			"materials": 22,
+			"morale": 5
+		}
+	},
+	"option_b": {
+		"text": "기존 화로 보수만 허가하고 노동력을 농장에 돌린다",
+		"deltas": {
+			"food": 12,
+			"materials": -5,
+			"morale": 0
+		}
+	}
+}

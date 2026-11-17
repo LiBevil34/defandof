@@ -1,0 +1,45 @@
+{
+	"version": 1,
+	"dungeons": [
+		{
+			"id": "dun_outer_wasteland",
+			"name": "성벽 외곽 황무지",
+			"description": "안개에 가려진 외곽 지역. 적 전초기지를 파괴하면 다음 디펜스 웨이브가 약화됩니다.",
+			"dungeon_type": "FIELD_GRID",
+			"grid_width": 19,
+			"grid_height": 13,
+			"depth": 1,
+			"drop_equipment_ids": [
+				"eq_iron_sword",
+				"eq_leather_armor",
+				"eq_swift_charm",
+				"eq_hunter_bow",
+				"eq_wind_boots",
+				"eq_steel_bulwark"
+			]
+		},
+		{
+			"id": "dun_crimson_crypt",
+			"name": "심연의 비보 유적",
+			"description": "외곽 포탈과 연결된 5단계 분기형 미니 던전. 희귀 장비와 네임드 유물을 파밍할 수 있습니다.",
+			"dungeon_type": "MINI_ROGUE",
+			"grid_width": 5,
+			"grid_height": 3,
+			"depth": 5,
+			"drop_equipment_ids": [
+				"eq_hunter_bow",
+				"eq_steel_bulwark",
+				"eq_knight_flamebrand",
+				"eq_mage_frost_orb",
+				"eq_named_leon_solaris",
+				"eq_named_elena_glacier",
+				"eq_named_seraphina_chalice",
+				"eq_named_gideon_aegis",
+				"eq_wind_boots",
+				"eq_berserk_axe",
+				"eq_named_camilla_tempest",
+				"eq_named_moros_grimoire"
+			]
+		}
+	]
+}

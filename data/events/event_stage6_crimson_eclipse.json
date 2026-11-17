@@ -1,0 +1,26 @@
+{
+	"id": "event_stage6_crimson_eclipse",
+	"event_category": "NORMAL",
+	"min_stage": 6,
+	"max_stage": 6,
+	"title": "붉은 월식의 징조와 예언가",
+	"description": "하늘에 불길한 붉은 달이 떠올라 영지민들이 동요하고 있습니다. 이 혼란을 어떻게 수습하시겠습니까?",
+	"option_a": {
+		"text": "성직자단과 함께 위령 의식을 열어 민심을 안정시킨다",
+		"deltas": {
+			"gold": -30,
+			"food": -12,
+			"morale": 18,
+			"unrest": -2
+		}
+	},
+	"option_b": {
+		"text": "소문을 퍼뜨린 이들을 구금하고 군수품 약탈에 대비해 증세를 강행한다",
+		"deltas": {
+			"gold": 50,
+			"materials": 18,
+			"morale": -16,
+			"unrest": 2
+		}
+	}
+}

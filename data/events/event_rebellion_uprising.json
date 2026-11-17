@@ -1,0 +1,26 @@
+{
+	"id": "event_rebellion_uprising",
+	"event_category": "REBELLION",
+	"min_stage": 1,
+	"max_stage": 6,
+	"title": "성내 무장 폭동 발발!",
+	"description": "거듭된 가혹한 정책과 누적된 불만 끝에 분노한 시민들이 광장과 성벽 관문을 점거했습니다! 즉각 대처하지 않으면 성벽이 크게 파손됩니다.",
+	"option_a": {
+		"text": "긴급 사면령을 내리고 식량·금을 배상해 폭동을 평화롭게 진정시킨다",
+		"deltas": {
+			"food": -22,
+			"gold": -35,
+			"morale": 22,
+			"unrest": -5
+		}
+	},
+	"option_b": {
+		"text": "경비대를 투입해 무력으로 진압한다 (성벽·자재 큰 피해 발생)",
+		"deltas": {
+			"materials": -16,
+			"wall_hp": -22,
+			"morale": -12,
+			"unrest": -3
+		}
+	}
+}

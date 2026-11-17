@@ -1,0 +1,151 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/management/ManagementScene.gd" id="1_mgmt"]
+
+[node name="ManagementScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_mgmt")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
+
+[node name="MainVBox" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HeaderPanel" type="PanelContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+
+[node name="HeaderMargin" type="MarginContainer" parent="MarginContainer/MainVBox/HeaderPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HeaderVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/HeaderPanel/HeaderMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleRow" type="HBoxContainer" parent="MarginContainer/MainVBox/HeaderPanel/HeaderMargin/HeaderVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="PhaseTitleLabel" type="Label" parent="MarginContainer/MainVBox/HeaderPanel/HeaderMargin/HeaderVBox/TitleRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "내정 경영 · 정책 결정 (MANAGEMENT)"
+horizontal_alignment = 1
+
+[node name="CalendarButton" type="Button" parent="MarginContainer/MainVBox/HeaderPanel/HeaderMargin/HeaderVBox/TitleRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 34)
+layout_mode = 2
+text = "달력 확인"
+
+[node name="StatusLabel" type="Label" parent="MarginContainer/MainVBox/HeaderPanel/HeaderMargin/HeaderVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "식량: 50  |  자재: 40  |  골드: 100  |  시민 사기: 70/100"
+horizontal_alignment = 1
+
+[node name="ProductionLabel" type="Label" parent="MarginContainer/MainVBox/HeaderPanel/HeaderMargin/HeaderVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "[일일 자동 생산] 대기 중..."
+horizontal_alignment = 1
+
+[node name="CenterContainer" type="CenterContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PolicyEventPanel" type="PanelContainer" parent="MarginContainer/MainVBox/CenterContainer"]
+custom_minimum_size = Vector2(880, 0)
+layout_mode = 2
+
+[node name="EventMargin" type="MarginContainer" parent="MarginContainer/MainVBox/CenterContainer/PolicyEventPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="EventVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/CenterContainer/PolicyEventPanel/EventMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="EventTitleLabel" type="Label" parent="MarginContainer/MainVBox/CenterContainer/PolicyEventPanel/EventMargin/EventVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "정책 이벤트"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/MainVBox/CenterContainer/PolicyEventPanel/EventMargin/EventVBox"]
+layout_mode = 2
+
+[node name="EventDescLabel" type="Label" parent="MarginContainer/MainVBox/CenterContainer/PolicyEventPanel/EventMargin/EventVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 19
+text = "이벤트 설명"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ChoiceHBox" type="HBoxContainer" parent="MarginContainer/MainVBox/CenterContainer/PolicyEventPanel/EventMargin/EventVBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="OptionAButton" type="Button" parent="MarginContainer/MainVBox/CenterContainer/PolicyEventPanel/EventMargin/EventVBox/ChoiceHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 15
+text = "선택지 A"
+autowrap_mode = 3
+
+[node name="OptionBButton" type="Button" parent="MarginContainer/MainVBox/CenterContainer/PolicyEventPanel/EventMargin/EventVBox/ChoiceHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 15
+text = "선택지 B"
+autowrap_mode = 3
+
+[node name="EventResultLabel" type="Label" parent="MarginContainer/MainVBox/CenterContainer/PolicyEventPanel/EventMargin/EventVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "정책을 선택해야 마을 관리로 이동할 수 있습니다."
+horizontal_alignment = 1
+
+[node name="FooterCenter" type="CenterContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+
+[node name="OffenseButton" type="Button" parent="MarginContainer/MainVBox/FooterCenter"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+disabled = true
+text = "마을 관리로 이동"

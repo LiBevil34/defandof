@@ -1,0 +1,61 @@
+{
+	"version": 1,
+	"towers": [
+		{
+			"id": "tower_flame_mortar",
+			"name": "작렬 화염 박격포",
+			"description": "화염 속성 대형 광역(AOE_LARGE) 포격을 가해 화상을 입히는 화력 타워입니다.",
+			"element": "FIRE",
+			"atk": 26,
+			"attack_interval": 2.2,
+			"target_scope": "AOE_LARGE",
+			"on_hit_effect_id": "skill_tower_flame_burn",
+			"build_cost": {
+				"materials": 25,
+				"gold": 40
+			}
+		},
+		{
+			"id": "tower_frost_obelisk",
+			"name": "서리 결빙 오벨리스크",
+			"description": "냉기 소형 광역(AOE_SMALL) 공격과 함께 적 이동/공격 속도를 감속시킵니다.",
+			"element": "ICE",
+			"atk": 18,
+			"attack_interval": 1.6,
+			"target_scope": "AOE_SMALL",
+			"on_hit_effect_id": "skill_tower_frost_slow",
+			"build_cost": {
+				"materials": 20,
+				"gold": 35
+			}
+		},
+		{
+			"id": "tower_ballista_pierce",
+			"name": "철갑 파쇄 발리스타",
+			"description": "빠른 속도로 단일 적을 저격하고 방어력 감소(DEF_DOWN)를 부여합니다.",
+			"element": "EARTH",
+			"atk": 32,
+			"attack_interval": 1.15,
+			"target_scope": "SINGLE_FRONT",
+			"on_hit_effect_id": "skill_tower_shatter_def",
+			"build_cost": {
+				"materials": 18,
+				"gold": 30
+			}
+		},
+		{
+			"id": "tower_storm_beacon",
+			"name": "천둥 폭풍 첨탑",
+			"description": "전장 전체(ALL_ENEMIES) 적에게 번개 마법 타격을 가하는 고급 광역 타워입니다.",
+			"element": "LIGHTNING",
+			"atk": 20,
+			"attack_interval": 2.6,
+			"target_scope": "ALL_ENEMIES",
+			"on_hit_effect_id": "",
+			"build_cost": {
+				"materials": 35,
+				"gold": 60
+			}
+		}
+	]
+}

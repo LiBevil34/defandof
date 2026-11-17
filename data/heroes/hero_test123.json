@@ -1,0 +1,16 @@
+{
+    "atk":  255,
+    "def":  200,
+    "defense_zone":  "성벽밖",
+    "element":  "LIGHT",
+    "heal_power":  0,
+    "id":  "hero_test123",
+    "rarity":  "N",
+    "job_class":  "탱커",
+    "max_hp":  300,
+    "name":  "test123",
+    "offense_rank":  "전열",
+    "role_category":  "전위",
+    "skill_description":  "",
+    "speed":  20
+}

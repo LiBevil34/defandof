@@ -1,0 +1,22 @@
+{
+    "id":  "hero_spearman",
+    "name":  "창병",
+    "rarity":  "R",
+    "role_category":  "중위",
+    "job_class":  "근접딜러",
+    "element":  "WIND",
+    "max_hp":  52,
+    "atk":  22,
+    "def":  10,
+    "heal_power":  0,
+    "speed":  15,
+    "dmg_bonus":  0.05,
+    "crit_rate":  0.2,
+    "crit_dmg":  1.5,
+    "armor_pen":  0.2,
+    "final_dmg_mult":  1.0,
+    "offense_rank":  "중위",
+    "defense_zone":  "성벽밖",
+    "skill_id":  "skill_spear_drag",
+    "skill_description":  "적 후열을 꿰뚫어 아군 앞(전열)으로 강제 견인하는 중위 창병입니다."
+}

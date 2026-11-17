@@ -1,0 +1,24 @@
+{
+	"id": "event_night_watch",
+	"event_category": "NORMAL",
+	"min_stage": 2,
+	"max_stage": 5,
+	"title": "야간 경계 태세 개편",
+	"description": "밤사이 몬스터 척후병의 동태가 포착되었습니다. 야간 보초를 강화해야 합니다.",
+	"option_a": {
+		"text": "횃불과 야식을 넉넉히 배급해 사기를 지키며 경계한다",
+		"deltas": {
+			"food": -8,
+			"materials": -6,
+			"morale": 15
+		}
+	},
+	"option_b": {
+		"text": "보급을 아끼고 엄격한 야간 통금을 시행한다",
+		"deltas": {
+			"food": 6,
+			"materials": 8,
+			"morale": -12
+		}
+	}
+}

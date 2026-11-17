@@ -1,0 +1,24 @@
+{
+	"id": "event_wall_materials",
+	"event_category": "NORMAL",
+	"min_stage": 1,
+	"max_stage": 4,
+	"title": "성벽 보수 자재 조달",
+	"description": "다가올 몬스터의 습격에 대비해 추가 자재 확보가 필요합니다.\n어떤 방식으로 자재를 조달하시겠습니까?",
+	"option_a": {
+		"text": "비축 식량을 내어 자재를 확보한다",
+		"deltas": {
+			"food": -12,
+			"materials": 18,
+			"morale": 5
+		}
+	},
+	"option_b": {
+		"text": "시민들에게 긴급 노역을 지시한다",
+		"deltas": {
+			"food": -5,
+			"materials": 15,
+			"morale": -12
+		}
+	}
+}

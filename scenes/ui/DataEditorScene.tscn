@@ -1,0 +1,2389 @@
+[gd_scene format=3 uid="uid://cou2gsehajc6n"]
+
+[ext_resource type="Script" uid="uid://bf7rwtcwhmmjn" path="res://scripts/ui/DataEditorScene.gd" id="1_editor"]
+
+[node name="DataEditorScene" type="Control" unique_id=920777487]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_editor")
+
+[node name="BgRect" type="ColorRect" parent="." unique_id=22971387]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.09, 0.1, 0.12, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=28094534]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="RootVBox" type="VBoxContainer" parent="MarginContainer" unique_id=1499994672]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TopBar" type="HBoxContainer" parent="MarginContainer/RootVBox" unique_id=2044324273]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/RootVBox/TopBar" unique_id=456545202]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "캐릭터 & 이벤트 JSON 데이터 편집기"
+
+[node name="DataRootLabel" type="Label" parent="MarginContainer/RootVBox/TopBar" unique_id=592409338]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "모딩 데이터 경로:"
+horizontal_alignment = 2
+text_overrun_behavior = 3
+
+[node name="ReloadAllButton" type="Button" parent="MarginContainer/RootVBox/TopBar" unique_id=1925229854]
+unique_name_in_owner = true
+layout_mode = 2
+text = "폴더 다시 불러오기"
+
+[node name="TabContainer" type="TabContainer" parent="MarginContainer/RootVBox" unique_id=1586233767]
+layout_mode = 2
+size_flags_vertical = 3
+current_tab = 0
+
+[node name="1. 영웅 편집기" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer" unique_id=845270198]
+layout_mode = 2
+theme_override_constants/separation = 16
+metadata/_tab_index = 0
+
+[node name="HeroLeftVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기" unique_id=1680983088]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HeroListTitle" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroLeftVBox" unique_id=1953494995]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "불러온 영웅 목록 (data/heroes/*.json)"
+
+[node name="HeroList" type="ItemList" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroLeftVBox" unique_id=1726903768]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HeroRightVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기" unique_id=1314762098]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="HeroFileLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox" unique_id=1201410358]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "파일: (새 파일로 저장됨)"
+
+[node name="HeroFormScroll" type="ScrollContainer" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox" unique_id=1645840583]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HeroFormVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll" unique_id=1778590267]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="NameRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox" unique_id=1672067771]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/NameRow" unique_id=1590288591]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "영웅 이름"
+
+[node name="HeroNameEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/NameRow" unique_id=1588318165]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "예: 성기사"
+
+[node name="RarityLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/NameRow" unique_id=1751732581]
+custom_minimum_size = Vector2(72, 0)
+layout_mode = 2
+text = "레어도"
+
+[node name="HeroRarityOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/NameRow" unique_id=1011326604]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+
+[node name="HeroNamedCheck" type="CheckButton" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/NameRow" unique_id=1116149867]
+unique_name_in_owner = true
+layout_mode = 2
+text = "네임드 영웅"
+
+[node name="HeroNamedSourceOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/NameRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(215, 0)
+layout_mode = 2
+
+[node name="NamedRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox" unique_id=2002104067]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/NamedRow" unique_id=1847840164]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "네임드 칭호"
+
+[node name="HeroNamedTitleEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/NamedRow" unique_id=264737864]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "예: 홍련의 검성"
+
+[node name="SigLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/NamedRow" unique_id=1577710122]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+text = "전용 장비"
+
+[node name="HeroSigEquipOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/NamedRow" unique_id=165194315]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LoreRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox" unique_id=1853836328]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="LoreLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/LoreRow" unique_id=833243949]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "네임드 서사"
+
+[node name="HeroLoreEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/LoreRow" unique_id=664103661]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "네임드 영웅의 배경 서사 (선택)"
+
+[node name="JobRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox" unique_id=2010653086]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="CategoryLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/JobRow" unique_id=615829918]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "직업군 대분류"
+
+[node name="HeroCategoryOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/JobRow" unique_id=806698034]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="JobLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/JobRow" unique_id=945735065]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "세부 직업"
+
+[node name="HeroJobOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/JobRow" unique_id=293115724]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ElementRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox" unique_id=1132291912]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ElementLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/ElementRow" unique_id=1189253422]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "속성 (elements.json)"
+
+[node name="HeroElementColorRect" type="ColorRect" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/ElementRow" unique_id=985217915]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+
+[node name="HeroElementOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/ElementRow" unique_id=2119992641]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DefLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/ElementRow" unique_id=199427225]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+text = "방어력(DEF)"
+
+[node name="HeroDefSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/ElementRow" unique_id=349996567]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 9999.0
+value = 10.0
+
+[node name="StatsRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox" unique_id=761181897]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HpLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/StatsRow" unique_id=1253734101]
+layout_mode = 2
+text = "체력(HP)"
+
+[node name="HeroHpSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/StatsRow" unique_id=1303425856]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 9999.0
+value = 60.0
+
+[node name="AtkLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/StatsRow" unique_id=874670994]
+layout_mode = 2
+text = "공격력(ATK)"
+
+[node name="HeroAtkSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/StatsRow" unique_id=876852345]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 9999.0
+value = 18.0
+
+[node name="SpdLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/StatsRow" unique_id=93607080]
+layout_mode = 2
+text = "속도(SPD)"
+
+[node name="HeroSpeedSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/StatsRow" unique_id=682339686]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 999.0
+value = 12.0
+
+[node name="HealLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/StatsRow" unique_id=1904334646]
+layout_mode = 2
+text = "치유력(HEAL)"
+
+[node name="HeroHealSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/StatsRow" unique_id=1948355791]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 9999.0
+
+[node name="CombatStatsRow1" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox" unique_id=841907942]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DmgBonusLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/CombatStatsRow1" unique_id=617524804]
+layout_mode = 2
+text = "피해증가"
+
+[node name="HeroDmgBonusSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/CombatStatsRow1" unique_id=1919376051]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 10.0
+step = 0.05
+
+[node name="CritRateLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/CombatStatsRow1" unique_id=1280904216]
+layout_mode = 2
+text = "치명타율"
+
+[node name="HeroCritRateSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/CombatStatsRow1" unique_id=920802462]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.05
+value = 0.05
+
+[node name="CritDmgLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/CombatStatsRow1" unique_id=2124872993]
+layout_mode = 2
+text = "치명피해"
+
+[node name="HeroCritDmgSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/CombatStatsRow1" unique_id=1784664491]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 10.0
+step = 0.05
+value = 1.5
+
+[node name="CombatStatsRow2" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox" unique_id=576983690]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ArmorPenLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/CombatStatsRow2" unique_id=159706707]
+layout_mode = 2
+text = "방어관통"
+
+[node name="HeroArmorPenSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/CombatStatsRow2" unique_id=646611889]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.05
+
+[node name="FinalMultLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/CombatStatsRow2" unique_id=1928519979]
+layout_mode = 2
+text = "최종배율"
+
+[node name="HeroFinalMultSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/CombatStatsRow2" unique_id=2000333041]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.1
+max_value = 10.0
+step = 0.05
+value = 1.0
+
+[node name="SkillAssignLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/CombatStatsRow2" unique_id=929652030]
+layout_mode = 2
+text = "액티브1"
+
+[node name="HeroSkillOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/CombatStatsRow2" unique_id=210428749]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SkillSlotsRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox" unique_id=761688900]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Skill2Label" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/SkillSlotsRow" unique_id=161015701]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "액티브2 (SR+)"
+
+[node name="HeroSkill2Option" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/SkillSlotsRow" unique_id=89992037]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="UltLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/SkillSlotsRow" unique_id=117805923]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "궁극기 (SSR)"
+
+[node name="HeroUltimateOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/SkillSlotsRow" unique_id=1526838369]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PlacementRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox" unique_id=1993689219]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="RankLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/PlacementRow" unique_id=1517493526]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "오펜스 선호열"
+
+[node name="HeroRankOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/PlacementRow" unique_id=1795381503]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ZoneLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/PlacementRow" unique_id=1984541722]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "디펜스 배치타입"
+
+[node name="HeroZoneOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox/PlacementRow" unique_id=1957062092]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SkillLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox" unique_id=1785803092]
+layout_mode = 2
+text = "스킬 설명"
+
+[node name="HeroSkillEdit" type="TextEdit" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroFormScroll/HeroFormVBox" unique_id=645710254]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+placeholder_text = "영웅의 역할과 스킬 설명을 입력하세요."
+wrap_mode = 1
+
+[node name="HeroStatusLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox" unique_id=847675736]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+
+[node name="HeroButtonsHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox" unique_id=1802219416]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeroNewButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroButtonsHBox" unique_id=383601476]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "새로 만들기"
+
+[node name="HeroSaveButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroButtonsHBox" unique_id=1661577808]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "JSON 파일로 저장"
+
+[node name="HeroDeleteButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/1. 영웅 편집기/HeroRightVBox/HeroButtonsHBox" unique_id=826416732]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "삭제"
+
+[node name="2. 정책 이벤트 편집기" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer" unique_id=1130082251]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 16
+metadata/_tab_index = 1
+
+[node name="EventLeftVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기" unique_id=1361356557]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EventListTitle" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventLeftVBox" unique_id=1962901986]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "불러온 이벤트 목록 (data/events/*.json)"
+
+[node name="EventList" type="ItemList" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventLeftVBox" unique_id=1822855000]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="EventRightVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기" unique_id=832441461]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="EventFileLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox" unique_id=137089859]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "파일: (새 파일로 저장됨)"
+
+[node name="EventFormScroll" type="ScrollContainer" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox" unique_id=1778721782]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="EventFormVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll" unique_id=1789934908]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="TitleRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox" unique_id=82109793]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/TitleRow" unique_id=824523371]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+text = "이벤트 제목"
+
+[node name="EventTitleEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/TitleRow" unique_id=1908107802]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "예: 상단 호위 의뢰"
+
+[node name="StageRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CatLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/StageRow"]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+text = "이벤트 유형"
+
+[node name="EventCategoryOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/StageRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MinLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/StageRow"]
+layout_mode = 2
+text = "등장 시작 시기"
+
+[node name="EventMinStageOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/StageRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MaxLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/StageRow"]
+layout_mode = 2
+text = "종료 시기"
+
+[node name="EventMaxStageOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/StageRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DescLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox" unique_id=1246256223]
+layout_mode = 2
+text = "상황 설명"
+
+[node name="EventDescEdit" type="TextEdit" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox" unique_id=981624447]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 86)
+layout_mode = 2
+placeholder_text = "양자택일 정책 이벤트의 상황 설명을 입력하세요."
+wrap_mode = 1
+
+[node name="HSeparatorA" type="HSeparator" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox" unique_id=1120876709]
+layout_mode = 2
+
+[node name="OptATitleRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox" unique_id=1034723917]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptATitleRow" unique_id=1107937856]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+text = "선택지 A 텍스트"
+
+[node name="OptATextEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptATitleRow" unique_id=276410071]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "예: 호위를 수락하고 식량을 지원한다"
+
+[node name="OptADeltasRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox" unique_id=528330854]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="FoodLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptADeltasRow" unique_id=188017699]
+layout_mode = 2
+text = "A 식량"
+
+[node name="OptAFoodSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptADeltasRow" unique_id=499399821]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -999.0
+max_value = 999.0
+
+[node name="MatLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptADeltasRow" unique_id=1684540608]
+layout_mode = 2
+text = "A 자재"
+
+[node name="OptAMatSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptADeltasRow" unique_id=1152944468]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -999.0
+max_value = 999.0
+
+[node name="MoraleLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptADeltasRow" unique_id=935750314]
+layout_mode = 2
+text = "A 사기"
+
+[node name="OptAMoraleSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptADeltasRow" unique_id=1136243733]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -999.0
+max_value = 999.0
+
+[node name="GoldLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptADeltasRow"]
+layout_mode = 2
+text = "A 골드"
+
+[node name="OptAGoldSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptADeltasRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -999.0
+max_value = 999.0
+
+[node name="UnrestLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptADeltasRow"]
+layout_mode = 2
+text = "A 반란위험"
+
+[node name="OptAUnrestSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptADeltasRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -10.0
+max_value = 10.0
+
+[node name="HSeparatorB" type="HSeparator" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox" unique_id=803448870]
+layout_mode = 2
+
+[node name="OptBTitleRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox" unique_id=105361293]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBTitleRow" unique_id=995215209]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+text = "선택지 B 텍스트"
+
+[node name="OptBTextEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBTitleRow" unique_id=799728880]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "예: 거절하고 자재를 비축한다"
+
+[node name="OptBDeltasRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox" unique_id=259422503]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="FoodLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBDeltasRow" unique_id=712532894]
+layout_mode = 2
+text = "B 식량"
+
+[node name="OptBFoodSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBDeltasRow" unique_id=477487964]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -999.0
+max_value = 999.0
+
+[node name="MatLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBDeltasRow" unique_id=1084644413]
+layout_mode = 2
+text = "B 자재"
+
+[node name="OptBMatSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBDeltasRow" unique_id=1670909862]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -999.0
+max_value = 999.0
+
+[node name="MoraleLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBDeltasRow" unique_id=1952295639]
+layout_mode = 2
+text = "B 사기"
+
+[node name="OptBMoraleSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBDeltasRow" unique_id=268430522]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -999.0
+max_value = 999.0
+
+[node name="GoldLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBDeltasRow"]
+layout_mode = 2
+text = "B 골드"
+
+[node name="OptBGoldSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBDeltasRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -999.0
+max_value = 999.0
+
+[node name="UnrestLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBDeltasRow"]
+layout_mode = 2
+text = "B 반란위험"
+
+[node name="OptBUnrestSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBDeltasRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -10.0
+max_value = 10.0
+
+[node name="EventStatusLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox" unique_id=1196561636]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+
+[node name="EventButtonsHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox" unique_id=2134736900]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="EventNewButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventButtonsHBox" unique_id=1020020572]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "새로 만들기"
+
+[node name="EventSaveButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventButtonsHBox" unique_id=1293349296]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "JSON 파일로 저장"
+
+[node name="EventDeleteButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventButtonsHBox" unique_id=332002475]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "삭제"
+
+[node name="3. 스킬 편집기" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer" unique_id=1698615456]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 16
+metadata/_tab_index = 2
+
+[node name="SkillLeftVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기" unique_id=362671994]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SkillListTitle" type="Label" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillLeftVBox" unique_id=269447726]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "불러온 스킬 목록 (data/skills.json)"
+
+[node name="SkillList" type="ItemList" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillLeftVBox" unique_id=1907048226]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SkillRightVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기" unique_id=504992931]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="SkillIdLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox" unique_id=1450209468]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "스킬 ID: (새 스킬로 저장됨)"
+
+[node name="SkillFormScroll" type="ScrollContainer" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox" unique_id=273079923]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SkillFormVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll" unique_id=1923154161]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="SkillHeaderRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox" unique_id=911228649]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="NameLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/SkillHeaderRow" unique_id=1082289247]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "스킬 이름"
+
+[node name="SkillNameEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/SkillHeaderRow" unique_id=1198830503]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "예: 화염 폭발"
+
+[node name="CdLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/SkillHeaderRow" unique_id=1368130695]
+layout_mode = 2
+text = "쿨다운"
+
+[node name="SkillCooldownSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/SkillHeaderRow" unique_id=1730222196]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 20.0
+value = 2.0
+
+[node name="SkillDescLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox" unique_id=1592270867]
+layout_mode = 2
+text = "스킬 설명"
+
+[node name="SkillDescEdit" type="TextEdit" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox" unique_id=207230069]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+placeholder_text = "스킬 설명을 입력하세요."
+wrap_mode = 1
+
+[node name="EffectsHeader" type="Label" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox" unique_id=716023183]
+layout_mode = 2
+text = "조립된 효과 블록 목록 (effects)"
+
+[node name="SkillEffectList" type="ItemList" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox" unique_id=1618147028]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+
+[node name="HSeparatorEff" type="HSeparator" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox" unique_id=456053955]
+layout_mode = 2
+
+[node name="EffRow1" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox" unique_id=1233716396]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TypeLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/EffRow1" unique_id=1197057938]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "효과 타입"
+
+[node name="EffectTypeOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/EffRow1" unique_id=137398845]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ScopeLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/EffRow1" unique_id=1149489776]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "대상 범위"
+
+[node name="EffectScopeOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/EffRow1" unique_id=895797779]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EffRow2" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox" unique_id=54543174]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="MultLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/EffRow2" unique_id=137052892]
+layout_mode = 2
+text = "계수/수치"
+
+[node name="EffectMultSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/EffRow2" unique_id=1345515265]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 50.0
+step = 0.05
+value = 1.5
+
+[node name="DurLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/EffRow2" unique_id=1093120237]
+layout_mode = 2
+text = "지속(턴/초)"
+
+[node name="EffectDurationSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/EffRow2" unique_id=717010879]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 99.0
+value = 2.0
+
+[node name="EffRow3" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox" unique_id=695091070]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BonusCritLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/EffRow3" unique_id=1149335531]
+layout_mode = 2
+text = "추가 치명타율"
+
+[node name="EffectBonusCritSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/EffRow3" unique_id=2120260738]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.05
+
+[node name="BonusPenLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/EffRow3" unique_id=2042964810]
+layout_mode = 2
+text = "추가 방어관통"
+
+[node name="EffectBonusPenSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/EffRow3" unique_id=1819625344]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.05
+
+[node name="EffActionsRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox" unique_id=262941740]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="EffectAddButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/EffActionsRow" unique_id=392492188]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "+ 효과 추가"
+
+[node name="EffectUpdateButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/EffActionsRow" unique_id=531036834]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "선택 효과 수정"
+
+[node name="EffectRemoveButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillFormScroll/SkillFormVBox/EffActionsRow" unique_id=35465896]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "선택 효과 삭제"
+
+[node name="SkillStatusLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox" unique_id=1309281391]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+
+[node name="SkillButtonsHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox" unique_id=1848468179]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SkillNewButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillButtonsHBox" unique_id=360036428]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "새로 만들기"
+
+[node name="SkillSaveButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillButtonsHBox" unique_id=1725277868]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "JSON 파일로 저장"
+
+[node name="SkillDeleteButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/3. 스킬 편집기/SkillRightVBox/SkillButtonsHBox" unique_id=2059528085]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "삭제"
+
+[node name="4. 장비 편집기" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer" unique_id=1254943246]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 16
+metadata/_tab_index = 3
+
+[node name="EquipLeftVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기" unique_id=169197466]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EquipListTitle" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipLeftVBox" unique_id=989142148]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "장비 목록 (data/equipments.json)"
+
+[node name="EquipList" type="ItemList" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipLeftVBox" unique_id=1447535177]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="EquipRightVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기" unique_id=572319425]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="EquipIdLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox" unique_id=1063601747]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "장비 ID: (새 장비로 저장됨)"
+
+[node name="EquipFormScroll" type="ScrollContainer" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox" unique_id=1840078774]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="EquipFormVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll" unique_id=1616012079]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Row1" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox" unique_id=1828022245]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="NameLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/Row1" unique_id=858674189]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+text = "장비 이름"
+
+[node name="EquipNameEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/Row1" unique_id=945508674]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "예: 용사의 대검"
+
+[node name="RarityLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/Row1" unique_id=2065651805]
+layout_mode = 2
+text = "등급"
+
+[node name="EquipRarityOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/Row1" unique_id=1106445322]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+
+[node name="SlotLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/Row1" unique_id=1025999086]
+layout_mode = 2
+text = "부위"
+
+[node name="EquipSlotOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/Row1" unique_id=844235638]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+
+[node name="Row2" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox" unique_id=1483522489]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ClassLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/Row2" unique_id=1496301241]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+text = "제한 직업군"
+
+[node name="EquipClassesEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/Row2" unique_id=820437666]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ALL"
+placeholder_text = "쉼표 구분 (예: ALL 또는 WARRIOR, KNIGHT)"
+
+[node name="ExclLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/Row2" unique_id=919760651]
+layout_mode = 2
+text = "전용 영웅"
+
+[node name="EquipExclusiveOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/Row2" unique_id=681199794]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Row3" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox" unique_id=475973547]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="PassiveLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/Row3" unique_id=1145875652]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+text = "추가 패시브"
+
+[node name="EquipPassiveOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/Row3" unique_id=1048916649]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ResonanceLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/Row3" unique_id=746232467]
+layout_mode = 2
+text = "전용 공명 스킬"
+
+[node name="EquipResonanceOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/Row3" unique_id=1661830432]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NamedRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox" unique_id=1503894522]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="EquipNamedCheck" type="CheckButton" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/NamedRow" unique_id=1552498769]
+unique_name_in_owner = true
+layout_mode = 2
+text = "네임드 장비 (유일)"
+
+[node name="EquipCraftableCheck" type="CheckButton" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/NamedRow"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "대장간 제작 가능"
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/NamedRow" unique_id=2010636407]
+layout_mode = 2
+text = "장비 칭호/각인"
+
+[node name="EquipNamedTitleEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/NamedRow" unique_id=1235457365]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "예: 태양을 가르는 성검"
+
+[node name="StatRow1" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox" unique_id=1776539120]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HpLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow1" unique_id=634976139]
+layout_mode = 2
+text = "HP"
+
+[node name="EquipHpSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow1" unique_id=2007636911]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -999.0
+max_value = 9999.0
+
+[node name="AtkLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow1" unique_id=234261827]
+layout_mode = 2
+text = "ATK"
+
+[node name="EquipAtkSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow1" unique_id=823759950]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -999.0
+max_value = 9999.0
+
+[node name="DefLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow1" unique_id=2066061497]
+layout_mode = 2
+text = "DEF"
+
+[node name="EquipDefSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow1" unique_id=598421861]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -999.0
+max_value = 9999.0
+
+[node name="SpdLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow1" unique_id=884627682]
+layout_mode = 2
+text = "SPD"
+
+[node name="EquipSpeedSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow1" unique_id=1260509837]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99.0
+max_value = 999.0
+
+[node name="StatRow2" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox" unique_id=1903693527]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DmgLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow2" unique_id=7886908]
+layout_mode = 2
+text = "피해증가"
+
+[node name="EquipDmgBonusSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow2" unique_id=1719902475]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -1.0
+max_value = 10.0
+step = 0.05
+
+[node name="CritLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow2" unique_id=913565884]
+layout_mode = 2
+text = "치명타율"
+
+[node name="EquipCritRateSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow2" unique_id=149468761]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -1.0
+max_value = 1.0
+step = 0.02
+
+[node name="CdmgLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow2" unique_id=492992804]
+layout_mode = 2
+text = "치명피해"
+
+[node name="EquipCritDmgSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow2" unique_id=1383810186]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -1.0
+max_value = 5.0
+step = 0.05
+
+[node name="PenLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow2" unique_id=1542070429]
+layout_mode = 2
+text = "방어관통"
+
+[node name="EquipArmorPenSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow2" unique_id=1932325341]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -1.0
+max_value = 1.0
+step = 0.05
+
+[node name="FinalLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow2" unique_id=735423735]
+layout_mode = 2
+text = "최종배율"
+
+[node name="EquipFinalMultSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox/StatRow2" unique_id=605918108]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -0.5
+max_value = 5.0
+step = 0.05
+value = 0.5
+
+[node name="DescLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox" unique_id=249721261]
+layout_mode = 2
+text = "장비 설명"
+
+[node name="EquipDescEdit" type="TextEdit" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipFormScroll/EquipFormVBox" unique_id=370761990]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+placeholder_text = "장비 배경 및 효과 설명을 입력하세요."
+wrap_mode = 1
+
+[node name="EquipStatusLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox" unique_id=1203954288]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+
+[node name="EquipButtonsHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox" unique_id=1186484219]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="EquipNewButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipButtonsHBox" unique_id=752520519]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "새로 만들기"
+
+[node name="EquipSaveButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipButtonsHBox" unique_id=1871316004]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "JSON 파일로 저장"
+
+[node name="EquipDeleteButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/4. 장비 편집기/EquipRightVBox/EquipButtonsHBox" unique_id=2042210086]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "삭제"
+
+[node name="5. 직군·피로도 설정" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer" unique_id=1070588216]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 16
+metadata/_tab_index = 4
+
+[node name="ClassLeftVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/5. 직군·피로도 설정" unique_id=1534207658]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ClassListTitle" type="Label" parent="MarginContainer/RootVBox/TabContainer/5. 직군·피로도 설정/ClassLeftVBox" unique_id=1866457295]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "직군 목록 (data/classes.json)"
+
+[node name="ClassList" type="ItemList" parent="MarginContainer/RootVBox/TabContainer/5. 직군·피로도 설정/ClassLeftVBox" unique_id=649330990]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ClassRightVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/5. 직군·피로도 설정" unique_id=1842274854]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="ClassIdLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/5. 직군·피로도 설정/ClassRightVBox" unique_id=368181333]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "직군 ID: -"
+
+[node name="ClassNameLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/5. 직군·피로도 설정/ClassRightVBox" unique_id=1574233873]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "직군을 왼쪽에서 선택하세요"
+
+[node name="FatigueRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/5. 직군·피로도 설정/ClassRightVBox" unique_id=1134153697]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="MoveFatigueLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/5. 직군·피로도 설정/ClassRightVBox/FatigueRow" unique_id=670676404]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "던전 이동당 피로도(+)"
+
+[node name="ClassMoveFatigueSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/5. 직군·피로도 설정/ClassRightVBox/FatigueRow" unique_id=1895549573]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 50.0
+value = 4.0
+
+[node name="BattleFatigueLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/5. 직군·피로도 설정/ClassRightVBox/FatigueRow" unique_id=833331443]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "전투 1회당 피로도(+)"
+
+[node name="ClassBattleFatigueSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/5. 직군·피로도 설정/ClassRightVBox/FatigueRow" unique_id=1321396317]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 60.0
+value = 10.0
+
+[node name="ClassDescTitle" type="Label" parent="MarginContainer/RootVBox/TabContainer/5. 직군·피로도 설정/ClassRightVBox" unique_id=1313286204]
+layout_mode = 2
+text = "직군 특성 설명"
+
+[node name="ClassDescEdit" type="TextEdit" parent="MarginContainer/RootVBox/TabContainer/5. 직군·피로도 설정/ClassRightVBox" unique_id=349451062]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+size_flags_vertical = 3
+wrap_mode = 1
+
+[node name="ClassStatusLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/5. 직군·피로도 설정/ClassRightVBox" unique_id=1010668981]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+
+[node name="ClassSaveButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/5. 직군·피로도 설정/ClassRightVBox" unique_id=976215630]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "직군 피로도 설정 저장 (data/classes.json)"
+
+[node name="6. 던전 이벤트(?) 편집기" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer" unique_id=1599552630]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 16
+metadata/_tab_index = 5
+
+[node name="DunEvLeftVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기" unique_id=1835265623]
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DunEvListTitle" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvLeftVBox" unique_id=1564032695]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "던전 이벤트 목록 (dungeon_events.json)"
+
+[node name="DungeonEventList" type="ItemList" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvLeftVBox" unique_id=918031012]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DunEvRightVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기" unique_id=1956474167]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="DunEvIdLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox" unique_id=1068345136]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "던전 이벤트 ID: (새 이벤트)"
+
+[node name="DunEvFormScroll" type="ScrollContainer" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox" unique_id=1112411309]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DunEvFormVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll" unique_id=1484341433]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="TitleRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox" unique_id=1215991063]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/TitleRow" unique_id=700039738]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "이벤트 제목"
+
+[node name="DunEvTitleEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/TitleRow" unique_id=1797576114]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "예: 무너진 보급 마차"
+
+[node name="DescLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox" unique_id=1379501362]
+layout_mode = 2
+text = "이벤트 상황 설명"
+
+[node name="DunEvDescEdit" type="TextEdit" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox" unique_id=1814503055]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+wrap_mode = 1
+
+[node name="ChoicesHeader" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox" unique_id=966199648]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "선택지 목록 (클릭하여 편집)"
+
+[node name="DunEvChoiceList" type="ItemList" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox" unique_id=780104448]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+
+[node name="ChoiceEditRow1" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox" unique_id=143177540]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ChLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/ChoiceEditRow1" unique_id=2033092642]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "선택지 문구"
+
+[node name="DunEvChoiceLabelEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/ChoiceEditRow1" unique_id=1583558718]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "예: 상자를 분해해 물자를 챙긴다"
+
+[node name="ChoiceEditRow2" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox" unique_id=1059171954]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ResLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/ChoiceEditRow2" unique_id=2141853222]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "결과 안내문"
+
+[node name="DunEvChoiceResultEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/ChoiceEditRow2" unique_id=1691744522]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "선택 후 팝업에 출력될 결과 메시지"
+
+[node name="CostRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox" unique_id=873164453]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CostLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/CostRow" unique_id=1166381354]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "비용(Cost)"
+
+[node name="CGold" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/CostRow" unique_id=1711285104]
+layout_mode = 2
+text = "골드"
+
+[node name="DunEvCostGoldSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/CostRow" unique_id=1284785418]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 500.0
+
+[node name="CFood" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/CostRow" unique_id=514702588]
+layout_mode = 2
+text = "식량"
+
+[node name="DunEvCostFoodSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/CostRow" unique_id=217763612]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 500.0
+
+[node name="CMat" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/CostRow" unique_id=1705488181]
+layout_mode = 2
+text = "자재"
+
+[node name="DunEvCostMatSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/CostRow" unique_id=1996547457]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 500.0
+
+[node name="RewardRow1" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox" unique_id=2101430408]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RewLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/RewardRow1" unique_id=194198067]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "보상(자원)"
+
+[node name="RGold" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/RewardRow1" unique_id=907021645]
+layout_mode = 2
+text = "골드"
+
+[node name="DunEvRewardGoldSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/RewardRow1" unique_id=1308361193]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -200.0
+max_value = 500.0
+
+[node name="RFood" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/RewardRow1" unique_id=571475751]
+layout_mode = 2
+text = "식량"
+
+[node name="DunEvRewardFoodSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/RewardRow1" unique_id=1232804346]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -200.0
+max_value = 500.0
+
+[node name="RMat" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/RewardRow1" unique_id=185093988]
+layout_mode = 2
+text = "자재"
+
+[node name="DunEvRewardMatSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/RewardRow1" unique_id=1010434410]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -200.0
+max_value = 500.0
+
+[node name="RewardRow2" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox" unique_id=189499655]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RMorale" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/RewardRow2" unique_id=1184936145]
+layout_mode = 2
+text = "사기"
+
+[node name="DunEvRewardMoraleSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/RewardRow2" unique_id=788398531]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -50.0
+max_value = 50.0
+
+[node name="RWallHp" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/RewardRow2" unique_id=2118028429]
+layout_mode = 2
+text = "성벽수리"
+
+[node name="DunEvRewardWallHpSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/RewardRow2" unique_id=1204330054]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 200.0
+
+[node name="RWallAtk" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/RewardRow2" unique_id=1725246364]
+layout_mode = 2
+text = "성벽화력+"
+
+[node name="DunEvRewardWallAtkSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/RewardRow2" unique_id=1949431154]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 50.0
+
+[node name="RFatigue" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/RewardRow2" unique_id=1095663188]
+layout_mode = 2
+text = "피로도증감"
+
+[node name="DunEvFatigueDeltaSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/RewardRow2" unique_id=1507539218]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -100.0
+
+[node name="DunEvDropEquipCheck" type="CheckButton" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/RewardRow2" unique_id=1209711331]
+unique_name_in_owner = true
+layout_mode = 2
+text = "랜덤 장비 드랍"
+
+[node name="DunEvChoiceActionsRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox" unique_id=2064807386]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DunEvChoiceAddButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/DunEvChoiceActionsRow" unique_id=1537541197]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "+ 선택지 추가"
+
+[node name="DunEvChoiceUpdateButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/DunEvChoiceActionsRow" unique_id=511006185]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "선택된 선택지 수정"
+
+[node name="DunEvChoiceRemoveButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvFormScroll/DunEvFormVBox/DunEvChoiceActionsRow" unique_id=1012125236]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "선택지 삭제"
+
+[node name="DunEvStatusLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox" unique_id=1253058492]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+
+[node name="DunEvButtonsHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox" unique_id=1452057719]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DunEvNewButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvButtonsHBox" unique_id=1854270823]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "새로 만들기"
+
+[node name="DunEvSaveButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvButtonsHBox" unique_id=1917004771]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "JSON 파일로 저장"
+
+[node name="DunEvDeleteButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/6. 던전 이벤트(?) 편집기/DunEvRightVBox/DunEvButtonsHBox" unique_id=1142991921]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "삭제"
+
+[node name="7. 던전·드랍 테이블 편집기" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer" unique_id=82769516]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 16
+metadata/_tab_index = 6
+
+[node name="DunLeftVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기" unique_id=890341878]
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DunListTitle" type="Label" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunLeftVBox" unique_id=823763026]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "던전 목록 (data/dungeons.json)"
+
+[node name="DungeonList" type="ItemList" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunLeftVBox" unique_id=449661223]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DunRightVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기" unique_id=1006727499]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="DungeonIdLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox" unique_id=1007800107]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "던전 ID: (새 던전)"
+
+[node name="DunFormScroll" type="ScrollContainer" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox" unique_id=1315216549]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DunFormVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll" unique_id=1015882349]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Row1" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox" unique_id=844495079]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="NameLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox/Row1" unique_id=1597748565]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "던전 이름"
+
+[node name="DungeonNameEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox/Row1" unique_id=574508376]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "예: 붉은 지하묘지"
+
+[node name="TypeLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox/Row1" unique_id=422635867]
+layout_mode = 2
+text = "던전 타입"
+
+[node name="DungeonTypeOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox/Row1" unique_id=626829867]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+
+[node name="Row2" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox" unique_id=1434026222]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="WLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox/Row2" unique_id=868760715]
+layout_mode = 2
+text = "그리드 너비"
+
+[node name="DungeonWidthSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox/Row2" unique_id=661327086]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 5.0
+max_value = 29.0
+value = 19.0
+
+[node name="HLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox/Row2" unique_id=901111362]
+layout_mode = 2
+text = "그리드 높이"
+
+[node name="DungeonHeightSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox/Row2" unique_id=1994955759]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 4.0
+max_value = 21.0
+value = 13.0
+
+[node name="DLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox/Row2" unique_id=312366612]
+layout_mode = 2
+text = "미니던전 깊이"
+
+[node name="DungeonDepthSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox/Row2" unique_id=996685674]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 4.0
+max_value = 6.0
+value = 5.0
+
+[node name="DescLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox" unique_id=545235675]
+layout_mode = 2
+text = "던전 설명"
+
+[node name="DungeonDescEdit" type="TextEdit" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox" unique_id=694934449]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+wrap_mode = 1
+
+[node name="DropHeaderLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox" unique_id=2060096539]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "파밍 가능 장비 드랍 테이블 (체크하여 지정)"
+
+[node name="DropScroll" type="ScrollContainer" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox" unique_id=1937621340]
+custom_minimum_size = Vector2(0, 180)
+layout_mode = 2
+
+[node name="DungeonDropChecksVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DunFormScroll/DunFormVBox/DropScroll" unique_id=748423611]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="DungeonStatusLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox" unique_id=440821829]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+
+[node name="DungeonButtonsHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox" unique_id=1713889348]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DungeonNewButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DungeonButtonsHBox" unique_id=926908518]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "새로 만들기"
+
+[node name="DungeonSaveButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DungeonButtonsHBox" unique_id=1494002591]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "JSON 파일로 저장"
+
+[node name="DungeonDeleteButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/7. 던전·드랍 테이블 편집기/DunRightVBox/DungeonButtonsHBox" unique_id=154404574]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "삭제"
+
+[node name="8. 적 유닛 편집기" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer" unique_id=1265468542]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 16
+metadata/_tab_index = 7
+
+[node name="EnemyLeftVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기" unique_id=2104711288]
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EnemyListTitle" type="Label" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyLeftVBox" unique_id=465342641]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "적 유닛 목록 (data/enemies.json)"
+
+[node name="EnemyList" type="ItemList" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyLeftVBox" unique_id=1955852790]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="EnemyRightVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기" unique_id=1893093314]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="EnemyIdLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox" unique_id=807191694]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "적 ID: (새 적 유닛)"
+
+[node name="EnemyFormScroll" type="ScrollContainer" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox" unique_id=283143523]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="EnemyFormVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll" unique_id=398582502]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Row1" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox" unique_id=1689504639]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="NameLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/Row1" unique_id=693909507]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "적 이름"
+
+[node name="EnemyNameEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/Row1" unique_id=762611096]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "예: 빙결 망령 기사"
+
+[node name="ElemLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/Row1" unique_id=407422513]
+layout_mode = 2
+text = "속성"
+
+[node name="EnemyElementOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/Row1" unique_id=1971092727]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+
+[node name="TypeLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/Row1" unique_id=2060793014]
+layout_mode = 2
+text = "타입"
+
+[node name="EnemyTypeOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/Row1" unique_id=927574749]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+
+[node name="StatRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox" unique_id=1690189041]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HpLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/StatRow" unique_id=748577948]
+layout_mode = 2
+text = "HP"
+
+[node name="EnemyHpSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/StatRow" unique_id=399693018]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 10.0
+max_value = 5000.0
+value = 60.0
+
+[node name="AtkLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/StatRow" unique_id=798572839]
+layout_mode = 2
+text = "ATK"
+
+[node name="EnemyAtkSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/StatRow" unique_id=1638575123]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 500.0
+value = 14.0
+
+[node name="DefLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/StatRow" unique_id=989946428]
+layout_mode = 2
+text = "DEF"
+
+[node name="EnemyDefSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/StatRow" unique_id=1958448294]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 500.0
+value = 8.0
+
+[node name="SpdLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/StatRow" unique_id=503839961]
+layout_mode = 2
+text = "SPD"
+
+[node name="EnemySpdSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/StatRow" unique_id=451903486]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+value = 12.0
+
+[node name="SeasonsRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox" unique_id=1737042599]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SeasonsLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/SeasonsRow" unique_id=1417297019]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "등장 계절"
+
+[node name="EnemySeasonsEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/SeasonsRow" unique_id=2058090523]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ALL"
+placeholder_text = "쉼표 구분 (ALL 또는 SPRING, SUMMER, AUTUMN, WINTER)"
+
+[node name="DescLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox" unique_id=1294523987]
+layout_mode = 2
+text = "적 설명"
+
+[node name="EnemyDescEdit" type="TextEdit" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox" unique_id=234038290]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+wrap_mode = 1
+
+[node name="PassiveHeader" type="Label" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox" unique_id=1200288237]
+layout_mode = 2
+text = "패시브 스킬 (skills.json 연동 체크)"
+
+[node name="EnemyPassiveScroll" type="ScrollContainer" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox" unique_id=602093410]
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+
+[node name="EnemyPassiveChecksVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/EnemyPassiveScroll" unique_id=209798381]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ActiveHeader" type="Label" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox" unique_id=892295520]
+layout_mode = 2
+text = "액티브 스킬 (skills.json 연동 체크)"
+
+[node name="EnemyActiveScroll" type="ScrollContainer" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox" unique_id=399834071]
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+
+[node name="EnemyActiveChecksVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyFormScroll/EnemyFormVBox/EnemyActiveScroll" unique_id=1983262100]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EnemyStatusLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox" unique_id=1846765260]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+
+[node name="EnemyButtonsHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox" unique_id=1582245911]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="EnemyNewButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyButtonsHBox" unique_id=633077093]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "새로 만들기"
+
+[node name="EnemySaveButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyButtonsHBox" unique_id=717618202]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "JSON 파일로 저장"
+
+[node name="EnemyDeleteButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/8. 적 유닛 편집기/EnemyRightVBox/EnemyButtonsHBox" unique_id=1639769255]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "삭제"
+
+[node name="9. 커스텀 타워 편집기" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer" unique_id=1016087395]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 16
+metadata/_tab_index = 8
+
+[node name="TowerLeftVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기" unique_id=2086776186]
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TowerListTitle" type="Label" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerLeftVBox" unique_id=1307267364]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "타워 목록 (data/towers.json)"
+
+[node name="TowerList" type="ItemList" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerLeftVBox" unique_id=2101899864]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TowerRightVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기" unique_id=1000495132]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="TowerIdLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox" unique_id=1974563344]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "타워 ID: (새 타워)"
+
+[node name="TowerFormScroll" type="ScrollContainer" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox" unique_id=152068324]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TowerFormVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll" unique_id=321896824]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Row1" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox" unique_id=458207669]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="NameLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox/Row1" unique_id=1744971280]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "타워 이름"
+
+[node name="TowerNameEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox/Row1" unique_id=1591092307]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "예: 작렬 화염 박격포"
+
+[node name="ElemLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox/Row1" unique_id=1274757939]
+layout_mode = 2
+text = "속성"
+
+[node name="TowerElementOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox/Row1" unique_id=776016711]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+
+[node name="ScopeLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox/Row1" unique_id=1166021757]
+layout_mode = 2
+text = "공격 범위"
+
+[node name="TowerScopeOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox/Row1" unique_id=1208519252]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+
+[node name="StatRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox" unique_id=52098476]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="AtkLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox/StatRow" unique_id=1309227717]
+layout_mode = 2
+text = "공격력(ATK)"
+
+[node name="TowerAtkSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox/StatRow" unique_id=754782868]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 500.0
+value = 25.0
+
+[node name="IntLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox/StatRow" unique_id=221193731]
+layout_mode = 2
+text = "공격 주기(초)"
+
+[node name="TowerIntervalSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox/StatRow" unique_id=754206529]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.3
+max_value = 10.0
+step = 0.05
+value = 1.5
+
+[node name="EffRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox" unique_id=519838620]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="OnHitLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox/EffRow" unique_id=1102525264]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+text = "적중 시 효과"
+
+[node name="TowerOnHitOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox/EffRow" unique_id=1154324845]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CostRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox" unique_id=411502524]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MatLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox/CostRow" unique_id=1503694117]
+layout_mode = 2
+text = "제작 자재 비용"
+
+[node name="TowerCostMatSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox/CostRow" unique_id=1009384297]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1000.0
+value = 20.0
+
+[node name="GoldLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox/CostRow" unique_id=733847064]
+layout_mode = 2
+text = "제작 골드 비용"
+
+[node name="TowerCostGoldSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox/CostRow" unique_id=417399177]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1000.0
+value = 35.0
+
+[node name="DescLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox" unique_id=216348954]
+layout_mode = 2
+text = "타워 설명"
+
+[node name="TowerDescEdit" type="TextEdit" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerFormScroll/TowerFormVBox" unique_id=240133745]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+wrap_mode = 1
+
+[node name="TowerStatusLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox" unique_id=175773430]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+
+[node name="TowerButtonsHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox" unique_id=1317790916]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TowerNewButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerButtonsHBox" unique_id=1091567264]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "새로 만들기"
+
+[node name="TowerSaveButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerButtonsHBox" unique_id=1981624250]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "JSON 파일로 저장"
+
+[node name="TowerDeleteButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/9. 커스텀 타워 편집기/TowerRightVBox/TowerButtonsHBox" unique_id=184036242]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "삭제"
+
+[node name="10. 아이템 편집기" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 16
+metadata/_tab_index = 9
+
+[node name="ItemLeftVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ItemListTitle" type="Label" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemLeftVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "소비 아이템 목록 (data/items.json)"
+
+[node name="ItemList" type="ItemList" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemLeftVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ItemRightVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="ItemIdLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "아이템 ID: (새 아이템으로 저장됨)"
+
+[node name="ItemFormScroll" type="ScrollContainer" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ItemFormVBox" type="VBoxContainer" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="Row1" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="NameLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox/Row1"]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+text = "아이템 이름"
+
+[node name="ItemNameEdit" type="LineEdit" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox/Row1"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "예: 상급 회복 영약"
+
+[node name="RarityLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox/Row1"]
+layout_mode = 2
+text = "등급"
+
+[node name="ItemRarityOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox/Row1"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+
+[node name="Row2" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TypeLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox/Row2"]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+text = "효과 유형"
+
+[node name="ItemTypeOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox/Row2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ScopeLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox/Row2"]
+layout_mode = 2
+text = "적용 범위"
+
+[node name="ItemScopeOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox/Row2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Row3" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="PowerLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox/Row3"]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+text = "위력/회복/배율"
+
+[node name="ItemPowerSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox/Row3"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 9999.0
+step = 0.05
+value = 45.0
+
+[node name="DurLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox/Row3"]
+layout_mode = 2
+text = "지속(턴)"
+
+[node name="ItemDurationSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox/Row3"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 20.0
+value = 1.0
+
+[node name="GoldLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox/Row3"]
+layout_mode = 2
+text = "기준 가격(골드)"
+
+[node name="ItemCostGoldSpin" type="SpinBox" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox/Row3"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 999.0
+value = 15.0
+
+[node name="Row4" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="ItemCombatCheck" type="CheckButton" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox/Row4"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "전투 중 사용 가능"
+
+[node name="ItemDungeonCheck" type="CheckButton" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox/Row4"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "던전 탐험 가방에서 사용 가능"
+
+[node name="DescLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox"]
+layout_mode = 2
+text = "아이템 설명"
+
+[node name="ItemDescEdit" type="TextEdit" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemFormScroll/ItemFormVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+wrap_mode = 1
+
+[node name="ItemStatusLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+
+[node name="ItemButtonsHBox" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ItemNewButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "새로 만들기"
+
+[node name="ItemSaveButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "JSON 파일로 저장"
+
+[node name="ItemDeleteButton" type="Button" parent="MarginContainer/RootVBox/TabContainer/10. 아이템 편집기/ItemRightVBox/ItemButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "삭제"

@@ -1,0 +1,24 @@
+{
+	"id": "event_festival",
+	"event_category": "NORMAL",
+	"min_stage": 1,
+	"max_stage": 3,
+	"title": "마을 축제와 비축 식량",
+	"description": "시민들이 지친 마음을 달래기 위해 소규모 마을 축제를 원하고 있습니다.\n어떻게 결정하시겠습니까?",
+	"option_a": {
+		"text": "축제를 열어 사기를 진작한다",
+		"deltas": {
+			"food": -10,
+			"materials": 0,
+			"morale": 15
+		}
+	},
+	"option_b": {
+		"text": "축제를 보류하고 물자를 비축한다",
+		"deltas": {
+			"food": 10,
+			"materials": 8,
+			"morale": -10
+		}
+	}
+}

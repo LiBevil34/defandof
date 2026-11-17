@@ -1,0 +1,24 @@
+{
+	"id": "event_tax_collection",
+	"event_category": "NORMAL",
+	"min_stage": 2,
+	"max_stage": 5,
+	"title": "임시 방위 물자 징수",
+	"description": "다가올 침공에 대비해 추가 보급품을 확보할지, 시민들의 부담을 덜어줄지 결정해야 합니다.",
+	"option_a": {
+		"text": "전시 물자 징수를 단행해 자재와 식량을 확보한다",
+		"deltas": {
+			"food": 10,
+			"materials": 14,
+			"morale": -14
+		}
+	},
+	"option_b": {
+		"text": "징수를 면제하고 사기를 크게 높인다",
+		"deltas": {
+			"food": -6,
+			"materials": -4,
+			"morale": 18
+		}
+	}
+}

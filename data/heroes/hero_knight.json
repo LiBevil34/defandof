@@ -1,0 +1,23 @@
+{
+    "id":  "hero_knight",
+    "name":  "기사",
+    "rarity":  "SR",
+    "role_category":  "전위",
+    "job_class":  "근접딜러",
+    "element":  "FIRE",
+    "max_hp":  65,
+    "atk":  20,
+    "def":  12,
+    "heal_power":  0,
+    "speed":  12,
+    "dmg_bonus":  0.1,
+    "crit_rate":  0.15,
+    "crit_dmg":  1.6,
+    "armor_pen":  0.1,
+    "final_dmg_mult":  1.0,
+    "offense_rank":  "전열",
+    "defense_zone":  "성벽밖",
+    "skill_id":  "skill_fire_slash",
+    "skill2_id":  "skill_flame_aura",
+    "skill_description":  "전열에서 불꽃 같은 검격으로 적의 전선을 돌파하고 투지를 불태웁니다."
+}

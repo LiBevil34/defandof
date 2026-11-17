@@ -1,0 +1,23 @@
+{
+    "id":  "hero_priest",
+    "name":  "사제",
+    "rarity":  "SR",
+    "role_category":  "후위",
+    "job_class":  "힐러",
+    "element":  "LIGHT",
+    "max_hp":  40,
+    "atk":  8,
+    "def":  8,
+    "heal_power":  24,
+    "speed":  16,
+    "dmg_bonus":  0.0,
+    "crit_rate":  0.05,
+    "crit_dmg":  1.5,
+    "armor_pen":  0.0,
+    "final_dmg_mult":  1.0,
+    "offense_rank":  "후열",
+    "defense_zone":  "성벽위",
+    "skill_id":  "skill_holy_blessing",
+    "skill2_id":  "skill_sanctuary_ward",
+    "skill_description":  "아군 전체의 체력을 회복하고 성역의 방벽으로 보호하는 힐러입니다."
+}

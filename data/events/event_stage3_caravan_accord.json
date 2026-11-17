@@ -1,0 +1,28 @@
+{
+	"id": "event_stage3_caravan_accord",
+	"event_category": "NORMAL",
+	"min_stage": 3,
+	"max_stage": 5,
+	"title": "동방 상단과의 장기 무역 협정",
+	"description": "거대 상단이 영지 통행세 면제를 조건으로 대량의 식량 또는 공성 자재 공급을 제안해 왔습니다.",
+	"option_a": {
+		"text": "관세를 낮추고 시민 복지를 위한 식량·자금을 확보한다",
+		"deltas": {
+			"food": 20,
+			"materials": 6,
+			"gold": 25,
+			"morale": 8,
+			"unrest": -1
+		}
+	},
+	"option_b": {
+		"text": "높은 통행세를 강제 징수해 국고와 군수 자재를 긁어모은다",
+		"deltas": {
+			"food": 0,
+			"materials": 24,
+			"gold": 40,
+			"morale": -12,
+			"unrest": 2
+		}
+	}
+}

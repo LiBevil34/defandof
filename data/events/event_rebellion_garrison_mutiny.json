@@ -1,0 +1,26 @@
+{
+	"id": "event_rebellion_garrison_mutiny",
+	"event_category": "REBELLION",
+	"min_stage": 3,
+	"max_stage": 6,
+	"title": "수비대 태업 및 성벽 반란 음모",
+	"description": "장기간의 불만과 사기 저하로 외곽 수비병 일부까지 동요해 명령을 거부하고 있습니다.",
+	"option_a": {
+		"text": "체불 수당과 특별 보급을 즉시 지급해 충성심을 회복시킨다",
+		"deltas": {
+			"gold": -45,
+			"food": -16,
+			"morale": 24,
+			"unrest": -6
+		}
+	},
+	"option_b": {
+		"text": "군법으로 엄단하고 반란 병력을 숙청한다 (성벽 내구도 급감)",
+		"deltas": {
+			"materials": -20,
+			"wall_hp": -28,
+			"morale": -15,
+			"unrest": -3
+		}
+	}
+}

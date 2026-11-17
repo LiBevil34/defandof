@@ -1,0 +1,443 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/dungeon/OffenseScene.gd" id="1_offense"]
+
+[node name="OffenseScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_offense")
+
+[node name="BgColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.09, 0.1, 0.12, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+
+[node name="MainVBox" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeaderBox" type="Control" parent="MarginContainer/MainVBox"]
+custom_minimum_size = Vector2(0, 114)
+layout_mode = 2
+
+[node name="HeaderBg" type="ColorRect" parent="MarginContainer/MainVBox/HeaderBox"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.14, 0.16, 0.2, 1)
+
+[node name="HeaderMargin" type="MarginContainer" parent="MarginContainer/MainVBox/HeaderBox"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="HeaderVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/HeaderBox/HeaderMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TopTitleHBox" type="HBoxContainer" parent="MarginContainer/MainVBox/HeaderBox/HeaderMargin/HeaderVBox"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/MainVBox/HeaderBox/HeaderMargin/HeaderVBox/TopTitleHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "3x3 던전 오펜스 전투 (OFFENSE)"
+
+[node name="AutoBattleButton" type="Button" parent="MarginContainer/MainVBox/HeaderBox/HeaderMargin/HeaderVBox/TopTitleHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+text = "전투: 수동"
+
+[node name="SpeedButton" type="Button" parent="MarginContainer/MainVBox/HeaderBox/HeaderMargin/HeaderVBox/TopTitleHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "배속 1x"
+
+[node name="RoundLabel" type="Label" parent="MarginContainer/MainVBox/HeaderBox/HeaderMargin/HeaderVBox/TopTitleHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "라운드 1"
+
+[node name="FrontlineStatusLabel" type="Label" parent="MarginContainer/MainVBox/HeaderBox/HeaderMargin/HeaderVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "현재 교전 전선 — 아군: [전열]  |  적군: [전열]"
+
+[node name="TurnQueueLabel" type="Label" parent="MarginContainer/MainVBox/HeaderBox/HeaderMargin/HeaderVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "행동 큐(SPD순): -"
+autowrap_mode = 3
+
+[node name="ArenaHBox" type="HBoxContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 56
+alignment = 1
+
+[node name="AllySection" type="VBoxContainer" parent="MarginContainer/MainVBox/ArenaHBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="AllyHeader" type="Label" parent="MarginContainer/MainVBox/ArenaHBox/AllySection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "아군 진형 (후열·포격+18% | 중열·기동+12% | 전열·철벽+15%)"
+horizontal_alignment = 1
+
+[node name="AllyGrid" type="GridContainer" parent="MarginContainer/MainVBox/ArenaHBox/AllySection"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 3
+
+[node name="CenterDivider" type="ColorRect" parent="MarginContainer/MainVBox/ArenaHBox"]
+custom_minimum_size = Vector2(3, 0)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.35, 0.37, 0.42, 1)
+
+[node name="EnemySection" type="VBoxContainer" parent="MarginContainer/MainVBox/ArenaHBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="EnemyHeader" type="Label" parent="MarginContainer/MainVBox/ArenaHBox/EnemySection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "적군 진형 (전열·철벽 | 중열·기동 | 후열·포격)"
+horizontal_alignment = 1
+
+[node name="EnemyGrid" type="GridContainer" parent="MarginContainer/MainVBox/ArenaHBox/EnemySection"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 3
+
+[node name="LogBox" type="Control" parent="MarginContainer/MainVBox"]
+custom_minimum_size = Vector2(0, 108)
+layout_mode = 2
+
+[node name="LogBg" type="ColorRect" parent="MarginContainer/MainVBox/LogBox"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.13, 0.14, 0.17, 1)
+
+[node name="LogMargin" type="MarginContainer" parent="MarginContainer/MainVBox/LogBox"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="CombatLogLabel" type="Label" parent="MarginContainer/MainVBox/LogBox/LogMargin"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "전투 로그"
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="FooterHBox" type="HBoxContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="SkillActionButton" type="Button" parent="MarginContainer/MainVBox/FooterHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(270, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+disabled = true
+text = "액티브1: 없음"
+
+[node name="Skill2ActionButton" type="Button" parent="MarginContainer/MainVBox/FooterHBox"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(270, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+disabled = true
+text = "액티브2: 없음"
+
+[node name="UltimateActionButton" type="Button" parent="MarginContainer/MainVBox/FooterHBox"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(270, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+disabled = true
+text = "궁극기: 없음"
+
+[node name="ItemActionButton" type="Button" parent="MarginContainer/MainVBox/FooterHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+disabled = true
+text = "아이템 (포션)"
+
+[node name="RestartButton" type="Button" parent="MarginContainer/MainVBox/FooterHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "전투 초기화 (재배치)"
+
+[node name="FinishPhaseButton" type="Button" parent="MarginContainer/MainVBox/FooterHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+disabled = true
+text = "정산으로 이동"
+
+[node name="ItemOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.04, 0.06, 0.78)
+
+[node name="CenterContainer" type="CenterContainer" parent="ItemOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="ItemOverlay/CenterContainer"]
+custom_minimum_size = Vector2(720, 500)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="ItemOverlay/CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="ItemOverlay/CenterContainer/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="ItemOverlay/CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "전투 소비 아이템 / 포션 사용 (현재 턴 소모)"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="ItemOverlay/CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CombatItemsVBox" type="VBoxContainer" parent="ItemOverlay/CenterContainer/Panel/Margin/VBox/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ItemOverlayCloseButton" type="Button" parent="ItemOverlay/CenterContainer/Panel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "취소 / 닫기"
+
+[node name="VictoryOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.03, 0.05, 0.8)
+
+[node name="CenterContainer" type="CenterContainer" parent="VictoryOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="VictoryOverlay/CenterContainer"]
+custom_minimum_size = Vector2(680, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="VictoryOverlay/CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 22
+
+[node name="VBox" type="VBoxContainer" parent="VictoryOverlay/CenterContainer/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="VictoryTitleLabel" type="Label" parent="VictoryOverlay/CenterContainer/Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.45, 1)
+theme_override_font_sizes/font_size = 24
+text = "★ 전투 승리!"
+horizontal_alignment = 1
+
+[node name="VictorySummaryLabel" type="Label" parent="VictoryOverlay/CenterContainer/Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "전리품 및 아군 상태"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="BtnHBox" type="HBoxContainer" parent="VictoryOverlay/CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="VictoryDirectReturnButton" type="Button" parent="VictoryOverlay/CenterContainer/Panel/Margin/VBox/BtnHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "바로 던전으로 돌아가기"
+
+[node name="VictoryPrepButton" type="Button" parent="VictoryOverlay/CenterContainer/Panel/Margin/VBox/BtnHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "전투 후 정비하고 돌아가기"
+
+[node name="PostPrepOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.03, 0.05, 0.82)
+
+[node name="CenterContainer" type="CenterContainer" parent="PostPrepOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="PostPrepOverlay/CenterContainer"]
+custom_minimum_size = Vector2(820, 560)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="PostPrepOverlay/CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="PostPrepOverlay/CenterContainer/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="PostPrepOverlay/CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 19
+text = "전투 후 정비 · 체력 회복 / 피로도 관리"
+horizontal_alignment = 1
+
+[node name="TargetLabel" type="Label" parent="PostPrepOverlay/CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "회복 대상을 선택한 뒤 아래 포션/소비 아이템을 사용하세요:"
+
+[node name="PostPrepHeroHBox" type="HBoxContainer" parent="PostPrepOverlay/CenterContainer/Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Scroll" type="ScrollContainer" parent="PostPrepOverlay/CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PostPrepItemsVBox" type="VBoxContainer" parent="PostPrepOverlay/CenterContainer/Panel/Margin/VBox/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="PostPrepStatusLabel" type="Label" parent="PostPrepOverlay/CenterContainer/Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = ""
+
+[node name="PostPrepDoneButton" type="Button" parent="PostPrepOverlay/CenterContainer/Panel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "정비 완료 · 던전으로 복귀"

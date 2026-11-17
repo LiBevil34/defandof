@@ -1,0 +1,26 @@
+{
+	"id": "event_stage4_smuggler_convoy",
+	"event_category": "NORMAL",
+	"min_stage": 4,
+	"max_stage": 6,
+	"title": "지하 암시장 밀수단 적발",
+	"description": "군수 물자를 빼돌려 폭리를 취하던 밀수단이 적발되었습니다. 본보기로 엄단할지 비밀리에 활용할지 선택하세요.",
+	"option_a": {
+		"text": "압수한 식량과 재화를 시민들에게 전액 환원한다",
+		"deltas": {
+			"food": 18,
+			"materials": 10,
+			"morale": 12,
+			"unrest": -1
+		}
+	},
+	"option_b": {
+		"text": "밀수단을 묵인하는 대가로 거액의 군자금과 강철 자재를 받는다",
+		"deltas": {
+			"materials": 26,
+			"gold": 45,
+			"morale": -14,
+			"unrest": 2
+		}
+	}
+}

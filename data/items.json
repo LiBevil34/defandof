@@ -1,0 +1,125 @@
+{
+	"version": 1,
+	"items": [
+		{
+			"id": "item_hp_potion_small",
+			"name": "응급 치유 물약",
+			"description": "아군 1명의 체력을 즉시 45 회복합니다. (던전 탐색·전투 공용)",
+			"rarity": "N",
+			"item_type": "HEAL_HP",
+			"target_scope": "SINGLE_ALLY",
+			"power": 45.0,
+			"duration": 1,
+			"usable_in_combat": true,
+			"usable_in_dungeon": true,
+			"buy_cost": {
+				"gold": 12
+			}
+		},
+		{
+			"id": "item_hp_potion_large",
+			"name": "상급 회복 영약",
+			"description": "아군 1명의 체력을 즉시 110 회복하고 상태이상을 정화합니다.",
+			"rarity": "R",
+			"item_type": "HEAL_HP",
+			"target_scope": "SINGLE_ALLY",
+			"power": 110.0,
+			"duration": 1,
+			"usable_in_combat": true,
+			"usable_in_dungeon": true,
+			"buy_cost": {
+				"gold": 25
+			}
+		},
+		{
+			"id": "item_party_elixir",
+			"name": "축복의 성수",
+			"description": "아군 전원의 체력을 즉시 65 회복합니다.",
+			"rarity": "SR",
+			"item_type": "HEAL_ALL_HP",
+			"target_scope": "ALL_ALLIES",
+			"power": 65.0,
+			"duration": 1,
+			"usable_in_combat": true,
+			"usable_in_dungeon": true,
+			"buy_cost": {
+				"gold": 40
+			}
+		},
+		{
+			"id": "item_stamina_tonic",
+			"name": "활력의 강장제",
+			"description": "출정 파티 전원의 피로도를 30 감소시킵니다. (던전 이동 중 사용)",
+			"rarity": "R",
+			"item_type": "RECOVER_FATIGUE",
+			"target_scope": "ALL_ALLIES",
+			"power": 30.0,
+			"duration": 1,
+			"usable_in_combat": false,
+			"usable_in_dungeon": true,
+			"buy_cost": {
+				"gold": 24
+			}
+		},
+		{
+			"id": "item_war_elixir",
+			"name": "광전사의 비약",
+			"description": "전투 중 아군 전체 공격력을 3턴(지속) 동안 +25% 증가시킵니다.",
+			"rarity": "R",
+			"item_type": "BUFF_ATK",
+			"target_scope": "ALL_ALLIES",
+			"power": 0.25,
+			"duration": 3,
+			"usable_in_combat": true,
+			"usable_in_dungeon": false,
+			"buy_cost": {
+				"gold": 22
+			}
+		},
+		{
+			"id": "item_aegis_brew",
+			"name": "철벽의 수호약",
+			"description": "전투 중 아군 전체 방어력을 3턴(지속) 동안 +35% 증가시킵니다.",
+			"rarity": "R",
+			"item_type": "BUFF_DEF",
+			"target_scope": "ALL_ALLIES",
+			"power": 0.35,
+			"duration": 3,
+			"usable_in_combat": true,
+			"usable_in_dungeon": false,
+			"buy_cost": {
+				"gold": 22
+			}
+		},
+		{
+			"id": "item_fire_flask",
+			"name": "알케미스트 화염병",
+			"description": "전투 중 모든 적에게 즉시 45의 화염 고정 피해를 입힙니다.",
+			"rarity": "R",
+			"item_type": "DAMAGE_ENEMY",
+			"target_scope": "ALL_ENEMIES",
+			"power": 45.0,
+			"duration": 1,
+			"usable_in_combat": true,
+			"usable_in_dungeon": false,
+			"buy_cost": {
+				"gold": 26
+			}
+		},
+		{
+			"id": "item_holy_scroll",
+			"name": "수호 결계 두루마리",
+			"description": "아군 전원에게 상태이상 정화 및 피해 흡수 보호막 +50을 부여합니다.",
+			"rarity": "SR",
+			"item_type": "SHIELD_ALL",
+			"target_scope": "ALL_ALLIES",
+			"power": 50.0,
+			"duration": 3,
+			"usable_in_combat": true,
+			"usable_in_dungeon": false,
+			"buy_cost": {
+				"gold": 38
+			}
+		}
+	]
+}

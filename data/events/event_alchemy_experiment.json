@@ -1,0 +1,24 @@
+{
+	"id": "event_alchemy_experiment",
+	"event_category": "NORMAL",
+	"min_stage": 3,
+	"max_stage": 6,
+	"title": "연금술 공방의 신소재 연구",
+	"description": "연금술사들이 식량 보존 약제와 방벽 강화용 석회 혼합물을 동시에 연구하고 있습니다.",
+	"option_a": {
+		"text": "연금술용 자재를 아낌없이 투자한다",
+		"deltas": {
+			"food": 18,
+			"materials": -14,
+			"morale": 8
+		}
+	},
+	"option_b": {
+		"text": "연구를 중단하고 재료를 성벽 창고로 돌린다",
+		"deltas": {
+			"food": -4,
+			"materials": 16,
+			"morale": -6
+		}
+	}
+}

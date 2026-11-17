@@ -1,0 +1,340 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/dungeon/DungeonMapScene.gd" id="1_map"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/OffenseScene.tscn" id="2_offense"]
+
+[node name="DungeonMapScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_map")
+
+[node name="BgRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.08, 0.09, 0.12, 1)
+
+[node name="MapRoot" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="HeaderPanel" type="PanelContainer" parent="MapRoot"]
+layout_mode = 2
+
+[node name="HeaderMargin" type="MarginContainer" parent="MapRoot/HeaderPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 10
+
+[node name="HeaderVBox" type="VBoxContainer" parent="MapRoot/HeaderPanel/HeaderMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TopHBox" type="HBoxContainer" parent="MapRoot/HeaderPanel/HeaderMargin/HeaderVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="MapRoot/HeaderPanel/HeaderMargin/HeaderVBox/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "이중 던전 탐험 (OFFENSE)"
+
+[node name="ModeBadgeLabel" type="Label" parent="MapRoot/HeaderPanel/HeaderMargin/HeaderVBox/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "[외곽 그리드]"
+
+[node name="ThreatLabel" type="Label" parent="MapRoot/HeaderPanel/HeaderMargin/HeaderVBox/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "위협도: 0 | 전초기지 약화: 0"
+
+[node name="BuffLabel" type="Label" parent="MapRoot/HeaderPanel/HeaderMargin/HeaderVBox/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "탐험 버프: ATK +0 / HP +0 | 식량 50 | 골드 100"
+horizontal_alignment = 2
+
+[node name="DungeonBagButton" type="Button" parent="MapRoot/HeaderPanel/HeaderMargin/HeaderVBox/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "가방/포션"
+
+[node name="CalendarButton" type="Button" parent="MapRoot/HeaderPanel/HeaderMargin/HeaderVBox/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "달력 확인"
+
+[node name="CenterCameraButton" type="Button" parent="MapRoot/HeaderPanel/HeaderMargin/HeaderVBox/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "내 위치"
+
+[node name="RegenerateButton" type="Button" parent="MapRoot/HeaderPanel/HeaderMargin/HeaderVBox/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "새 던전 생성"
+
+[node name="ReturnButton" type="Button" parent="MapRoot/HeaderPanel/HeaderMargin/HeaderVBox/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "귀환"
+
+[node name="StatusLabel" type="Label" parent="MapRoot/HeaderPanel/HeaderMargin/HeaderVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "안내"
+autowrap_mode = 3
+
+[node name="MapCanvas" type="Control" parent="MapRoot"]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CanvasBg" type="ColorRect" parent="MapRoot/MapCanvas"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.11, 0.12, 0.15, 1)
+
+[node name="FieldPanContainer" type="Control" parent="MapRoot/MapCanvas"]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FieldGrid" type="GridContainer" parent="MapRoot/MapCanvas/FieldPanContainer"]
+unique_name_in_owner = true
+layout_mode = 0
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 15
+
+[node name="RogueLayer" type="Control" parent="MapRoot/MapCanvas"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LinesLayer" type="Control" parent="MapRoot/MapCanvas/RogueLayer"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="NodesLayer" type="Control" parent="MapRoot/MapCanvas/RogueLayer"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PartyHudPanel" type="PanelContainer" parent="MapRoot"]
+layout_mode = 2
+
+[node name="PartyHudMargin" type="MarginContainer" parent="MapRoot/PartyHudPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="PartyHudVBox" type="VBoxContainer" parent="MapRoot/PartyHudPanel/PartyHudMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PartyHudHeaderLabel" type="Label" parent="MapRoot/PartyHudPanel/PartyHudMargin/PartyHudVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "출정 파티 상태 (실시간 체력 및 직군별 피로도 — 80 이상: [지침] ATK·SPD -15%, 100: [탈진] 출전 불가)"
+
+[node name="PartyStatusScroll" type="ScrollContainer" parent="MapRoot/PartyHudPanel/PartyHudMargin/PartyHudVBox"]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+vertical_scroll_mode = 0
+
+[node name="PartyStatusHBox" type="HBoxContainer" parent="MapRoot/PartyHudPanel/PartyHudMargin/PartyHudVBox/PartyStatusScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EventOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.72)
+
+[node name="CenterContainer" type="CenterContainer" parent="EventOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="EventPanel" type="PanelContainer" parent="EventOverlay/CenterContainer"]
+custom_minimum_size = Vector2(740, 0)
+layout_mode = 2
+
+[node name="EventMargin" type="MarginContainer" parent="EventOverlay/CenterContainer/EventPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="EventVBox" type="VBoxContainer" parent="EventOverlay/CenterContainer/EventPanel/EventMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="EventTitleLabel" type="Label" parent="EventOverlay/CenterContainer/EventPanel/EventMargin/EventVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "이벤트"
+horizontal_alignment = 1
+
+[node name="EventDescLabel" type="Label" parent="EventOverlay/CenterContainer/EventPanel/EventMargin/EventVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(680, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "내용"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="EventChoicesVBox" type="VBoxContainer" parent="EventOverlay/CenterContainer/EventPanel/EventMargin/EventVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EventConfirmButton" type="Button" parent="EventOverlay/CenterContainer/EventPanel/EventMargin/EventVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "확인 (탐험 계속)"
+
+[node name="BagOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.04, 0.06, 0.78)
+
+[node name="CenterContainer" type="CenterContainer" parent="BagOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BagPanel" type="PanelContainer" parent="BagOverlay/CenterContainer"]
+custom_minimum_size = Vector2(780, 560)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="BagOverlay/CenterContainer/BagPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="BagOverlay/CenterContainer/BagPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="BagOverlay/CenterContainer/BagPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 19
+text = "탐험 가방 · 포션 및 소비 아이템 사용"
+horizontal_alignment = 1
+
+[node name="TargetLabel" type="Label" parent="BagOverlay/CenterContainer/BagPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "단일 회복 대상 영웅 선택 (전체 효과 아이템은 즉시 전체 적용):"
+
+[node name="BagHeroHBox" type="HBoxContainer" parent="BagOverlay/CenterContainer/BagPanel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Scroll" type="ScrollContainer" parent="BagOverlay/CenterContainer/BagPanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BagItemsVBox" type="VBoxContainer" parent="BagOverlay/CenterContainer/BagPanel/Margin/VBox/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="BagStatusLabel" type="Label" parent="BagOverlay/CenterContainer/BagPanel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = ""
+
+[node name="BagCloseButton" type="Button" parent="BagOverlay/CenterContainer/BagPanel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "닫기"
+
+[node name="OffenseScene" parent="." instance=ExtResource("2_offense")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+embedded_in_map = true

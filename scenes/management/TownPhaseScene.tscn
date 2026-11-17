@@ -1,0 +1,1066 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/management/TownPhaseScene.gd" id="1_town"]
+
+[node name="TownPhaseScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_town")
+
+[node name="BgRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.08, 0.09, 0.12, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="MainVBox" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TopBarPanel" type="PanelContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+
+[node name="TopBarMargin" type="MarginContainer" parent="MarginContainer/MainVBox/TopBarPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 8
+
+[node name="TopBarVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TopBarPanel/TopBarMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TopMetaHBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TopBarPanel/TopBarMargin/TopBarVBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="PhaseTitleLabel" type="Label" parent="MarginContainer/MainVBox/TopBarPanel/TopBarMargin/TopBarVBox/TopMetaHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "마을 관리 페이즈 (TOWN)"
+
+[node name="TopDateLabel" type="Label" parent="MarginContainer/MainVBox/TopBarPanel/TopBarMargin/TopBarVBox/TopMetaHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "1년차 1월 1일 (총 1일차)"
+
+[node name="TopSeasonLabel" type="Label" parent="MarginContainer/MainVBox/TopBarPanel/TopBarMargin/TopBarVBox/TopMetaHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "계절: 봄"
+
+[node name="TopDefenseCountdownLabel" type="Label" parent="MarginContainer/MainVBox/TopBarPanel/TopBarMargin/TopBarVBox/TopMetaHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "디펜스 데이: D-4 (4일 후)"
+horizontal_alignment = 2
+
+[node name="CalendarButton" type="Button" parent="MarginContainer/MainVBox/TopBarPanel/TopBarMargin/TopBarVBox/TopMetaHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 32)
+layout_mode = 2
+text = "달력 확인"
+
+[node name="TopResourcesLabel" type="Label" parent="MarginContainer/MainVBox/TopBarPanel/TopBarMargin/TopBarVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "식량 50  |  자재 40  |  골드 100  |  시민 사기 70/100  |  성벽 100/100 (Lv.1)"
+
+[node name="TownTabContainer" type="TabContainer" parent="MarginContainer/MainVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+current_tab = 0
+
+[node name="여관" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer"]
+layout_mode = 2
+theme_override_constants/separation = 14
+metadata/_tab_index = 0
+
+[node name="HeroListVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관"]
+custom_minimum_size = Vector2(430, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HeroCountLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroListVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "보유 영웅 (5명)"
+
+[node name="HeroRosterList" type="ItemList" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroListVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PartyPresetPanel" type="PanelContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관"]
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관/PartyPresetPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관/PartyPresetPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PresetHeaderLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/PartyPresetPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "오펜스 파티 편성 (1~5번 · 최대 5명)"
+
+[node name="PresetButtonsHBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관/PartyPresetPanel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PresetHintLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/PartyPresetPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "영웅 선택 후 칸 클릭=배치 · 동일 영웅/빈 선택 클릭=해제"
+autowrap_mode = 3
+
+[node name="GridColumnsLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/PartyPresetPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "후열(피해+18%/치유+15%) | 중열(공+12%/속+3) | 전열(HP+15%/방+25%)"
+horizontal_alignment = 1
+
+[node name="PartyFormationGrid" type="GridContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관/PartyPresetPanel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 3
+
+[node name="PresetActionsHBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관/PartyPresetPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="QuickFormationButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/여관/PartyPresetPanel/Margin/VBox/PresetActionsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "빠른 편성"
+
+[node name="ClearPresetButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/여관/PartyPresetPanel/Margin/VBox/PresetActionsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "파티 비우기"
+
+[node name="PresetStatusLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/PartyPresetPanel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "1번 파티: 5명 편성"
+autowrap_mode = 3
+
+[node name="HeroDetailPanel" type="PanelContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HeroDetailMargin" type="MarginContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="HeroDetailVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeroHeaderHBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeroElementSwatch" type="ColorRect" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/HeroHeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+
+[node name="HeroRarityLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/HeroHeaderHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "[N]"
+
+[node name="HeroTitleLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/HeroHeaderHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "[Lv.1] 기사 — 전위 · 근접딜러"
+
+[node name="HeroDeploymentLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "속성: 불  |  오펜스 배치: 전열  |  디펜스 배치: 성벽밖"
+
+[node name="HpRowHBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeroHpLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/HpRowHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "체력: 65 / 65"
+
+[node name="HeroHpBar" type="ProgressBar" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/HpRowHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+value = 100.0
+show_percentage = false
+
+[node name="FatigueRowHBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeroFatigueLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/FatigueRowHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "피로도: 0 / 100 [양호]"
+
+[node name="HeroFatigueBar" type="ProgressBar" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/FatigueRowHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 100.0
+value = 0.0
+show_percentage = false
+
+[node name="HeroStatsLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "ATK: 20 | DEF: 12 | HEAL: 0 | SPD: 12"
+autowrap_mode = 3
+
+[node name="EquipHeaderLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "장착 장비 (슬롯 클릭으로 장착/교체/해제)"
+
+[node name="EquipSlotsHBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EquipWeaponButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/EquipSlotsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "무기: (비어 있음)"
+clip_text = true
+
+[node name="EquipArmorButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/EquipSlotsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "방어구: (비어 있음)"
+clip_text = true
+
+[node name="EquipAccessoryButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/EquipSlotsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "장신구: (비어 있음)"
+clip_text = true
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox"]
+layout_mode = 2
+
+[node name="SkillsHeaderLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "보유 스킬창 (등급별 해금)"
+
+[node name="SkillsScroll" type="ScrollContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SkillsVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/SkillsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="PassiveSkillLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/SkillsScroll/SkillsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "[패시브] -"
+autowrap_mode = 3
+
+[node name="ActiveSkillLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/SkillsScroll/SkillsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "[액티브 1] -"
+autowrap_mode = 3
+
+[node name="Active2SkillLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/SkillsScroll/SkillsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "[액티브 2] -"
+autowrap_mode = 3
+
+[node name="UltimateSkillLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/SkillsScroll/SkillsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "[궁극기] -"
+autowrap_mode = 3
+
+[node name="EquipPassiveLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/SkillsScroll/SkillsVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "[장비 패시브] -"
+autowrap_mode = 3
+
+[node name="HeroActionHBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeroHealButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/HeroActionHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "휴식 / 치료 (HP 전액 회복)"
+
+[node name="HeroTrainButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/HeroActionHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "훈련 / 레벨업 (Lv +1)"
+
+[node name="PartyRestButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/HeroActionHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "전체 숙소 휴식 (피로 -35)"
+
+[node name="HeroActionStatusLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = ""
+
+[node name="술집" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+metadata/_tab_index = 1
+
+[node name="TavernHeaderHBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/술집"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TavernInfoLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/술집/TavernHeaderHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "주점/길드 모집 후보 (무작위 3명)"
+
+[node name="RefreshRecruitButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/술집/TavernHeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 38)
+layout_mode = 2
+text = "모집 목록 새로고침 (골드 5)"
+
+[node name="CandidatesHBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/술집"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="TavernStatusLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/술집"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = ""
+
+[node name="마을" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+metadata/_tab_index = 2
+
+[node name="FacilitySummaryPanel" type="PanelContainer" parent="MarginContainer/MainVBox/TownTabContainer/마을"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilitySummaryPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="FacilitySummaryLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilitySummaryPanel/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "농장 Lv.1 (식량 +10/일)  |  제재소 Lv.1 (자재 +8/일)  |  시민 사기 70/100"
+
+[node name="FacilityScroll" type="ScrollContainer" parent="MarginContainer/MainVBox/TownTabContainer/마을"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="FacilityListVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="UpgradeFarmCard" type="PanelContainer" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/UpgradeFarmCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/UpgradeFarmCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="InfoVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/UpgradeFarmCard/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/UpgradeFarmCard/Margin/HBox/InfoVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "농장 증설 (식량 생산 업그레이드)"
+
+[node name="UpgradeFarmDescLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/UpgradeFarmCard/Margin/HBox/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "1일 기본 식량 생산량을 증가시킵니다."
+
+[node name="UpgradeFarmButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/UpgradeFarmCard/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 48)
+layout_mode = 2
+text = "농장 업그레이드"
+
+[node name="UpgradeMillCard" type="PanelContainer" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/UpgradeMillCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/UpgradeMillCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="InfoVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/UpgradeMillCard/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/UpgradeMillCard/Margin/HBox/InfoVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "제재소 증설 (자재 생산 업그레이드)"
+
+[node name="UpgradeMillDescLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/UpgradeMillCard/Margin/HBox/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "1일 기본 자재 생산량을 증가시킵니다."
+
+[node name="UpgradeMillButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/UpgradeMillCard/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 48)
+layout_mode = 2
+text = "제재소 업그레이드"
+
+[node name="BoostMoraleCard" type="PanelContainer" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/BoostMoraleCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/BoostMoraleCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="InfoVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/BoostMoraleCard/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/BoostMoraleCard/Margin/HBox/InfoVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "마을 광장 지원 (시민 사기 진작)"
+
+[node name="BoostMoraleDescLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/BoostMoraleCard/Margin/HBox/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "자원을 투자해 시민 사기를 회복시킵니다."
+
+[node name="BoostMoraleButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/마을/FacilityScroll/FacilityListVBox/BoostMoraleCard/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 48)
+layout_mode = 2
+text = "사기 진작 투자"
+
+[node name="FacilityStatusLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/마을"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = ""
+
+[node name="성벽" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+metadata/_tab_index = 3
+
+[node name="WallSummaryPanel" type="PanelContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallSummaryPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="WallSummaryLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallSummaryPanel/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "성벽 Lv.1 (100/100)  |  기본 포탑 ATK 14  |  커스텀 타워 0/3 슬롯 장착"
+
+[node name="WallScroll" type="ScrollContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="WallListVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="RepairWallCard" type="PanelContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/RepairWallCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/RepairWallCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="InfoVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/RepairWallCard/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/RepairWallCard/Margin/HBox/InfoVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "성벽 긴급 수리"
+
+[node name="RepairWallDescLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/RepairWallCard/Margin/HBox/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "파손된 성벽 내구도를 수리합니다."
+
+[node name="RepairWallButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/RepairWallCard/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 48)
+layout_mode = 2
+text = "성벽 수리"
+
+[node name="ExpandWallCard" type="PanelContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/ExpandWallCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/ExpandWallCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="InfoVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/ExpandWallCard/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/ExpandWallCard/Margin/HBox/InfoVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "성벽 최대 내구도 증축"
+
+[node name="ExpandWallDescLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/ExpandWallCard/Margin/HBox/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "성벽 레벨과 최대 내구도를 올립니다."
+
+[node name="ExpandWallButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/ExpandWallCard/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 48)
+layout_mode = 2
+text = "성벽 증축"
+
+[node name="BaseTowerCard" type="PanelContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/BaseTowerCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/BaseTowerCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="InfoVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/BaseTowerCard/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/BaseTowerCard/Margin/HBox/InfoVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "성벽 기본 방어 포탑 강화"
+
+[node name="BaseTowerDescLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/BaseTowerCard/Margin/HBox/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "성벽에 기본 부착된 포탑의 공격력·공속을 강화합니다."
+
+[node name="BaseTowerAtkButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/BaseTowerCard/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 48)
+layout_mode = 2
+text = "포탑 공격력 강화"
+
+[node name="BaseTowerSpdButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/BaseTowerCard/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 48)
+layout_mode = 2
+text = "포탑 공격속도 강화"
+
+[node name="CustomTowerCard" type="PanelContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/CustomTowerCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/CustomTowerCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/CustomTowerCard/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "성벽 커스텀 타워 거치대 (3슬롯 장착 · 제작은 대장간/연구는 연구소)"
+
+[node name="TowerMountsHBox" type="HBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/CustomTowerCard/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TowerMountListVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/성벽/WallScroll/WallListVBox/CustomTowerCard/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="WallStatusLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/성벽"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = ""
+
+[node name="대장간" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+metadata/_tab_index = 4
+
+[node name="BlacksmithSummaryPanel" type="PanelContainer" parent="MarginContainer/MainVBox/TownTabContainer/대장간"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithSummaryPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="BlacksmithSummaryLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithSummaryPanel/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "대장간 · 일반/연구 해금 장비 및 성벽 커스텀 포탑을 제작합니다. (네임드 전용 장비는 대장간 제작 불가 · 던전/이벤트 획득)"
+
+[node name="BlacksmithScroll" type="ScrollContainer" parent="MarginContainer/MainVBox/TownTabContainer/대장간"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BlacksmithRootVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="BlacksmithCard" type="PanelContainer" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithScroll/BlacksmithRootVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithScroll/BlacksmithRootVBox/BlacksmithCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithScroll/BlacksmithRootVBox/BlacksmithCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithScroll/BlacksmithRootVBox/BlacksmithCard/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "장비 제작 (data/equipments.json)"
+
+[node name="BlacksmithListVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithScroll/BlacksmithRootVBox/BlacksmithCard/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BlacksmithTowerCard" type="PanelContainer" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithScroll/BlacksmithRootVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithScroll/BlacksmithRootVBox/BlacksmithTowerCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithScroll/BlacksmithRootVBox/BlacksmithTowerCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithScroll/BlacksmithRootVBox/BlacksmithTowerCard/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "커스텀 포탑 제작 (data/towers.json · 제작 후 성벽 탭에서 장착)"
+
+[node name="TowerCatalogVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithScroll/BlacksmithRootVBox/BlacksmithTowerCard/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BlacksmithStatusLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/대장간"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = ""
+
+[node name="연구소" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+metadata/_tab_index = 5
+
+[node name="ResearchSummaryPanel" type="PanelContainer" parent="MarginContainer/MainVBox/TownTabContainer/연구소"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/TownTabContainer/연구소/ResearchSummaryPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="ResearchSummaryLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/연구소/ResearchSummaryPanel/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "연구소 · 완료 0 / 0건 (성벽 포탑 및 고급 장비 대장간 제작 설계 해금)"
+
+[node name="ResearchScroll" type="ScrollContainer" parent="MarginContainer/MainVBox/TownTabContainer/연구소"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ResearchListVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/연구소/ResearchScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="ResearchStatusLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/연구소"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = ""
+
+[node name="FooterHBox" type="HBoxContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="FooterStatusLabel" type="Label" parent="MarginContainer/MainVBox/FooterHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "다음 페이즈: 평일 오펜스"
+
+[node name="ReadyDeployButton" type="Button" parent="MarginContainer/MainVBox/FooterHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(290, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "출정 준비 완료 (다음 페이즈로)"
+
+[node name="EquipPickerOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.04, 0.06, 0.78)
+
+[node name="CenterContainer" type="CenterContainer" parent="EquipPickerOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PickerPanel" type="PanelContainer" parent="EquipPickerOverlay/CenterContainer"]
+custom_minimum_size = Vector2(860, 620)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="EquipPickerOverlay/CenterContainer/PickerPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="EquipPickerOverlay/CenterContainer/PickerPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="EquipPickerTitleLabel" type="Label" parent="EquipPickerOverlay/CenterContainer/PickerPanel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "장비 선택"
+
+[node name="EquipPickerSubLabel" type="Label" parent="EquipPickerOverlay/CenterContainer/PickerPanel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "장착 가능한 보유 장비만 표시됩니다."
+
+[node name="HSeparator" type="HSeparator" parent="EquipPickerOverlay/CenterContainer/PickerPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="Scroll" type="ScrollContainer" parent="EquipPickerOverlay/CenterContainer/PickerPanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="EquipPickerListVBox" type="VBoxContainer" parent="EquipPickerOverlay/CenterContainer/PickerPanel/Margin/VBox/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ButtonsHBox" type="HBoxContainer" parent="EquipPickerOverlay/CenterContainer/PickerPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="EquipPickerUnequipButton" type="Button" parent="EquipPickerOverlay/CenterContainer/PickerPanel/Margin/VBox/ButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "현재 장비 해제"
+
+[node name="EquipPickerCloseButton" type="Button" parent="EquipPickerOverlay/CenterContainer/PickerPanel/Margin/VBox/ButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 40)
+layout_mode = 2
+text = "닫기"
+
+[node name="DungeonDeployOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.04, 0.06, 0.80)
+
+[node name="CenterContainer" type="CenterContainer" parent="DungeonDeployOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DeployPanel" type="PanelContainer" parent="DungeonDeployOverlay/CenterContainer"]
+custom_minimum_size = Vector2(960, 640)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="DungeonDeployOverlay/CenterContainer/DeployPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="DungeonDeployOverlay/CenterContainer/DeployPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DeployTitleLabel" type="Label" parent="DungeonDeployOverlay/CenterContainer/DeployPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "던전 출정 파티 최종 확인"
+horizontal_alignment = 1
+
+[node name="DeploySubLabel" type="Label" parent="DungeonDeployOverlay/CenterContainer/DeployPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "출정할 원정대(1~5번 파티)를 선택하고 파티원들의 체력과 피로도 상태를 확인하세요."
+horizontal_alignment = 1
+
+[node name="DeployPresetButtonsHBox" type="HBoxContainer" parent="DungeonDeployOverlay/CenterContainer/DeployPanel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HSeparator" type="HSeparator" parent="DungeonDeployOverlay/CenterContainer/DeployPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="DeployMembersScroll" type="ScrollContainer" parent="DungeonDeployOverlay/CenterContainer/DeployPanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DeployMembersVBox" type="VBoxContainer" parent="DungeonDeployOverlay/CenterContainer/DeployPanel/Margin/VBox/DeployMembersScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="DeploySummaryLabel" type="Label" parent="DungeonDeployOverlay/CenterContainer/DeployPanel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "선택 파티: 1번 파티"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ButtonsHBox" type="HBoxContainer" parent="DungeonDeployOverlay/CenterContainer/DeployPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DeployCancelButton" type="Button" parent="DungeonDeployOverlay/CenterContainer/DeployPanel/Margin/VBox/ButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 44)
+layout_mode = 2
+text = "취소 (마을로)"
+
+[node name="DeployConfirmButton" type="Button" parent="DungeonDeployOverlay/CenterContainer/DeployPanel/Margin/VBox/ButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "선택한 파티로 던전 출정!"

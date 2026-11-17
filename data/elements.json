@@ -1,0 +1,23 @@
+{
+	"version": 1,
+	"elements": [
+		{ "id": "FIRE", "name": "불", "color": "#FF5A36" },
+		{ "id": "ICE", "name": "얼음", "color": "#5CE1E6" },
+		{ "id": "WIND", "name": "바람", "color": "#7ED957" },
+		{ "id": "WATER", "name": "물", "color": "#3B82F6" },
+		{ "id": "EARTH", "name": "땅", "color": "#C48A47" },
+		{ "id": "LIGHTNING", "name": "번개", "color": "#FACC15" },
+		{ "id": "LIGHT", "name": "빛", "color": "#FFF3B0" },
+		{ "id": "DARK", "name": "어둠", "color": "#9333EA" }
+	],
+	"matrix": {
+		"FIRE":      { "FIRE": 0.75, "ICE": 1.5,  "WIND": 0.75, "WATER": 0.75, "EARTH": 1.0,  "LIGHTNING": 1.0,  "LIGHT": 1.0,  "DARK": 1.0  },
+		"ICE":       { "FIRE": 0.75, "ICE": 0.75, "WIND": 1.5,  "WATER": 1.0,  "EARTH": 1.0,  "LIGHTNING": 1.0,  "LIGHT": 1.0,  "DARK": 1.0  },
+		"WIND":      { "FIRE": 1.5,  "ICE": 0.75, "WIND": 0.75, "WATER": 1.0,  "EARTH": 1.0,  "LIGHTNING": 1.0,  "LIGHT": 1.0,  "DARK": 1.0  },
+		"WATER":     { "FIRE": 1.5,  "ICE": 1.0,  "WIND": 1.0,  "WATER": 0.75, "EARTH": 1.5,  "LIGHTNING": 0.75, "LIGHT": 1.0,  "DARK": 1.0  },
+		"EARTH":     { "FIRE": 1.0,  "ICE": 1.0,  "WIND": 1.0,  "WATER": 0.75, "EARTH": 0.75, "LIGHTNING": 1.5,  "LIGHT": 1.0,  "DARK": 1.0  },
+		"LIGHTNING": { "FIRE": 1.0,  "ICE": 1.0,  "WIND": 1.0,  "WATER": 1.5,  "EARTH": 0.75, "LIGHTNING": 0.75, "LIGHT": 1.0,  "DARK": 1.0  },
+		"LIGHT":     { "FIRE": 1.0,  "ICE": 1.0,  "WIND": 1.0,  "WATER": 1.0,  "EARTH": 1.0,  "LIGHTNING": 1.0,  "LIGHT": 0.75, "DARK": 1.5  },
+		"DARK":      { "FIRE": 1.0,  "ICE": 1.0,  "WIND": 1.0,  "WATER": 1.0,  "EARTH": 1.0,  "LIGHTNING": 1.0,  "LIGHT": 1.5,  "DARK": 0.75 }
+	}
+}

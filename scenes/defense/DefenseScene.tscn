@@ -1,0 +1,358 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/defense/DefenseScene.gd" id="1_defense"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
+size = Vector2(76, 740)
+
+[node name="DefenseScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_defense")
+
+[node name="BgRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.08, 0.09, 0.11, 1)
+
+[node name="MainVBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="HudPanel" type="PanelContainer" parent="MainVBox"]
+layout_mode = 2
+
+[node name="HudMargin" type="MarginContainer" parent="MainVBox/HudPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 8
+
+[node name="HudVBox" type="VBoxContainer" parent="MainVBox/HudPanel/HudMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TopStatsHBox" type="HBoxContainer" parent="MainVBox/HudPanel/HudMargin/HudVBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TitleLabel" type="Label" parent="MainVBox/HudPanel/HudMargin/HudVBox/TopStatsHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "5일 주기 성벽 디펜스"
+
+[node name="WallHpLabel" type="Label" parent="MainVBox/HudPanel/HudMargin/HudVBox/TopStatsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "성벽 HP: 100 / 100"
+
+[node name="DeployCountLabel" type="Label" parent="MainVBox/HudPanel/HudMargin/HudVBox/TopStatsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "배치 인원: 0 / 10명"
+
+[node name="WaveInfoLabel" type="Label" parent="MainVBox/HudPanel/HudMargin/HudVBox/TopStatsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "스폰: 0/100 | 처치: 0/100 | 활성: 0 (풀 대기: 100)"
+horizontal_alignment = 2
+
+[node name="ControlsHBox" type="HBoxContainer" parent="MainVBox/HudPanel/HudMargin/HudVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="StatusLabel" type="Label" parent="MainVBox/HudPanel/HudMargin/HudVBox/ControlsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "안내"
+
+[node name="AutoDeployButton" type="Button" parent="MainVBox/HudPanel/HudMargin/HudVBox/ControlsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "자동 배치 (10명)"
+
+[node name="StartWaveButton" type="Button" parent="MainVBox/HudPanel/HudMargin/HudVBox/ControlsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "웨이브 시작 (100마리)"
+
+[node name="AutoBattleButton" type="Button" parent="MainVBox/HudPanel/HudMargin/HudVBox/ControlsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "전투: 수동"
+
+[node name="CastUltimatesButton" type="Button" parent="MainVBox/HudPanel/HudMargin/HudVBox/ControlsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "궁극기 (R)"
+
+[node name="DefenseItemButton" type="Button" parent="MainVBox/HudPanel/HudMargin/HudVBox/ControlsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "아이템 사용"
+
+[node name="SpeedButton" type="Button" parent="MainVBox/HudPanel/HudMargin/HudVBox/ControlsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "배속 1x"
+
+[node name="ResetButton" type="Button" parent="MainVBox/HudPanel/HudMargin/HudVBox/ControlsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "초기화"
+
+[node name="FinishPhaseButton" type="Button" parent="MainVBox/HudPanel/HudMargin/HudVBox/ControlsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+disabled = true
+text = "정산으로 이동"
+
+[node name="Battlefield" type="Control" parent="MainVBox"]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="FieldBg" type="ColorRect" parent="MainVBox/Battlefield"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.12, 0.15, 0.14, 1)
+
+[node name="WallVisual" type="ColorRect" parent="MainVBox/Battlefield"]
+layout_mode = 0
+offset_left = 112.0
+offset_top = 18.0
+offset_right = 292.0
+offset_bottom = 760.0
+mouse_filter = 2
+color = Color(0.32, 0.34, 0.40, 1)
+
+[node name="WallLabel" type="Label" parent="MainVBox/Battlefield/WallVisual"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -65.0
+offset_top = 6.0
+offset_right = 65.0
+offset_bottom = 30.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 15
+text = "[성벽 위]"
+horizontal_alignment = 1
+
+[node name="SpawnZoneLabel" type="Label" parent="MainVBox/Battlefield"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -220.0
+offset_top = 16.0
+offset_right = -24.0
+offset_bottom = 42.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 15
+text = "← 적 스폰 구역"
+horizontal_alignment = 2
+
+[node name="WallArea" type="Area2D" parent="MainVBox/Battlefield"]
+unique_name_in_owner = true
+position = Vector2(252, 385)
+collision_mask = 2
+
+[node name="WallShape" type="CollisionShape2D" parent="MainVBox/Battlefield/WallArea"]
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="SlotsContainer" type="Control" parent="MainVBox/Battlefield"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MonsterContainer" type="Node2D" parent="MainVBox/Battlefield"]
+unique_name_in_owner = true
+
+[node name="RosterPanel" type="PanelContainer" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 134)
+layout_mode = 2
+
+[node name="RosterMargin" type="MarginContainer" parent="MainVBox/RosterPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="RosterVBox" type="VBoxContainer" parent="MainVBox/RosterPanel/RosterMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="RosterTitle" type="Label" parent="MainVBox/RosterPanel/RosterMargin/RosterVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "아군 로스터 (최대 10명 성벽 위·밖 배치 가능)"
+
+[node name="RosterScroll" type="ScrollContainer" parent="MainVBox/RosterPanel/RosterMargin/RosterVBox"]
+custom_minimum_size = Vector2(0, 92)
+layout_mode = 2
+vertical_scroll_mode = 0
+
+[node name="RosterHBox" type="HBoxContainer" parent="MainVBox/RosterPanel/RosterMargin/RosterVBox/RosterScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DefenseItemOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.04, 0.06, 0.78)
+
+[node name="CenterContainer" type="CenterContainer" parent="DefenseItemOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="DefenseItemOverlay/CenterContainer"]
+custom_minimum_size = Vector2(720, 500)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="DefenseItemOverlay/CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="DefenseItemOverlay/CenterContainer/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="DefenseItemOverlay/CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "방어전 전술 아이템 / 포션 사용 (전장 즉시 반영)"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="DefenseItemOverlay/CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DefenseItemsVBox" type="VBoxContainer" parent="DefenseItemOverlay/CenterContainer/Panel/Margin/VBox/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="DefenseItemCloseButton" type="Button" parent="DefenseItemOverlay/CenterContainer/Panel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "닫기"
+
+[node name="DefenseVictoryOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.03, 0.05, 0.8)
+
+[node name="CenterContainer" type="CenterContainer" parent="DefenseVictoryOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="DefenseVictoryOverlay/CenterContainer"]
+custom_minimum_size = Vector2(680, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="DefenseVictoryOverlay/CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 22
+
+[node name="VBox" type="VBoxContainer" parent="DefenseVictoryOverlay/CenterContainer/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="DefenseVictoryTitleLabel" type="Label" parent="DefenseVictoryOverlay/CenterContainer/Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.96, 0.68, 1)
+theme_override_font_sizes/font_size = 24
+text = "★ 성벽 방어전 승리!"
+horizontal_alignment = 1
+
+[node name="DefenseVictorySummaryLabel" type="Label" parent="DefenseVictoryOverlay/CenterContainer/Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "성벽을 성공적으로 방어했습니다."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="BtnHBox" type="HBoxContainer" parent="DefenseVictoryOverlay/CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="DefenseVictoryNextButton" type="Button" parent="DefenseVictoryOverlay/CenterContainer/Panel/Margin/VBox/BtnHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "바로 다음으로 진행 (하루 정산)"
+
+[node name="DefenseVictoryStayButton" type="Button" parent="DefenseVictoryOverlay/CenterContainer/Panel/Margin/VBox/BtnHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "전장 결과 확인"

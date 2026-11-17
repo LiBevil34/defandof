@@ -1,0 +1,27 @@
+{
+	"id": "event_stage5_siege_mobilization",
+	"event_category": "NORMAL",
+	"min_stage": 5,
+	"max_stage": 6,
+	"title": "총력 방어전 비상 동원령",
+	"description": "3년차의 거대한 공세가 임박했습니다. 성벽 보강에 총력을 다할지 시민들에게 충분한 보상과 휴식을 줄지 결정하세요.",
+	"option_a": {
+		"text": "국고를 풀어 정규 공병대와 유급 인력을 고용해 성벽을 보강한다",
+		"deltas": {
+			"materials": 28,
+			"gold": -35,
+			"wall_hp": 25,
+			"morale": 10,
+			"unrest": -1
+		}
+	},
+	"option_b": {
+		"text": "전 시민 강제 징발령을 내려 무급으로 성벽을 증축한다",
+		"deltas": {
+			"materials": 34,
+			"wall_hp": 20,
+			"morale": -18,
+			"unrest": 3
+		}
+	}
+}

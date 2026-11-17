@@ -1,0 +1,24 @@
+{
+	"id": "event_bountiful_harvest",
+	"event_category": "NORMAL",
+	"min_stage": 1,
+	"max_stage": 3,
+	"title": "풍작 기원제와 공동 경작",
+	"description": "수확철을 앞두고 농민들이 공동 경작과 기원제를 동시에 준비하고 있습니다.",
+	"option_a": {
+		"text": "자재를 지원해 관개 수로를 정비한다 (식량 대량 생산)",
+		"deltas": {
+			"food": 24,
+			"materials": -10,
+			"morale": 4
+		}
+	},
+	"option_b": {
+		"text": "수확 대신 성벽 보수 자재 비축을 우선한다",
+		"deltas": {
+			"food": 6,
+			"materials": 12,
+			"morale": -4
+		}
+	}
+}
