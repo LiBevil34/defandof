@@ -40,6 +40,7 @@ const BASE_FOOD_PROD: int = 10
 const BASE_MAT_PROD: int = 8
 const CALENDAR_SCENE: PackedScene = preload("res://scenes/ui/CalendarOverlay.tscn")
 
+@onready var bg_rect: ColorRect = %BgRect
 @onready var top_date_label: Label = %TopDateLabel
 @onready var top_season_label: Label = %TopSeasonLabel
 @onready var top_defense_countdown_label: Label = %TopDefenseCountdownLabel
@@ -72,6 +73,7 @@ const CALENDAR_SCENE: PackedScene = preload("res://scenes/ui/CalendarOverlay.tsc
 @onready var hero_heal_button: Button = %HeroHealButton
 @onready var hero_train_button: Button = %HeroTrainButton
 @onready var party_rest_button: Button = %PartyRestButton
+@onready var hero_dismiss_button: Button = %HeroDismissButton
 @onready var hero_action_status_label: Label = %HeroActionStatusLabel
 
 # --- 탭 2: 신규 영웅 모집 ---
@@ -106,6 +108,7 @@ const CALENDAR_SCENE: PackedScene = preload("res://scenes/ui/CalendarOverlay.tsc
 # --- 탭 5: 대장간 ---
 @onready var blacksmith_list_vbox: VBoxContainer = %BlacksmithListVBox
 @onready var tower_catalog_vbox: VBoxContainer = %TowerCatalogVBox
+@onready var blacksmith_disassemble_vbox: VBoxContainer = %BlacksmithDisassembleVBox
 @onready var blacksmith_status_label: Label = %BlacksmithStatusLabel
 
 # --- 탭 6: 연구소 ---
@@ -140,6 +143,13 @@ const CALENDAR_SCENE: PackedScene = preload("res://scenes/ui/CalendarOverlay.tsc
 @onready var deploy_cancel_button: Button = %DeployCancelButton
 @onready var deploy_confirm_button: Button = %DeployConfirmButton
 
+# --- 영웅 전역(방출) 확인 팝업 ---
+@onready var dismiss_confirm_overlay: ColorRect = %DismissConfirmOverlay
+@onready var dismiss_confirm_title_label: Label = %DismissConfirmTitleLabel
+@onready var dismiss_confirm_body_label: Label = %DismissConfirmBodyLabel
+@onready var dismiss_confirm_cancel_button: Button = %DismissConfirmCancelButton
+@onready var dismiss_confirm_ok_button: Button = %DismissConfirmOkButton
+
 var _selected_hero_uid: int = -1
 var _picking_slot_type: String = ""
 var _recruit_candidates: Array[Dictionary] = []
@@ -149,9 +159,25 @@ var _formation_slot_buttons: Dictionary = {} # "rank,row" -> Button
 var _deploy_preset_buttons: Array[Button] = []
 var _selected_tower_mount_idx: int = 0
 var _calendar_modal: Control = null
+var _hero_portrait_frame: PanelContainer = null
+var _temperament_panel: PanelContainer = null
+var _temp_general_label: Label = null
+var _temp_veteran_label: Label = null
+var _temp_negative_label: Label = null
+var _temp_summary_label: Label = null
+var hero_cure_trauma_button: Button = null
 
 
 func _ready() -> void:
+	AssetManager.apply_backdrop(bg_rect, "town_bg", Color(0.11, 0.13, 0.19), Color(0.06, 0.07, 0.11), 0.035)
+	_hero_portrait_frame = AssetManager.create_hero_portrait({}, Vector2(76, 76))
+	var hero_header_hbox: Control = hero_title_label.get_parent()
+	if hero_header_hbox != null:
+		hero_header_hbox.add_child(_hero_portrait_frame)
+		hero_header_hbox.move_child(_hero_portrait_frame, 0)
+	hero_roster_list.fixed_icon_size = Vector2i(28, 28)
+	hero_hp_bar.add_theme_stylebox_override("fill", AssetManager.make_panel_style(Color(0.24, 0.78, 0.45, 1.0), Color(0.5, 0.95, 0.65, 0.7), 4, 1, 0))
+
 	GlobalData.resources_changed.connect(_on_global_changed)
 	GlobalData.morale_changed.connect(_on_global_changed)
 	GlobalData.wall_hp_changed.connect(_on_global_changed)
@@ -177,6 +203,10 @@ func _ready() -> void:
 	hero_heal_button.pressed.connect(_on_hero_heal_pressed)
 	hero_train_button.pressed.connect(_on_hero_train_pressed)
 	party_rest_button.pressed.connect(_on_party_rest_pressed)
+	hero_dismiss_button.pressed.connect(_on_hero_dismiss_pressed)
+	_build_temperament_ui()
+	dismiss_confirm_cancel_button.pressed.connect(_close_dismiss_confirm)
+	dismiss_confirm_ok_button.pressed.connect(_on_dismiss_confirm_ok_pressed)
 
 	refresh_recruit_button.pressed.connect(_on_refresh_recruit_pressed)
 
@@ -205,6 +235,7 @@ func _ready() -> void:
 		GlobalData.init_starter_equipment()
 	equip_picker_overlay.visible = false
 	dungeon_deploy_overlay.visible = false
+	dismiss_confirm_overlay.visible = false
 	_roll_recruit_candidates()
 	_refresh_all()
 
@@ -393,6 +424,7 @@ func _refresh_hero_roster_tab() -> void:
 			state_str,
 		]
 		hero_roster_list.add_item(row_text)
+		hero_roster_list.set_item_icon(i, AssetManager.get_hero_portrait(hero))
 		hero_roster_list.set_item_metadata(i, uid)
 		if uid == _selected_hero_uid:
 			selected_idx = i
@@ -417,6 +449,71 @@ func _on_hero_selected(index: int) -> void:
 	_display_hero_detail(hero)
 
 
+func _build_temperament_ui() -> void:
+	var stats_parent: Control = hero_stats_label.get_parent()
+	if stats_parent != null:
+		_temperament_panel = PanelContainer.new()
+		_temperament_panel.name = "HeroTemperamentsPanel"
+		_temperament_panel.add_theme_stylebox_override(
+			"panel",
+			AssetManager.make_panel_style(Color(0.08, 0.10, 0.16, 0.90), Color(0.32, 0.42, 0.62, 0.65), 6, 1, 8)
+		)
+		var tvbox := VBoxContainer.new()
+		tvbox.add_theme_constant_override("separation", 3)
+		_temperament_panel.add_child(tvbox)
+
+		_temp_general_label = Label.new()
+		_temp_general_label.add_theme_font_size_override("font_size", 12)
+		_temp_general_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_temp_general_label.modulate = Color(0.95, 0.86, 0.52)
+		tvbox.add_child(_temp_general_label)
+
+		_temp_veteran_label = Label.new()
+		_temp_veteran_label.add_theme_font_size_override("font_size", 12)
+		_temp_veteran_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_temp_veteran_label.modulate = Color(0.58, 0.94, 0.68)
+		tvbox.add_child(_temp_veteran_label)
+
+		_temp_negative_label = Label.new()
+		_temp_negative_label.add_theme_font_size_override("font_size", 12)
+		_temp_negative_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_temp_negative_label.modulate = Color(1.0, 0.50, 0.46)
+		tvbox.add_child(_temp_negative_label)
+
+		_temp_summary_label = Label.new()
+		_temp_summary_label.add_theme_font_size_override("font_size", 11)
+		_temp_summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_temp_summary_label.modulate = Color(0.75, 0.86, 1.0)
+		tvbox.add_child(_temp_summary_label)
+
+		stats_parent.add_child(_temperament_panel)
+		stats_parent.move_child(_temperament_panel, hero_stats_label.get_index() + 1)
+
+	var action_parent: Control = hero_heal_button.get_parent()
+	if action_parent != null:
+		hero_cure_trauma_button = Button.new()
+		hero_cure_trauma_button.name = "HeroCureTraumaButton"
+		hero_cure_trauma_button.custom_minimum_size = Vector2(0, 44)
+		hero_cure_trauma_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		hero_cure_trauma_button.pressed.connect(_on_hero_cure_trauma_pressed)
+		action_parent.add_child(hero_cure_trauma_button)
+		action_parent.move_child(hero_cure_trauma_button, hero_heal_button.get_index() + 1)
+
+
+func _format_temperament_entries(temp_ids: Array[String]) -> String:
+	if temp_ids.is_empty():
+		return ""
+	var parts: PackedStringArray = []
+	for tid in temp_ids:
+		var info: Dictionary = GlobalData.get_temperament_info(tid)
+		if info.is_empty():
+			continue
+		var cat: String = str(info.get("category", ""))
+		var star: String = "★" if cat == "POSITIVE" else ""
+		parts.append("%s%s (%s)" % [star, str(info.get("name", tid)), str(info.get("summary", ""))])
+	return "  /  ".join(parts)
+
+
 func _display_empty_hero_detail() -> void:
 	hero_element_swatch.color = Color.GRAY
 	hero_rarity_label.text = "[-]"
@@ -431,6 +528,11 @@ func _display_empty_hero_detail() -> void:
 	hero_fatigue_label.text = "피로도: 0 / 100 [-]"
 	hero_fatigue_label.modulate = Color.WHITE
 	hero_stats_label.text = "-"
+	if _temperament_panel != null:
+		_temp_general_label.text = "[고유/일반 기질]: -"
+		_temp_veteran_label.text = "[경험·습관 기질 (영구)]: -"
+		_temp_negative_label.text = "[후유증/부정 기질 (슬롯 외)]: -"
+		_temp_summary_label.text = "기질 합산 보정: -"
 	skills_header_label.text = "보유 스킬창"
 	passive_skill_label.visible = true
 	passive_skill_label.text = "[패시브] -"
@@ -467,6 +569,7 @@ func _format_skill_line(slot_label: String, skill_id: String, fallback_text: Str
 
 
 func _display_hero_detail(hero: Dictionary) -> void:
+	AssetManager.update_hero_portrait(_hero_portrait_frame, hero)
 	var elem_id: String = str(hero.get("element", "FIRE"))
 	var elem_name: String = DataManager.get_element_name(elem_id)
 	hero_element_swatch.color = DataManager.get_element_color(elem_id)
@@ -478,12 +581,14 @@ func _display_hero_detail(hero: Dictionary) -> void:
 	var is_named: bool = bool(hero.get("is_named", false))
 	var named_title: String = str(hero.get("named_title", ""))
 	var title_suffix: String = "  «%s»" % named_title if is_named and not named_title.is_empty() else ""
-	hero_title_label.text = "[Lv.%d] %s%s  —  %s · %s" % [
+	var t_info: Dictionary = GlobalData.get_hero_trait_summary(hero)
+	hero_title_label.text = "[Lv.%d] %s%s  —  [%s · %s - %s]" % [
 		int(hero.get("level", 1)),
 		str(hero.get("name", "영웅")),
 		title_suffix,
-		DataManager.normalize_role_category(str(hero.get("role_category", "전위")), str(hero.get("job_class", ""))),
-		str(hero.get("job_class", "근접딜러")),
+		str(t_info["role_category"]),
+		str(t_info["class_group"]),
+		str(t_info["sub_class"]),
 	]
 
 	var sig_id: String = str(hero.get("signature_equip_id", ""))
@@ -500,12 +605,21 @@ func _display_hero_detail(hero: Dictionary) -> void:
 
 	var lore_str: String = str(hero.get("lore", ""))
 	var lore_line: String = "\n" + lore_str if is_named and not lore_str.is_empty() else ""
-	hero_deployment_label.text = "등급: %s  |  속성: %s  |  오펜스 배치: %s  |  디펜스 배치: %s%s%s" % [
+	var trait_lines: String = "\n• 병과 특성 [%s - %s]: %s\n• 세부직군 특성 [%s - %s]: %s" % [
+		str(t_info["class_group"]),
+		str(t_info["class_trait_name"]),
+		str(t_info["class_trait_desc"]),
+		str(t_info["sub_class"]),
+		str(t_info["sub_trait_label"]),
+		str(t_info["sub_trait_desc"]),
+	]
+	hero_deployment_label.text = "등급: %s  |  속성: %s  |  오펜스 배치: %s  |  디펜스 배치: %s%s%s%s" % [
 		rarity,
 		elem_name,
 		str(hero.get("offense_rank", "전열")),
 		str(hero.get("defense_zone", "성벽밖")),
 		sig_note,
+		trait_lines,
 		lore_line,
 	]
 
@@ -535,6 +649,7 @@ func _display_hero_detail(hero: Dictionary) -> void:
 
 	var eff_atk: int = roundi(GlobalData.get_effective_stat(hero, "atk"))
 	var eff_def: int = roundi(GlobalData.get_effective_stat(hero, "def"))
+	var eff_heal: int = roundi(GlobalData.get_effective_stat(hero, "heal_power"))
 	var eff_spd: int = roundi(GlobalData.get_effective_stat(hero, "speed"))
 	var eff_dmg_bonus: float = GlobalData.get_effective_stat(hero, "dmg_bonus") * 100.0
 	var eff_crit_rate: float = GlobalData.get_effective_stat(hero, "crit_rate") * 100.0
@@ -548,7 +663,7 @@ func _display_hero_detail(hero: Dictionary) -> void:
 	) % [
 		eff_atk,
 		eff_def,
-		int(hero.get("heal_power", 0)),
+		eff_heal,
 		eff_spd,
 		eff_dmg_bonus,
 		eff_crit_rate,
@@ -556,6 +671,32 @@ func _display_hero_detail(hero: Dictionary) -> void:
 		eff_armor_pen,
 		eff_final_mult,
 	]
+
+	if _temperament_panel != null:
+		var grouped_t: Dictionary = GlobalData.get_hero_temperaments_by_category(hero)
+		var gen_ids: Array[String] = grouped_t["general"]
+		var vet_ids: Array[String] = grouped_t["veteran"]
+		var neg_ids: Array[String] = grouped_t["negative"]
+		var is_locked_t: bool = bool(hero.get("lock_general_temperaments", false))
+		var gen_header: String = "[고유/일반 기질 (고정 · 추가잠금)]" if is_locked_t else "[고유/일반 기질 (%d/%d)]" % [gen_ids.size(), GlobalData.MAX_GENERAL_TEMPERAMENTS]
+		var gen_body: String = _format_temperament_entries(gen_ids)
+		_temp_general_label.text = "%s: %s" % [gen_header, gen_body if not gen_body.is_empty() else "없음"]
+		_temp_general_label.modulate = Color(1.0, 0.88, 0.42) if is_locked_t else Color(0.70, 0.90, 1.0)
+
+		var vet_body: String = _format_temperament_entries(vet_ids)
+		_temp_veteran_label.text = "[경험·습관 기질 (영구 %d개)]: %s" % [
+			vet_ids.size(),
+			vet_body if not vet_body.is_empty() else "아직 없음 (전투·방어·탐사를 통해 자연 습득)",
+		]
+
+		var neg_body: String = _format_temperament_entries(neg_ids)
+		_temp_negative_label.text = "[후유증/부정 기질 (슬롯 외 %d개)]: %s" % [
+			neg_ids.size(),
+			neg_body if not neg_body.is_empty() else "없음 (건강함)",
+		]
+		_temp_negative_label.modulate = Color(1.0, 0.48, 0.44) if not neg_ids.is_empty() else Color(0.68, 0.74, 0.78)
+
+		_temp_summary_label.text = "기질 종합 보정: %s" % GlobalData.format_temperament_summary_text(hero)
 
 	_refresh_hero_equip_slot_buttons(hero)
 
@@ -652,8 +793,13 @@ func _refresh_hero_action_buttons() -> void:
 	if hero.is_empty():
 		hero_heal_button.disabled = true
 		hero_heal_button.text = "숙소 휴식 / 치료"
+		if hero_cure_trauma_button != null:
+			hero_cure_trauma_button.disabled = true
+			hero_cure_trauma_button.text = "후유증 치료"
 		hero_train_button.disabled = true
 		hero_train_button.text = "훈련 / 레벨업"
+		hero_dismiss_button.disabled = true
+		hero_dismiss_button.text = "영웅 전역(방출)"
 		return
 
 	var hp: int = int(hero.get("hp", 0))
@@ -673,6 +819,22 @@ func _refresh_hero_action_buttons() -> void:
 	else:
 		hero_heal_button.tooltip_text = ""
 
+	if hero_cure_trauma_button != null:
+		var grouped_btn: Dictionary = GlobalData.get_hero_temperaments_by_category(hero)
+		var neg_cnt: int = (grouped_btn["negative"] as Array).size()
+		var cure_cost: Dictionary = GlobalData.TRAUMA_CURE_COST
+		var can_cure_cost: bool = GlobalData.can_afford(cure_cost)
+		hero_cure_trauma_button.text = "후유증 치료 (보유 %d)\n[골드 %d, 식량 %d]" % [
+			neg_cnt, int(cure_cost["gold"]), int(cure_cost["food"])
+		]
+		hero_cure_trauma_button.disabled = (neg_cnt <= 0) or (not can_cure_cost)
+		if neg_cnt <= 0:
+			hero_cure_trauma_button.tooltip_text = "치료할 후유증/부정 기질이 없습니다. (고정·경험 기질은 유지됩니다)"
+		elif not can_cure_cost:
+			hero_cure_trauma_button.tooltip_text = "후유증 치료에 필요한 자원(골드 %d, 식량 %d)이 부족합니다." % [int(cure_cost["gold"]), int(cure_cost["food"])]
+		else:
+			hero_cure_trauma_button.tooltip_text = "순수 부정 기질(후유증) 1개를 제거합니다. 고정/경험 기질은 보존됩니다."
+
 	var train_cost: Dictionary = _get_train_cost(hero)
 	var can_train_cost: bool = GlobalData.can_afford(train_cost)
 	hero_train_button.text = "훈련 / 레벨업 (Lv.%d → %d)\n[식량 %d, 골드 %d]" % [
@@ -683,6 +845,12 @@ func _refresh_hero_action_buttons() -> void:
 	]
 	hero_train_button.disabled = not can_train_cost
 	hero_train_button.tooltip_text = "" if can_train_cost else "훈련에 필요한 자원이 부족합니다."
+
+	var can_dismiss: bool = GlobalData.hero_roster.size() > 1
+	var refund_gold: int = GlobalData.get_hero_dismiss_refund(hero)
+	hero_dismiss_button.text = "영웅 전역(방출)\n[위로금 +%dG]" % refund_gold
+	hero_dismiss_button.disabled = not can_dismiss
+	hero_dismiss_button.tooltip_text = "최소 1명의 영웅은 남겨야 합니다." if not can_dismiss else "로스터·파티에서 영웅을 방출하고 퇴직 위로금을 받습니다. (장착 장비 자동 해제)"
 
 
 func _on_hero_heal_pressed() -> void:
@@ -711,6 +879,28 @@ func _on_hero_heal_pressed() -> void:
 		int(hero.get("fatigue", 0)),
 	]
 	hero_action_status_label.modulate = Color(0.55, 0.95, 0.65)
+
+
+func _on_hero_cure_trauma_pressed() -> void:
+	var hero: Dictionary = GlobalData.get_hero_by_uid(_selected_hero_uid)
+	if hero.is_empty():
+		return
+	var res: Dictionary = GlobalData.cure_hero_negative_temperament(_selected_hero_uid)
+	if bool(res.get("cured", false)):
+		hero_action_status_label.text = "★ [%s] 후유증 치료 완료! [%s] 기질이 제거되었습니다. (고유·경험 기질 보존)" % [
+			str(hero.get("name", "영웅")),
+			str(res.get("removed_name", "")),
+		]
+		hero_action_status_label.modulate = Color(0.55, 0.95, 0.65)
+	elif str(res.get("reason", "")) == "NO_RESOURCES":
+		hero_action_status_label.text = "자원 부족: 후유증 치료에는 골드 %d, 식량 %d이 필요합니다." % [
+			int(GlobalData.TRAUMA_CURE_COST["gold"]),
+			int(GlobalData.TRAUMA_CURE_COST["food"]),
+		]
+		hero_action_status_label.modulate = Color(1.0, 0.5, 0.45)
+	else:
+		hero_action_status_label.text = "치료할 후유증(순수 부정 기질)이 없습니다."
+		hero_action_status_label.modulate = Color(0.85, 0.85, 0.85)
 
 
 func _on_party_rest_pressed() -> void:
@@ -745,6 +935,56 @@ func _on_hero_train_pressed() -> void:
 	hero_action_status_label.modulate = Color(0.55, 0.95, 0.65)
 
 
+func _on_hero_dismiss_pressed() -> void:
+	var hero: Dictionary = GlobalData.get_hero_by_uid(_selected_hero_uid)
+	if hero.is_empty():
+		return
+	if GlobalData.hero_roster.size() <= 1:
+		hero_action_status_label.text = "방출 불가: 최소 1명의 영웅은 영지에 남아 있어야 합니다."
+		hero_action_status_label.modulate = Color(1.0, 0.45, 0.45)
+		return
+
+	var rarity: String = DataManager.normalize_rarity(hero.get("rarity", "N"))
+	var refund: int = GlobalData.get_hero_dismiss_refund(hero)
+	var eq_count: int = GlobalData.get_hero_equipped_templates(hero).size()
+	var eq_note: String = "\n• 장착 중인 장비 %d개는 자동으로 인벤토리로 복귀합니다." % eq_count if eq_count > 0 else ""
+	dismiss_confirm_title_label.text = "[%s] %s — 영웅 전역(방출) 확인" % [rarity, str(hero.get("name", "영웅"))]
+	dismiss_confirm_body_label.text = (
+		"정말 [%s] %s (Lv.%d) 영웅을 전역시키겠습니까?\n\n"
+		+ "• 퇴직 위로금: 골드 +%d 지급\n"
+		+ "• 편성된 파티 프리셋 슬롯에서 자동 해제됩니다.%s\n"
+		+ "• 전역된 영웅은 로스터에서 영구 제거됩니다."
+	) % [rarity, str(hero.get("name", "영웅")), int(hero.get("level", 1)), refund, eq_note]
+	dismiss_confirm_overlay.visible = true
+
+
+func _close_dismiss_confirm() -> void:
+	dismiss_confirm_overlay.visible = false
+
+
+func _on_dismiss_confirm_ok_pressed() -> void:
+	dismiss_confirm_overlay.visible = false
+	var res: Dictionary = GlobalData.dismiss_hero(_selected_hero_uid)
+	if not bool(res.get("ok", false)):
+		hero_action_status_label.text = str(res.get("reason", "영웅 전역 실패"))
+		hero_action_status_label.modulate = Color(1.0, 0.45, 0.45)
+		return
+	if not GlobalData.hero_roster.is_empty():
+		_selected_hero_uid = int(GlobalData.hero_roster[0].get("uid", -1))
+	else:
+		_selected_hero_uid = -1
+	_refresh_hero_roster_tab()
+	_refresh_party_formation_ui()
+	var eq_note: String = " (장비 %d개 인벤토리 복귀)" % int(res.get("unequipped_count", 0)) if int(res.get("unequipped_count", 0)) > 0 else ""
+	hero_action_status_label.text = "[%s] %s 전역 완료! 위로금 골드 +%d 수령%s" % [
+		str(res.get("rarity", "N")),
+		str(res.get("name", "영웅")),
+		int(res.get("gold", 0)),
+		eq_note,
+	]
+	hero_action_status_label.modulate = Color(0.95, 0.84, 0.45)
+
+
 # ==========================================
 # 탭 2: 신규 영웅 모집 (주점/길드)
 # ==========================================
@@ -770,7 +1010,7 @@ func _roll_recruit_candidates() -> void:
 	pool.shuffle()
 	var pick_count: int = mini(3, pool.size())
 	for i in range(pick_count):
-		var tpl: Dictionary = pool[i]
+		var tpl: Dictionary = _attach_preview_temperaments(pool[i])
 		_recruit_candidates.append({
 			"template": tpl,
 			"cost": _get_recruit_cost_for_template(tpl),
@@ -779,12 +1019,23 @@ func _roll_recruit_candidates() -> void:
 
 	# 후보 풀이 3종 미만일 경우 일반 영웅에 한해 중복 허용해 3슬롯 채움 (네임드는 1장만 등장)
 	while _recruit_candidates.size() < 3 and not generic_pool.is_empty():
-		var extra_tpl: Dictionary = generic_pool[randi() % generic_pool.size()].duplicate(true)
+		var extra_tpl: Dictionary = _attach_preview_temperaments(generic_pool[randi() % generic_pool.size()].duplicate(true))
 		_recruit_candidates.append({
 			"template": extra_tpl,
 			"cost": _get_recruit_cost_for_template(extra_tpl),
 			"recruited": false,
 		})
+
+
+func _attach_preview_temperaments(tpl: Dictionary) -> Dictionary:
+	var out: Dictionary = tpl.duplicate(true)
+	var prev_uid: int = GlobalData.next_hero_uid
+	var preview: Dictionary = GlobalData.create_hero_instance(out)
+	GlobalData.next_hero_uid = prev_uid
+	out["temperaments"] = (preview.get("temperaments", []) as Array).duplicate()
+	out["lock_general_temperaments"] = bool(preview.get("lock_general_temperaments", false))
+	out["fixed_temperaments"] = (preview.get("fixed_temperaments", []) as Array).duplicate()
+	return out
 
 
 func _on_refresh_recruit_pressed() -> void:
@@ -824,9 +1075,15 @@ func _build_candidate_card(idx: int, entry: Dictionary) -> PanelContainer:
 	var is_recruited: bool = bool(entry.get("recruited", false))
 	var can_afford: bool = GlobalData.can_afford(cost)
 
+	var is_named: bool = bool(tpl.get("is_named", false))
 	var panel := PanelContainer.new()
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var card_rarity: String = DataManager.normalize_rarity(tpl.get("rarity", "N"))
+	panel.add_theme_stylebox_override(
+		"panel",
+		AssetManager.make_panel_style(Color(0.11, 0.13, 0.20, 0.96), DataManager.get_rarity_color(card_rarity), 8, 2 if is_named else 1, 0)
+	)
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 14)
@@ -839,10 +1096,13 @@ func _build_candidate_card(idx: int, entry: Dictionary) -> PanelContainer:
 	vbox.add_theme_constant_override("separation", 8)
 	margin.add_child(vbox)
 
-	# 상단 이름 + 속성 컬러바
+	# 상단 초상화 + 이름 + 속성 컬러바
 	var head_hbox := HBoxContainer.new()
-	head_hbox.add_theme_constant_override("separation", 8)
+	head_hbox.add_theme_constant_override("separation", 10)
 	vbox.add_child(head_hbox)
+
+	var portrait := AssetManager.create_hero_portrait(tpl, Vector2(60, 60))
+	head_hbox.add_child(portrait)
 
 	var elem_id: String = str(tpl.get("element", "FIRE"))
 	var swatch := ColorRect.new()
@@ -851,7 +1111,6 @@ func _build_candidate_card(idx: int, entry: Dictionary) -> PanelContainer:
 	swatch.color = DataManager.get_element_color(elem_id)
 	head_hbox.add_child(swatch)
 
-	var is_named: bool = bool(tpl.get("is_named", false))
 	var named_title: String = str(tpl.get("named_title", ""))
 
 	var rarity: String = DataManager.normalize_rarity(tpl.get("rarity", "N"))
@@ -868,14 +1127,21 @@ func _build_candidate_card(idx: int, entry: Dictionary) -> PanelContainer:
 
 	var role_lbl := Label.new()
 	role_lbl.add_theme_font_size_override("font_size", 13)
+	role_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	role_lbl.modulate = Color(0.98, 0.86, 0.52) if is_named else Color(0.8, 0.88, 0.96)
 	var title_tag: String = "«%s»  |  " % named_title if is_named and not named_title.is_empty() else ""
-	role_lbl.text = "%s%s · %s  |  오펜스:%s / 디펜스:%s" % [
+	var c_trait: Dictionary = GlobalData.get_hero_trait_summary(tpl)
+	role_lbl.text = "%s[%s · %s - %s]  |  오펜스:%s / 디펜스:%s\n• 병과(%s): %s\n• 직군(%s): %s" % [
 		title_tag,
-		DataManager.normalize_role_category(str(tpl.get("role_category", "전위")), str(tpl.get("job_class", ""))),
-		str(tpl.get("job_class", "근접딜러")),
+		str(c_trait["role_category"]),
+		str(c_trait["class_group"]),
+		str(c_trait["sub_class"]),
 		str(tpl.get("offense_rank", "전열")),
 		str(tpl.get("defense_zone", "성벽밖")),
+		str(c_trait["class_trait_name"]),
+		str(c_trait["class_trait_desc"]),
+		str(c_trait["sub_trait_label"]),
+		str(c_trait["sub_trait_desc"]),
 	]
 	vbox.add_child(role_lbl)
 
@@ -893,6 +1159,47 @@ func _build_candidate_card(idx: int, entry: Dictionary) -> PanelContainer:
 		float(tpl.get("crit_rate", 0.05)) * 100.0,
 	]
 	vbox.add_child(stats_lbl)
+
+	var t_box := VBoxContainer.new()
+	t_box.add_theme_constant_override("separation", 2)
+	var grouped_c: Dictionary = GlobalData.get_hero_temperaments_by_category(tpl)
+	var c_gen: Array[String] = grouped_c["general"]
+	var c_vet: Array[String] = grouped_c["veteran"]
+	var c_neg: Array[String] = grouped_c["negative"]
+	var c_locked: bool = bool(tpl.get("lock_general_temperaments", false))
+
+	var lbl_gen := Label.new()
+	lbl_gen.add_theme_font_size_override("font_size", 11)
+	lbl_gen.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl_gen.modulate = Color(1.0, 0.88, 0.42) if c_locked else Color(0.70, 0.90, 1.0)
+	var g_head: String = "[고유/일반 기질 (고정)]" if c_locked else "[고유/일반 기질 (%d/%d)]" % [c_gen.size(), GlobalData.MAX_GENERAL_TEMPERAMENTS]
+	var g_body: String = _format_temperament_entries(c_gen)
+	lbl_gen.text = "%s: %s" % [g_head, g_body if not g_body.is_empty() else "없음"]
+	t_box.add_child(lbl_gen)
+
+	var lbl_vet := Label.new()
+	lbl_vet.add_theme_font_size_override("font_size", 11)
+	lbl_vet.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl_vet.modulate = Color(0.58, 0.94, 0.68)
+	var v_body: String = _format_temperament_entries(c_vet)
+	lbl_vet.text = "[경험·습관 기질 (영구)]: %s" % (v_body if not v_body.is_empty() else "없음 (실전 습득)")
+	t_box.add_child(lbl_vet)
+
+	var lbl_neg := Label.new()
+	lbl_neg.add_theme_font_size_override("font_size", 11)
+	lbl_neg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl_neg.modulate = Color(1.0, 0.48, 0.44) if not c_neg.is_empty() else Color(0.65, 0.70, 0.75)
+	var n_body: String = _format_temperament_entries(c_neg)
+	lbl_neg.text = "[후유증/부정 기질 (슬롯 외)]: %s" % (n_body if not n_body.is_empty() else "없음")
+	t_box.add_child(lbl_neg)
+
+	var lbl_sum := Label.new()
+	lbl_sum.add_theme_font_size_override("font_size", 11)
+	lbl_sum.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl_sum.modulate = Color(0.75, 0.86, 1.0)
+	lbl_sum.text = "보정 요약: %s" % GlobalData.format_temperament_summary_text(tpl)
+	t_box.add_child(lbl_sum)
+	vbox.add_child(t_box)
 
 	var rules: Dictionary = DataManager.get_skill_slot_rules(rarity)
 	var skill_lines: PackedStringArray = ["스킬창 [%s등급]: 패시브" % rarity]
@@ -1365,21 +1672,25 @@ func _refresh_hero_equip_slot_buttons(hero: Dictionary) -> void:
 		var btn: Button = btn_map[slot_type]
 		var slot_label: String = DataManager.get_slot_label(slot_type)
 		btn.disabled = false
+		btn.expand_icon = true
 		var inst_val: Variant = equipped.get(slot_type, null)
 		if inst_val == null:
 			btn.text = "%s: (비어 있음)" % slot_label
-			btn.modulate = Color.WHITE
+			btn.icon = AssetManager.get_slot_emblem_texture(slot_type)
+			btn.modulate = Color(0.85, 0.88, 0.94, 0.9)
 		else:
 			var tpl: Dictionary = GlobalData.get_equipment_template_for_instance(int(inst_val))
 			if tpl.is_empty():
 				btn.text = "%s: (비어 있음)" % slot_label
-				btn.modulate = Color.WHITE
+				btn.icon = AssetManager.get_slot_emblem_texture(slot_type)
+				btn.modulate = Color(0.85, 0.88, 0.94, 0.9)
 			else:
 				var r: String = DataManager.normalize_rarity(tpl.get("rarity", "N"))
 				var is_named_eq: bool = bool(tpl.get("is_named", false))
 				var res_mark: String = " [공명!]" if GlobalData.is_signature_resonance_active(hero, tpl) else ""
 				var named_mark: String = "★" if is_named_eq else ""
 				btn.text = "%s: %s[%s] %s%s" % [slot_label, named_mark, r, str(tpl.get("name", "")), res_mark]
+				btn.icon = AssetManager.get_equipment_icon(tpl)
 				btn.modulate = Color(1.0, 0.88, 0.40) if not res_mark.is_empty() else DataManager.get_rarity_color(r)
 
 
@@ -1629,6 +1940,96 @@ func _refresh_blacksmith_ui() -> void:
 		note_lbl.text = "※ 대장간 제작 불가 장비(네임드 전용 장비 등) %d종은 목록에서 제외되며 던전·이벤트 보상으로 획득할 수 있습니다." % hidden_uncraftable_count
 		blacksmith_list_vbox.add_child(note_lbl)
 
+	_refresh_blacksmith_disassemble_ui()
+
+
+func _refresh_blacksmith_disassemble_ui() -> void:
+	for child in blacksmith_disassemble_vbox.get_children():
+		child.queue_free()
+
+	var unequipped_items: Array[Dictionary] = []
+	var equipped_count: int = 0
+	for inst in GlobalData.equipment_inventory:
+		var inst_id: int = int(inst.get("inst_id", -1))
+		if GlobalData.get_equipment_owner_uid(inst_id) != -1:
+			equipped_count += 1
+		else:
+			unequipped_items.append(inst)
+
+	if unequipped_items.is_empty():
+		var empty_lbl := Label.new()
+		empty_lbl.add_theme_font_size_override("font_size", 13)
+		empty_lbl.modulate = Color(0.75, 0.78, 0.85)
+		empty_lbl.text = "현재 분해 가능한 미장착 장비가 없습니다. (장착 중인 장비 %d개는 보호됨)" % equipped_count
+		blacksmith_disassemble_vbox.add_child(empty_lbl)
+		return
+
+	for inst in unequipped_items:
+		var inst_id: int = int(inst.get("inst_id", -1))
+		var eq: Dictionary = DataManager.get_equipment(str(inst.get("equip_id", "")))
+		if eq.is_empty():
+			continue
+
+		var rarity: String = DataManager.normalize_rarity(eq.get("rarity", "N"))
+		var slot_lbl: String = DataManager.get_slot_label(str(eq.get("slot_type", "WEAPON")))
+		var check: Dictionary = GlobalData.can_disassemble_equipment(inst_id)
+		var can_dis: bool = bool(check.get("ok", false))
+		var reward: Dictionary = GlobalData.get_equipment_disassemble_reward(eq)
+		var is_locked_special: bool = not can_dis
+
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 10)
+
+		var info_lbl := Label.new()
+		info_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		info_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		info_lbl.add_theme_font_size_override("font_size", 13)
+		var lock_note: String = " [🔒분해 잠금: 네임드/유일 전용]" if is_locked_special else ""
+		info_lbl.text = "[%s][%s] %s%s\n%s" % [
+			rarity,
+			slot_lbl,
+			str(eq.get("name", "장비")),
+			lock_note,
+			_format_equipment_bonuses(eq),
+		]
+		if is_locked_special:
+			info_lbl.modulate = Color(1.0, 0.88, 0.55)
+		row.add_child(info_lbl)
+
+		var dis_btn := Button.new()
+		dis_btn.custom_minimum_size = Vector2(220, 42)
+		if is_locked_special:
+			dis_btn.text = "잠금 (분해 불가)"
+			dis_btn.disabled = true
+			dis_btn.tooltip_text = str(check.get("reason", "분해 불가"))
+		else:
+			dis_btn.text = "장비 분해 (자재+%d, 골드+%d)" % [int(reward["materials"]), int(reward["gold"])]
+			dis_btn.modulate = Color(1.0, 0.80, 0.65)
+			dis_btn.pressed.connect(_on_disassemble_equipment_pressed.bind(inst_id))
+		row.add_child(dis_btn)
+
+		blacksmith_disassemble_vbox.add_child(row)
+
+	if equipped_count > 0:
+		var eq_note := Label.new()
+		eq_note.add_theme_font_size_override("font_size", 12)
+		eq_note.modulate = Color(0.72, 0.78, 0.86)
+		eq_note.text = "※ 영웅이 장착 중인 장비 %d개는 실수 방지를 위해 미장착 목록에서 제외됩니다." % equipped_count
+		blacksmith_disassemble_vbox.add_child(eq_note)
+
+
+func _on_disassemble_equipment_pressed(inst_id: int) -> void:
+	var res: Dictionary = GlobalData.disassemble_equipment(inst_id)
+	if not bool(res.get("ok", false)):
+		_set_blacksmith_status(str(res.get("reason", "장비 분해 실패")), false)
+		return
+	_set_blacksmith_status("[%s] %s 분해 완료! (자재 +%d, 골드 +%d 획득)" % [
+		str(res.get("rarity", "N")),
+		str(res.get("name", "장비")),
+		int(res.get("materials", 0)),
+		int(res.get("gold", 0)),
+	], true)
+
 
 func _on_craft_equipment_pressed(equip_id: String) -> void:
 	var eq: Dictionary = DataManager.get_equipment(equip_id)
@@ -1789,8 +2190,11 @@ func _build_party_formation_ui() -> void:
 			slot_btn.custom_minimum_size = Vector2(132, 118)
 			slot_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			slot_btn.size_flags_vertical = Control.SIZE_EXPAND_FILL
-			slot_btn.add_theme_font_size_override("font_size", 13)
+			slot_btn.add_theme_font_size_override("font_size", 12)
 			slot_btn.clip_text = true
+			slot_btn.expand_icon = true
+			slot_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			slot_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 			slot_btn.tooltip_text = GlobalData.get_rank_bonus_summary(rank)
 			slot_btn.pressed.connect(_on_formation_slot_pressed.bind(rank, row))
 			party_formation_grid.add_child(slot_btn)
@@ -1835,6 +2239,7 @@ func _refresh_party_formation_ui() -> void:
 			var hero: Dictionary = GlobalData.get_party_slot_hero(cur_idx, rank, row)
 			if hero.is_empty():
 				sbtn.text = "[%s]\n(빈 칸)" % rank_labels[rank]
+				sbtn.icon = null
 				sbtn.modulate = Color(0.75, 0.78, 0.82)
 			else:
 				total_count += 1
@@ -1848,6 +2253,7 @@ func _refresh_party_formation_ui() -> void:
 					str(hero.get("job_class", "")),
 					f_tag,
 				]
+				sbtn.icon = AssetManager.get_hero_portrait(hero)
 				if not can_go:
 					sbtn.modulate = Color(1.0, 0.45, 0.45)
 				elif GlobalData.is_hero_tired(hero):

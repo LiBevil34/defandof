@@ -56,10 +56,13 @@ const POLICY_EVENTS: Array[Dictionary] = [
 	},
 ]
 
+@onready var bg_rect: ColorRect = %BgRect
 @onready var status_label: Label = %StatusLabel
 @onready var production_label: Label = %ProductionLabel
 @onready var calendar_button: Button = %CalendarButton
 @onready var event_title_label: Label = %EventTitleLabel
+@onready var event_illustration_frame: PanelContainer = %EventIllustrationFrame
+@onready var event_illustration_tex: TextureRect = %EventIllustrationTex
 @onready var event_desc_label: Label = %EventDescLabel
 @onready var option_a_button: Button = %OptionAButton
 @onready var option_b_button: Button = %OptionBButton
@@ -77,6 +80,7 @@ var _calendar_modal: Control = null
 
 
 func _ready() -> void:
+	AssetManager.apply_backdrop(bg_rect, "management_bg", Color(0.11, 0.13, 0.20), Color(0.05, 0.06, 0.10), 0.03)
 	GlobalData.resources_changed.connect(_on_stats_changed)
 	GlobalData.morale_changed.connect(_on_stats_changed)
 	GlobalData.facilities_changed.connect(_on_stats_changed)
@@ -185,14 +189,15 @@ func _present_next_policy_event() -> void:
 		event_title_label.text = "%s %s" % [stage_badge, str(_current_event.get("title", "정책 이벤트"))]
 		event_title_label.modulate = Color.WHITE
 	event_desc_label.text = str(_current_event.get("description", ""))
+	_update_event_illustration(_current_event, cat)
 
 	var opt_a: Dictionary = _current_event["option_a"]
 	var opt_b: Dictionary = _current_event["option_b"]
 	_current_scaled_a = _scale_event_deltas(opt_a["deltas"], scale_mult)
 	_current_scaled_b = _scale_event_deltas(opt_b["deltas"], scale_mult)
 
-	option_a_button.text = "%s\n(%s)" % [opt_a["text"], _format_deltas(_current_scaled_a)]
-	option_b_button.text = "%s\n(%s)" % [opt_b["text"], _format_deltas(_current_scaled_b)]
+	option_a_button.text = "%s\n(%s)" % [opt_a["text"], _format_option_summary(opt_a, _current_scaled_a)]
+	option_b_button.text = "%s\n(%s)" % [opt_b["text"], _format_option_summary(opt_b, _current_scaled_b)]
 
 	option_a_button.disabled = false
 	option_b_button.disabled = false
@@ -292,6 +297,12 @@ func _on_option_selected(option_key: String) -> void:
 	var deltas: Dictionary = _current_scaled_a if option_key == "option_a" else _current_scaled_b
 
 	GlobalData.apply_deltas(deltas)
+	var extra_res: Dictionary = GlobalData.grant_event_rewards(chosen)
+	GlobalData.record_event_resolved()
+	if str(_current_event.get("event_category", "NORMAL")) == "REBELLION":
+		GlobalData.rebellion_suppression_active = true
+	elif GlobalData.rebellion_risk < 4:
+		GlobalData.rebellion_suppression_active = false
 
 	# 잘못된 선택(사기 큰 하락) 시 반란 위험도 증가 / 선한 선택 시 감소
 	if not deltas.has("unrest"):
@@ -307,10 +318,13 @@ func _on_option_selected(option_key: String) -> void:
 	option_b_button.disabled = true
 
 	var risk_note: String = "  (반란 위험도: %d/10)" % GlobalData.rebellion_risk if GlobalData.rebellion_risk > 0 else ""
-	event_result_label.text = "정책 적용 완료: [%s] → %s%s" % [
+	var extra_msgs: PackedStringArray = extra_res.get("messages", PackedStringArray())
+	var extra_text: String = ("\n" + "  |  ".join(extra_msgs)) if not extra_msgs.is_empty() else ""
+	event_result_label.text = "정책 적용 완료: [%s] → %s%s%s" % [
 		chosen["text"],
 		_format_deltas(deltas),
 		risk_note,
+		extra_text,
 	]
 	event_result_label.modulate = Color(0.55, 0.95, 0.65)
 	offense_button.disabled = false
@@ -341,6 +355,105 @@ func _update_status_label() -> void:
 		GlobalData.rebellion_risk,
 		extra_part,
 	]
+
+
+func _update_event_illustration(ev: Dictionary, cat: String) -> void:
+	var ev_id: String = str(ev.get("id", "")).strip_edges()
+	var custom_tex: Texture2D = AssetManager.get_texture("events", ev_id, str(ev.get("illustration_path", "")))
+	if custom_tex != null:
+		event_illustration_frame.custom_minimum_size = Vector2(360, 140)
+		event_illustration_tex.custom_minimum_size = Vector2(344, 128)
+		event_illustration_tex.texture = custom_tex
+		event_illustration_tex.modulate = Color.WHITE
+		event_illustration_frame.add_theme_stylebox_override(
+			"panel",
+			AssetManager.make_panel_style(Color(0.07, 0.08, 0.12, 0.96), AssetManager.COL_BORDER_GOLD, 8, 2, 6)
+		)
+		return
+
+	event_illustration_frame.custom_minimum_size = Vector2(140, 102)
+	event_illustration_tex.custom_minimum_size = Vector2(124, 88)
+	var opt_a: Dictionary = ev.get("option_a", {})
+	var opt_b: Dictionary = ev.get("option_b", {})
+	var hero_id: String = str(opt_a.get("recruit_hero_id", "")).strip_edges()
+	if hero_id.is_empty():
+		hero_id = str(opt_b.get("recruit_hero_id", "")).strip_edges()
+	if not hero_id.is_empty():
+		var h_tpl: Dictionary = DataManager.get_hero_template(hero_id)
+		if not h_tpl.is_empty():
+			var r_col: Color = DataManager.get_rarity_color(DataManager.normalize_rarity(h_tpl.get("rarity", "SR")))
+			var el_col: Color = DataManager.get_element_color(str(h_tpl.get("element", "FIRE")))
+			var has_art: bool = AssetManager.get_texture("heroes/portraits", hero_id, str(h_tpl.get("portrait_path", ""))) != null
+			event_illustration_tex.texture = AssetManager.get_hero_portrait(h_tpl)
+			event_illustration_tex.modulate = Color.WHITE if has_art else el_col.lightened(0.32)
+			event_illustration_frame.add_theme_stylebox_override(
+				"panel",
+				AssetManager.make_panel_style(Color(0.08, 0.10, 0.16, 0.96), r_col, 8, 2, 6)
+			)
+			return
+
+	var equip_id: String = str(opt_a.get("grant_equip_id", "")).strip_edges()
+	if equip_id.is_empty():
+		equip_id = str(opt_b.get("grant_equip_id", "")).strip_edges()
+	if not equip_id.is_empty():
+		var eq_tpl: Dictionary = DataManager.get_equipment(equip_id)
+		if not eq_tpl.is_empty():
+			var r_col: Color = DataManager.get_rarity_color(DataManager.normalize_rarity(eq_tpl.get("rarity", "SR")))
+			event_illustration_tex.texture = AssetManager.get_equipment_icon(eq_tpl)
+			event_illustration_tex.modulate = r_col.lightened(0.18)
+			event_illustration_frame.add_theme_stylebox_override(
+				"panel",
+				AssetManager.make_panel_style(Color(0.08, 0.10, 0.16, 0.96), r_col, 8, 2, 6)
+			)
+			return
+
+	if cat == "REBELLION":
+		event_illustration_tex.texture = AssetManager.get_enemy_emblem_texture("BOSS")
+		event_illustration_tex.modulate = Color(1.0, 0.45, 0.38, 0.95)
+		event_illustration_frame.add_theme_stylebox_override(
+			"panel",
+			AssetManager.make_panel_style(Color(0.14, 0.06, 0.08, 0.96), Color(0.90, 0.32, 0.28, 0.9), 8, 2, 6)
+		)
+	else:
+		event_illustration_tex.texture = AssetManager.get_tile_icon("tile_outpost")
+		event_illustration_tex.modulate = Color(0.82, 0.88, 0.98, 0.92)
+		event_illustration_frame.add_theme_stylebox_override(
+			"panel",
+			AssetManager.make_panel_style(Color(0.09, 0.11, 0.17, 0.96), AssetManager.COL_BORDER, 8, 1, 6)
+		)
+
+
+func _format_option_summary(opt: Dictionary, deltas: Dictionary) -> String:
+	var parts: PackedStringArray = []
+	var delta_txt: String = _format_deltas(deltas)
+	if delta_txt != "변동 없음":
+		parts.append(delta_txt)
+
+	var hero_id: String = str(opt.get("recruit_hero_id", "")).strip_edges()
+	if not hero_id.is_empty():
+		var h_tpl: Dictionary = DataManager.get_hero_template(hero_id)
+		if not h_tpl.is_empty():
+			if GlobalData.can_recruit_hero(h_tpl):
+				parts.append("★영웅 영입: [%s] %s" % [DataManager.normalize_rarity(h_tpl.get("rarity", "R")), str(h_tpl.get("name", hero_id))])
+			else:
+				parts.append("★%s 보유중(한계훈련+자원)" % str(h_tpl.get("name", hero_id)))
+
+	var equip_id: String = str(opt.get("grant_equip_id", "")).strip_edges()
+	if not equip_id.is_empty():
+		var eq_tpl: Dictionary = DataManager.get_equipment(equip_id)
+		if not eq_tpl.is_empty():
+			if GlobalData.can_obtain_equipment(equip_id):
+				parts.append("★장비: [%s] %s" % [DataManager.normalize_rarity(eq_tpl.get("rarity", "N")), str(eq_tpl.get("name", equip_id))])
+			else:
+				parts.append("★장비 중복→골드·자재 대체")
+
+	var item_id: String = str(opt.get("grant_item_id", "")).strip_edges()
+	if not item_id.is_empty():
+		var it_tpl: Dictionary = DataManager.get_item(item_id)
+		if not it_tpl.is_empty():
+			parts.append("아이템: %s x1" % str(it_tpl.get("name", item_id)))
+
+	return " | ".join(parts) if not parts.is_empty() else "변동 없음"
 
 
 func _format_deltas(deltas: Dictionary) -> String:

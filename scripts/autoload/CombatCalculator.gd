@@ -133,8 +133,15 @@ func _compute_skill_damage_internal(
 	var eff_dmg_bonus: float = StatusEffectManager.get_effective_stat(attacker, "dmg_bonus")
 	var eff_crit_rate: float = StatusEffectManager.get_effective_stat(attacker, "crit_rate")
 	var eff_crit_dmg: float = StatusEffectManager.get_effective_stat(attacker, "crit_dmg")
+	if str(attacker.get("class_group", "")) == "특수" and bool(attacker.get("ambush_active", false)):
+		eff_crit_dmg += 0.20
 	var eff_armor_pen: float = StatusEffectManager.get_effective_stat(attacker, "armor_pen")
 	var eff_final_mult: float = StatusEffectManager.get_effective_stat(attacker, "final_dmg_mult")
+	var elem_adv: float = DataManager.get_element_multiplier(str(attacker.get("element", "")), str(defender.get("element", "")))
+	if elem_adv >= 1.45 and str(attacker.get("class_group", "")) == "술사":
+		eff_final_mult *= 1.15
+	if elem_adv >= 1.45 and str(attacker.get("sub_trait", "")) == "ELEMENT_MASTERY":
+		eff_final_mult *= 1.15
 	var target_def: float = StatusEffectManager.get_effective_stat(defender, "def")
 
 	var skill_mult: float = float(skill_effect.get("multiplier", 1.0))
@@ -170,6 +177,9 @@ func _compute_skill_damage_internal(
 		eff_final_mult,
 		flat_damage
 	)
+	var def_taken_mult: float = StatusEffectManager.get_damage_taken_multiplier(defender)
+	if def_taken_mult < 0.999:
+		res["damage"] = maxi(1, roundi(float(res["damage"]) * def_taken_mult))
 	res["is_crit"] = is_crit
 	res["crit_multiplier"] = applied_crit_mult
 	res["total_crit_rate"] = total_crit_rate

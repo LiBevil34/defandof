@@ -1040,6 +1040,239 @@
                                            "skill_bonus_armor_pen":  0
                                        }
                                    ]
+                   },
+                   {
+                       "id":  "skill_eagle_eye",
+                       "name":  "매의 눈 (탐색 패시브)",
+                       "description":  "척후 정찰 훈련으로 던전 탐색 시야 반경을 +1칸 넓히고(VISION_UP) 기탐사 방의 매복 위험을 사전에 감지(DANGER_SENSE)합니다.",
+                       "cooldown":  0,
+                       "is_passive":  true,
+                       "effects":  [
+                                       {
+                                           "effect_type":  "VISION_UP",
+                                           "target_scope":  "SELF",
+                                           "multiplier":  1,
+                                           "duration":  0,
+                                           "skill_bonus_crit_rate":  0,
+                                           "skill_bonus_armor_pen":  0
+                                       },
+                                       {
+                                           "effect_type":  "DANGER_SENSE",
+                                           "target_scope":  "SELF",
+                                           "multiplier":  1,
+                                           "duration":  0,
+                                           "skill_bonus_crit_rate":  0,
+                                           "skill_bonus_armor_pen":  0
+                                       }
+                                   ]
+                   },
+                   {
+                       "id":  "skill_enemy_preacher_hymn",
+                       "name":  "[적] 교단 광신 성가",
+                       "description":  "부상 입은 적 아군을 치유하고 아군 전체의 공격력을 2턴간 강화합니다.",
+                       "cooldown":  2,
+                       "effects":  [
+                                       {
+                                           "effect_type":  "HEAL",
+                                           "target_scope":  "SINGLE_ALLY",
+                                           "multiplier":  1.35,
+                                           "duration":  0,
+                                           "skill_bonus_crit_rate":  0,
+                                           "skill_bonus_armor_pen":  0
+                                       },
+                                       {
+                                           "effect_type":  "BUFF_ATK",
+                                           "target_scope":  "ALL_ALLIES",
+                                           "multiplier":  0.15,
+                                           "duration":  2,
+                                           "skill_bonus_crit_rate":  0,
+                                           "skill_bonus_armor_pen":  0
+                                       }
+                                   ]
+                   },
+                   {
+                       "id":  "skill_enemy_acid_spit",
+                       "name":  "[적] 부식 산성 분출",
+                       "description":  "강력한 산성 포자를 분출해 맹독(POISON)과 방어력 약화(DEF_DOWN)를 동시에 입힙니다.",
+                       "cooldown":  2,
+                       "effects":  [
+                                       {
+                                           "effect_type":  "DAMAGE",
+                                           "target_scope":  "ROW",
+                                           "multiplier":  1.05,
+                                           "duration":  0,
+                                           "skill_bonus_crit_rate":  0.05,
+                                           "skill_bonus_armor_pen":  0.15
+                                       },
+                                       {
+                                           "effect_type":  "POISON",
+                                           "target_scope":  "ROW",
+                                           "multiplier":  0.08,
+                                           "duration":  2,
+                                           "skill_bonus_crit_rate":  0,
+                                           "skill_bonus_armor_pen":  0
+                                       },
+                                       {
+                                           "effect_type":  "DEF_DOWN",
+                                           "target_scope":  "ROW",
+                                           "multiplier":  0.2,
+                                           "duration":  2,
+                                           "skill_bonus_crit_rate":  0,
+                                           "skill_bonus_armor_pen":  0
+                                       }
+                                   ]
+                   },
+                   {
+                       "id":  "skill_palette_fire",
+                       "name":  "[변종] 작열의 기운",
+                       "description":  "화염 변종 패시브: 공격력 +15%, 피해 증가 +10%.",
+                       "cooldown":  0,
+                       "is_passive":  true,
+                       "effects":  [
+                                       {"effect_type": "BUFF_ATK", "target_scope": "SELF", "multiplier": 0.15, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0},
+                                       {"effect_type": "BUFF_DMG_BONUS", "target_scope": "SELF", "multiplier": 0.10, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0}
+                                   ]
+                   },
+                   {
+                       "id":  "skill_palette_ice",
+                       "name":  "[변종] 서리 외피",
+                       "description":  "빙결 변종 패시브: 방어력 +20%, 가시 피해 반사 +15%.",
+                       "cooldown":  0,
+                       "is_passive":  true,
+                       "effects":  [
+                                       {"effect_type": "BUFF_DEF", "target_scope": "SELF", "multiplier": 0.20, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0},
+                                       {"effect_type": "REFLECT", "target_scope": "SELF", "multiplier": 0.15, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0}
+                                   ]
+                   },
+                   {
+                       "id":  "skill_palette_wind",
+                       "name":  "[변종] 질풍 가속",
+                       "description":  "바람 변종 패시브: 속도 +25%, 치명타 확률 +10%.",
+                       "cooldown":  0,
+                       "is_passive":  true,
+                       "effects":  [
+                                       {"effect_type": "BUFF_SPEED", "target_scope": "SELF", "multiplier": 0.25, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0},
+                                       {"effect_type": "BUFF_CRIT_RATE", "target_scope": "SELF", "multiplier": 0.10, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0}
+                                   ]
+                   },
+                   {
+                       "id":  "skill_palette_water",
+                       "name":  "[변종] 심해 유체",
+                       "description":  "물 변종 패시브: 보호막 +1.0x 및 피해 감소 +10%.",
+                       "cooldown":  0,
+                       "is_passive":  true,
+                       "effects":  [
+                                       {"effect_type": "SHIELD", "target_scope": "SELF", "multiplier": 1.0, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0},
+                                       {"effect_type": "DMG_REDUCE", "target_scope": "SELF", "multiplier": 0.10, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0}
+                                   ]
+                   },
+                   {
+                       "id":  "skill_palette_earth",
+                       "name":  "[변종] 암반 갑각",
+                       "description":  "대지 변종 패시브: 방어력 +35%, 피해 감소 +10%.",
+                       "cooldown":  0,
+                       "is_passive":  true,
+                       "effects":  [
+                                       {"effect_type": "BUFF_DEF", "target_scope": "SELF", "multiplier": 0.35, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0},
+                                       {"effect_type": "DMG_REDUCE", "target_scope": "SELF", "multiplier": 0.10, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0}
+                                   ]
+                   },
+                   {
+                       "id":  "skill_palette_lightning",
+                       "name":  "[변종] 뇌전 과부하",
+                       "description":  "번개 변종 패시브: 속도 +15%, 방어 관통 +20%.",
+                       "cooldown":  0,
+                       "is_passive":  true,
+                       "effects":  [
+                                       {"effect_type": "BUFF_SPEED", "target_scope": "SELF", "multiplier": 0.15, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0},
+                                       {"effect_type": "BUFF_ARMOR_PEN", "target_scope": "SELF", "multiplier": 0.20, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0}
+                                   ]
+                   },
+                   {
+                       "id":  "skill_palette_light",
+                       "name":  "[변종] 성광 결계",
+                       "description":  "빛 변종 패시브: 강력한 보호막 +1.4x 및 공격력 +10%.",
+                       "cooldown":  0,
+                       "is_passive":  true,
+                       "effects":  [
+                                       {"effect_type": "SHIELD", "target_scope": "SELF", "multiplier": 1.4, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0},
+                                       {"effect_type": "BUFF_ATK", "target_scope": "SELF", "multiplier": 0.10, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0}
+                                   ]
+                   },
+                   {
+                       "id":  "skill_palette_dark",
+                       "name":  "[변종] 공허 침식",
+                       "description":  "어둠 변종 패시브: 최종 피해 +12%, 치명타 피해 +25%.",
+                       "cooldown":  0,
+                       "is_passive":  true,
+                       "effects":  [
+                                       {"effect_type": "BUFF_FINAL_DMG", "target_scope": "SELF", "multiplier": 0.12, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0},
+                                       {"effect_type": "BUFF_CRIT_DMG", "target_scope": "SELF", "multiplier": 0.25, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0}
+                                   ]
+                   },
+                   {
+                       "id":  "skill_passive_falcon_sight",
+                       "name":  "[공용 패시브] 천리안 관측",
+                       "description":  "척후병 없이도 던전 탐색 시야 반경을 +1칸 넓혀주는 공용 정찰 패시브입니다.",
+                       "cooldown":  0,
+                       "is_passive":  true,
+                       "effects":  [
+                                       {"effect_type": "VISION_UP", "target_scope": "SELF", "multiplier": 1, "duration": 0, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0}
+                                   ]
+                   },
+                   {
+                       "id":  "skill_passive_danger_intuition",
+                       "name":  "[공용 패시브] 위험 직감",
+                       "description":  "척후병을 대체해 기탐사 구역의 매복 위험을 사전에 감지(DANGER_SENSE)합니다.",
+                       "cooldown":  0,
+                       "is_passive":  true,
+                       "effects":  [
+                                       {"effect_type": "DANGER_SENSE", "target_scope": "SELF", "multiplier": 1, "duration": 0, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0}
+                                   ]
+                   },
+                   {
+                       "id":  "skill_passive_shadow_cloak",
+                       "name":  "[공용 패시브] 그림자 은신술",
+                       "description":  "암살자·의적용 공용 패시브: 매복 사전 감지(DANGER_SENSE) 및 치명타 피해 +20%.",
+                       "cooldown":  0,
+                       "is_passive":  true,
+                       "effects":  [
+                                       {"effect_type": "DANGER_SENSE", "target_scope": "SELF", "multiplier": 1, "duration": 0, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0},
+                                       {"effect_type": "BUFF_CRIT_DMG", "target_scope": "SELF", "multiplier": 0.20, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0}
+                                   ]
+                   },
+                   {
+                       "id":  "skill_passive_siege_artillery",
+                       "name":  "[공용 패시브] 중갑 파쇄 탄두",
+                       "description":  "포격수·마검사용 공용 패시브: 방어 관통 +18% 및 피해 증가 +10%.",
+                       "cooldown":  0,
+                       "is_passive":  true,
+                       "effects":  [
+                                       {"effect_type": "BUFF_ARMOR_PEN", "target_scope": "SELF", "multiplier": 0.18, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0},
+                                       {"effect_type": "BUFF_DMG_BONUS", "target_scope": "SELF", "multiplier": 0.10, "duration": 99, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0}
+                                   ]
+                   },
+                   {
+                       "id":  "skill_passive_tactical_banner",
+                       "name":  "[공용 패시브] 선봉 군기 지휘",
+                       "description":  "선봉·보조용 공용 패시브: 전투 시작 시 아군 전원 공격력 +10% 및 치명타 +6%.",
+                       "cooldown":  0,
+                       "is_passive":  true,
+                       "effects":  [
+                                       {"effect_type": "BUFF_ATK", "target_scope": "ALL_ALLIES", "multiplier": 0.10, "duration": 3, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0},
+                                       {"effect_type": "BUFF_CRIT_RATE", "target_scope": "ALL_ALLIES", "multiplier": 0.06, "duration": 3, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0}
+                                   ]
+                   },
+                   {
+                       "id":  "skill_passive_aegis_prayer",
+                       "name":  "[공용 패시브] 성역 수호 기도",
+                       "description":  "중장·의료용 공용 패시브: 아군 전체 방어력 +12% 및 초기 보호막 +0.7x.",
+                       "cooldown":  0,
+                       "is_passive":  true,
+                       "effects":  [
+                                       {"effect_type": "BUFF_DEF", "target_scope": "ALL_ALLIES", "multiplier": 0.12, "duration": 3, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0},
+                                       {"effect_type": "SHIELD", "target_scope": "ALL_ALLIES", "multiplier": 0.70, "duration": 3, "skill_bonus_crit_rate": 0, "skill_bonus_armor_pen": 0}
+                                   ]
                    }
                ]
 }

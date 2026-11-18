@@ -1,0 +1,25 @@
+{
+	"id": "event_story_seraphina_chalice",
+	"event_category": "NORMAL",
+	"min_stage": 4,
+	"max_stage": 6,
+	"title": "여명의 유물 · 새벽빛 성배 수색",
+	"description": "정찰대가 옛 수도원 폐허에서 성녀 세라피나의 전용 성물 '새벽빛 성배'의 흔적을 발견했습니다. 소규모 원정대를 파견해 회수하시겠습니까?",
+	"option_a": {
+		"text": "정찰 호위대를 파견해 새벽빛 성배를 안전히 회수한다",
+		"deltas": {
+			"food": -18,
+			"materials": -12,
+			"morale": 8
+		},
+		"grant_equip_id": "eq_named_seraphina_chalice"
+	},
+	"option_b": {
+		"text": "위험을 피하고 수도원 외곽의 방어 자재와 군자금만 수거한다",
+		"deltas": {
+			"gold": 35,
+			"materials": 20,
+			"wall_hp": 15
+		}
+	}
+}

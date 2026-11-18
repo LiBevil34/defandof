@@ -101,6 +101,7 @@ func save_to_slot(slot_index: int) -> bool:
 			"territory_debuff_rate": GlobalData.territory_debuff_rate,
 			"territory_debuff_days": GlobalData.territory_debuff_days,
 			"rebellion_risk": GlobalData.rebellion_risk,
+			"rebellion_suppression_active": GlobalData.rebellion_suppression_active,
 			"bad_choice_streak": GlobalData.bad_choice_streak,
 			"field_dungeon_state": GlobalData.field_dungeon_state.duplicate(true),
 			"upcoming_defense_elements": GlobalData.upcoming_defense_elements.duplicate(),
@@ -114,6 +115,9 @@ func save_to_slot(slot_index: int) -> bool:
 			"selected_party_index": GlobalData.selected_party_index,
 			"auto_battle_mode": GlobalData.auto_battle_mode,
 			"battle_speed_mult": GlobalData.battle_speed_mult,
+			"run_stats": GlobalData.run_stats.duplicate(true),
+			"victory_achieved": GlobalData.victory_achieved,
+			"is_endless_mode": GlobalData.is_endless_mode,
 		},
 		"time_manager": {
 			"current_year": TimeManager.current_year,
@@ -193,6 +197,7 @@ func load_from_slot(slot_index: int) -> bool:
 	GlobalData.territory_debuff_rate = float(gd.get("territory_debuff_rate", 0.0))
 	GlobalData.territory_debuff_days = maxi(0, int(gd.get("territory_debuff_days", 0)))
 	GlobalData.rebellion_risk = clampi(int(gd.get("rebellion_risk", 0)), 0, 10)
+	GlobalData.rebellion_suppression_active = bool(gd.get("rebellion_suppression_active", false))
 	GlobalData.bad_choice_streak = maxi(0, int(gd.get("bad_choice_streak", 0)))
 
 	var raw_fstate: Variant = gd.get("field_dungeon_state", {})
@@ -250,6 +255,13 @@ func load_from_slot(slot_index: int) -> bool:
 
 	GlobalData.auto_battle_mode = clampi(int(gd.get("auto_battle_mode", GlobalData.AutoBattleMode.MANUAL)), 0, 2)
 	GlobalData.battle_speed_mult = clampf(float(gd.get("battle_speed_mult", 1.0)), 1.0, 3.0)
+	GlobalData.reset_run_stats()
+	var raw_stats: Variant = gd.get("run_stats", {})
+	if typeof(raw_stats) == TYPE_DICTIONARY:
+		for k in GlobalData.run_stats.keys():
+			GlobalData.run_stats[k] = maxi(0, int((raw_stats as Dictionary).get(k, 0)))
+	GlobalData.victory_achieved = bool(gd.get("victory_achieved", false))
+	GlobalData.is_endless_mode = bool(gd.get("is_endless_mode", false))
 	var raw_presets: Variant = gd.get("party_presets", [])
 	GlobalData._init_party_presets()
 	if typeof(raw_presets) == TYPE_ARRAY and (raw_presets as Array).size() > 0:

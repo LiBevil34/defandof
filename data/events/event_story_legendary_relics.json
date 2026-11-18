@@ -1,0 +1,26 @@
+{
+	"id": "event_story_legendary_relics",
+	"event_category": "NORMAL",
+	"min_stage": 6,
+	"max_stage": 6,
+	"title": "결전의 성유물 · 왕실 비밀 무기고 개방",
+	"description": "3년차 최후의 결전을 앞두고 왕실 비밀 보물고의 봉인이 풀렸습니다. 영지의 영웅들을 위해 단 하나의 신화급 유물을 선택할 수 있습니다.",
+	"option_a": {
+		"text": "태양을 가르는 성검 [솔라리스]를 봉인 해제한다 (레온 전용 공명)",
+		"deltas": {
+			"gold": -40,
+			"materials": -20,
+			"morale": 10
+		},
+		"grant_equip_id": "eq_named_leon_solaris"
+	},
+	"option_b": {
+		"text": "영원한 밤의 서고에서 [일식의 대마도서]를 회수한다 (모로스 전용 공명)",
+		"deltas": {
+			"gold": -40,
+			"food": -20,
+			"morale": 8
+		},
+		"grant_equip_id": "eq_named_moros_grimoire"
+	}
+}

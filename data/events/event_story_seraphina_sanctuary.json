@@ -1,0 +1,28 @@
+{
+	"id": "event_story_seraphina_sanctuary",
+	"event_category": "NORMAL",
+	"min_stage": 2,
+	"max_stage": 4,
+	"title": "성역 순례자 세라피나의 방문",
+	"description": "피난민 행렬 속에서 부상자들을 돌보던 성역의 성녀 세라피나가 영지를 찾아왔습니다. 그녀는 임시 구호소 개설을 조건으로 방어전에 힘을 보태겠다고 제안합니다.",
+	"option_a": {
+		"text": "식량과 자금을 지원해 성역 치료소를 열고 세라피나를 영입한다",
+		"deltas": {
+			"food": -15,
+			"gold": -15,
+			"morale": 12,
+			"unrest": -2
+		},
+		"recruit_hero_id": "hero_named_seraphina",
+		"grant_item_id": "item_party_elixir"
+	},
+	"option_b": {
+		"text": "순례단의 안전을 우선해 축복 물자와 방어 자재만 교환한다",
+		"deltas": {
+			"materials": 22,
+			"gold": 25,
+			"morale": 4
+		},
+		"grant_item_id": "item_hp_potion_large"
+	}
+}

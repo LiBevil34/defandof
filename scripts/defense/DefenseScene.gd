@@ -42,6 +42,7 @@ const COLOR_SLOT_HEAL_FLASH := Color(0.30, 0.92, 0.72, 1.0)
 @onready var status_label: Label = %StatusLabel
 @onready var auto_deploy_button: Button = %AutoDeployButton
 @onready var start_wave_button: Button = %StartWaveButton
+@onready var element_chart_button: Button = %ElementChartButton
 @onready var auto_battle_button: Button = %AutoBattleButton
 @onready var cast_ultimates_button: Button = %CastUltimatesButton
 @onready var defense_item_button: Button = %DefenseItemButton
@@ -58,6 +59,8 @@ const COLOR_SLOT_HEAL_FLASH := Color(0.30, 0.92, 0.72, 1.0)
 @onready var finish_phase_button: Button = %FinishPhaseButton
 
 @onready var battlefield: Control = %Battlefield
+@onready var field_bg: ColorRect = %FieldBg
+@onready var wall_visual: ColorRect = %WallVisual
 @onready var wall_area: Area2D = %WallArea
 @onready var slots_container: Control = %SlotsContainer
 @onready var monster_container: Node2D = %MonsterContainer
@@ -80,6 +83,10 @@ var _next_monster_id: int = 1
 var _base_tower_cd: float = 0.0
 var _custom_tower_cds: Array[float] = [0.0, 0.0, 0.0]
 var _tower_visual_nodes: Array[Node] = []
+var _element_chart_overlay: ColorRect = null
+var _pending_miracle_uids: Array[int] = []
+var _defense_kills_by_uid: Dictionary = {}
+var _defense_healed_by_uid: Dictionary = {}
 
 
 func _ready() -> void:
@@ -103,7 +110,11 @@ func _ready() -> void:
 	reset_button.pressed.connect(_on_reset_pressed)
 	finish_phase_button.pressed.connect(_on_finish_phase_pressed)
 
+	_element_chart_overlay = CombatFeedbackUI.create_element_chart_overlay(self)
+	element_chart_button.pressed.connect(_element_chart_overlay.show)
+
 	_init_roster()
+	_style_battlefield()
 	_build_slots()
 	_rebuild_tower_mounts()
 	_init_monster_pool()
@@ -200,7 +211,8 @@ func _init_roster() -> void:
 		for hero in GlobalData.hero_roster:
 			var uid: int = int(hero.get("uid", -1))
 			var eq_bonuses: Dictionary = GlobalData.get_hero_equipment_bonuses(hero)
-			var base_max: int = maxi(1, int(hero.get("max_hp", 50)) + roundi(float(eq_bonuses.get("max_hp", 0.0))))
+			var temp_max_hp: int = maxi(1, roundi(GlobalData.get_hero_base_with_temperament(hero, "max_hp")))
+			var base_max: int = maxi(1, temp_max_hp + roundi(float(eq_bonuses.get("max_hp", 0.0))))
 			var base_cur: int = clampi(int(hero.get("hp", base_max)), 0, base_max)
 			var scaled_max: int = maxi(60, base_max * 2)
 			var scaled_cur: int = 0 if base_cur <= 0 else maxi(1, roundi(float(base_cur) / float(base_max) * float(scaled_max)))
@@ -208,27 +220,41 @@ func _init_roster() -> void:
 			var is_wall_pref: bool = (def_zone == "성벽위")
 			var slot_passives: Dictionary = eq_bonuses.duplicate(true)
 			slot_passives["max_hp"] = 0.0
-			var eff_spd_val: float = float(hero.get("speed", 12)) + float(eq_bonuses.get("speed", 0.0))
+			var temp_spd: float = GlobalData.get_hero_base_with_temperament(hero, "speed")
+			var eff_spd_val: float = temp_spd + float(eq_bonuses.get("speed", 0.0))
+			var hier: Dictionary = DataManager.normalize_class_hierarchy(
+				str(hero.get("class_group", "")),
+				str(hero.get("sub_class", hero.get("job_class", "돌격검객"))),
+				str(hero.get("role_category", "전위"))
+			)
+			var sub_cls_info: Dictionary = DataManager.get_sub_class_info(str(hier["sub_class"]))
 			_roster.append({
 				"id": uid,
 				"uid": uid,
+				"hero_id": str(hero.get("id", "")),
+				"is_named": bool(hero.get("is_named", false)),
+				"portrait_path": str(hero.get("portrait_path", "")),
+				"sprite_path": str(hero.get("sprite_path", "")),
 				"name": str(hero.get("name", "영웅")),
 				"rarity": DataManager.normalize_rarity(hero.get("rarity", "N")),
 				"level": int(hero.get("level", 1)),
-				"role_category": DataManager.normalize_role_category(str(hero.get("role_category", "전위")), str(hero.get("job_class", ""))),
-				"role": str(hero.get("job_class", "근접딜러")),
+				"role_category": str(hier["role_category"]),
+				"class_group": str(hier["class_group"]),
+				"sub_class": str(hier["sub_class"]),
+				"sub_trait": str(sub_cls_info.get("sub_trait", "")),
+				"role": str(hier["sub_class"]),
 				"defense_zone": def_zone,
 				"element": str(hero.get("element", "FIRE")),
 				"base_max_hp": base_max,
 				"max_hp": scaled_max,
 				"current_hp": scaled_cur,
-				"atk": int(hero.get("atk", 15)),
-				"def": int(hero.get("def", 10)),
-				"heal_power": int(hero.get("heal_power", 0)),
-				"dmg_bonus": float(hero.get("dmg_bonus", 0.0)),
-				"crit_rate": float(hero.get("crit_rate", 0.05)),
-				"crit_dmg": float(hero.get("crit_dmg", 1.5)),
-				"armor_pen": float(hero.get("armor_pen", 0.0)),
+				"atk": maxi(1, roundi(GlobalData.get_hero_base_with_temperament(hero, "atk"))),
+				"def": maxi(0, roundi(GlobalData.get_hero_base_with_temperament(hero, "def"))),
+				"heal_power": maxi(0, roundi(GlobalData.get_hero_base_with_temperament(hero, "heal_power"))),
+				"dmg_bonus": GlobalData.get_hero_base_with_temperament(hero, "dmg_bonus"),
+				"crit_rate": GlobalData.get_hero_base_with_temperament(hero, "crit_rate"),
+				"crit_dmg": GlobalData.get_hero_base_with_temperament(hero, "crit_dmg"),
+				"armor_pen": GlobalData.get_hero_base_with_temperament(hero, "armor_pen"),
 				"final_dmg_mult": float(hero.get("final_dmg_mult", 1.0)),
 				"is_tired": GlobalData.is_hero_tired(hero),
 				"is_exhausted": GlobalData.is_hero_exhausted(hero),
@@ -256,11 +282,38 @@ func _init_roster() -> void:
 
 	for member in _roster:
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(174, 84)
-		btn.add_theme_font_size_override("font_size", 13)
+		btn.custom_minimum_size = Vector2(204, 84)
+		btn.add_theme_font_size_override("font_size", 12)
+		btn.expand_icon = true
+		btn.add_theme_constant_override("icon_max_width", 40)
+		btn.icon = AssetManager.get_hero_portrait(member)
 		btn.pressed.connect(_on_roster_button_pressed.bind(int(member["id"])))
 		roster_hbox.add_child(btn)
 		_roster_buttons[int(member["id"])] = btn
+
+
+func _style_battlefield() -> void:
+	AssetManager.apply_backdrop(field_bg, "defense_bg", Color(0.11, 0.14, 0.16), Color(0.05, 0.07, 0.09), 0.03)
+	AssetManager.apply_backdrop(wall_visual, "wall_texture", Color(0.28, 0.31, 0.38), Color(0.18, 0.20, 0.26), 0.06)
+
+	var wall_border := Panel.new()
+	wall_border.set_anchors_preset(Control.PRESET_FULL_RECT)
+	wall_border.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	wall_border.add_theme_stylebox_override(
+		"panel",
+		AssetManager.make_panel_style(Color(0, 0, 0, 0), Color(0.62, 0.56, 0.42, 0.85), 4, 2, 0)
+	)
+	wall_visual.add_child(wall_border)
+
+	# 5개 진격 레인 가이드 스트라이프
+	for lane in range(LANE_COUNT):
+		var cy: float = LANE_Y_START + lane * LANE_Y_STEP
+		var lane_strip := ColorRect.new()
+		lane_strip.position = Vector2(296.0, cy - 46.0)
+		lane_strip.size = Vector2(1580.0, 92.0)
+		lane_strip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		lane_strip.color = Color(0.18, 0.21, 0.26, 0.22) if (lane % 2 == 0) else Color(0.12, 0.14, 0.18, 0.16)
+		field_bg.add_child(lane_strip)
 
 
 func _build_slots() -> void:
@@ -291,16 +344,27 @@ func _create_slot(zone: ZoneType, lane: int, center_pos: Vector2) -> void:
 	root.size = slot_size
 	slots_container.add_child(root)
 
-	var bg := ColorRect.new()
+	var bg := Panel.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bg.color = COLOR_SLOT_WALL_EMPTY if zone == ZoneType.ON_WALL else COLOR_SLOT_OUTSIDE_EMPTY
+	bg.add_theme_stylebox_override(
+		"panel",
+		AssetManager.make_panel_style(
+			COLOR_SLOT_WALL_EMPTY if zone == ZoneType.ON_WALL else COLOR_SLOT_OUTSIDE_EMPTY,
+			AssetManager.COL_BORDER,
+			8,
+			1,
+			0
+		)
+	)
 	root.add_child(bg)
 
 	var btn := Button.new()
 	btn.set_anchors_preset(Control.PRESET_FULL_RECT)
 	btn.flat = true
-	btn.add_theme_font_size_override("font_size", 12)
+	btn.expand_icon = true
+	btn.add_theme_constant_override("icon_max_width", 30)
+	btn.add_theme_font_size_override("font_size", 11)
 	root.add_child(btn)
 
 	# 사거리 판정용 Area2D
@@ -399,6 +463,9 @@ func _reset_battle_state(restore_wall: bool) -> void:
 	_base_tower_cd = 0.0
 	_custom_tower_cds = [0.0, 0.0, 0.0]
 	_selected_roster_id = -1
+	_pending_miracle_uids.clear()
+	_defense_kills_by_uid.clear()
+	_defense_healed_by_uid.clear()
 	_rebuild_tower_mounts()
 	defense_victory_overlay.visible = false
 	defense_item_overlay.visible = false
@@ -416,6 +483,8 @@ func _reset_battle_state(restore_wall: bool) -> void:
 	auto_deploy_button.disabled = false
 	finish_phase_button.disabled = true
 	var note_parts: PackedStringArray = []
+	if TimeManager.is_final_battle_day():
+		note_parts.append("★ [3년차 최종 결전] 최후의 대공세! 이 방어전을 막아내면 영지 수호 최종 승리!")
 	if GlobalData.outpost_weakened_stacks > 0:
 		note_parts.append("전초기지 약화 x%d (적 %d마리)" % [GlobalData.outpost_weakened_stacks, _get_wave_total_monsters()])
 	if GlobalData.defense_wall_atk_bonus > 0:
@@ -504,6 +573,11 @@ func _find_roster_member(roster_id: int) -> Dictionary:
 func _deploy_unit_to_slot(member: Dictionary, slot: Dictionary) -> void:
 	slot["unit"] = member
 	slot["name"] = str(member["name"])
+	slot["class_group"] = str(member.get("class_group", DataManager.get_class_group_for_sub_class(str(member.get("role", "근접딜러")))))
+	slot["sub_class"] = str(member.get("sub_class", member.get("role", "돌격검객")))
+	slot["sub_trait"] = str(member.get("sub_trait", ""))
+	slot["_duration_ext"] = 2.0
+	slot["max_block"] = MAX_BLOCK_COUNT + (1 if str(slot["class_group"]) == "중장" else 0)
 	slot["element"] = str(member.get("element", "FIRE"))
 	slot["max_hp"] = int(member["max_hp"])
 	slot["hp"] = clampi(int(member.get("current_hp", member["max_hp"])), 1, int(member["max_hp"]))
@@ -532,6 +606,7 @@ func _deploy_unit_to_slot(member: Dictionary, slot: Dictionary) -> void:
 	slot["attack_cooldown"] = 0.0
 	slot["flash_timer"] = 0.0
 	slot["heal_flash_timer"] = 0.0
+	slot["_miracle_revived"] = false
 	slot["blocked_monsters"] = []
 
 	var base_range: float = float(member["range"])
@@ -540,10 +615,12 @@ func _deploy_unit_to_slot(member: Dictionary, slot: Dictionary) -> void:
 		if slot["zone"] == ZoneType.ON_WALL
 		else base_range
 	)
+	if slot["zone"] == ZoneType.ON_WALL and str(slot["class_group"]) == "저격":
+		final_range *= 1.15
 	var circle: CircleShape2D = slot["range_circle"]
 	circle.radius = final_range
 
-	var zone_str: String = "성벽 위(사거리 %.0f, 근접면역)" % final_range if slot["zone"] == ZoneType.ON_WALL else "성벽 밖(최대 3저지)"
+	var zone_str: String = "성벽 위(사거리 %.0f, 근접면역)" % final_range if slot["zone"] == ZoneType.ON_WALL else "성벽 밖(최대 %d저지)" % int(slot["max_block"])
 	_set_status("[%s] → %s 배치 완료!" % [member["name"], zone_str])
 
 
@@ -674,18 +751,27 @@ func _rebuild_tower_mounts() -> void:
 	_tower_visual_nodes.clear()
 
 	var base_stats: Dictionary = GlobalData.get_base_tower_stats()
-	var base_panel := ColorRect.new()
+	var base_panel := Panel.new()
 	base_panel.position = Vector2(18, 285)
 	base_panel.size = Vector2(84, 92)
-	base_panel.color = Color(0.28, 0.42, 0.56, 0.95)
 	base_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	base_panel.add_theme_stylebox_override("panel", AssetManager.make_panel_style(Color(0.20, 0.30, 0.42, 0.96), AssetManager.COL_BORDER_GOLD, 8, 2, 4))
+	var base_vb := VBoxContainer.new()
+	base_vb.set_anchors_preset(Control.PRESET_FULL_RECT)
+	base_vb.alignment = BoxContainer.ALIGNMENT_CENTER
+	base_panel.add_child(base_vb)
+	var base_icon := TextureRect.new()
+	base_icon.custom_minimum_size = Vector2(34, 34)
+	base_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	base_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	base_icon.texture = AssetManager.get_tower_sprite("base_tower")
+	base_icon.modulate = Color(0.85, 0.92, 1.0)
+	base_vb.add_child(base_icon)
 	var base_lbl := Label.new()
-	base_lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
 	base_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	base_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	base_lbl.add_theme_font_size_override("font_size", 12)
+	base_lbl.add_theme_font_size_override("font_size", 11)
 	base_lbl.text = "기본포탑\nATK %d" % int(base_stats["atk"])
-	base_panel.add_child(base_lbl)
+	base_vb.add_child(base_lbl)
 	slots_container.add_child(base_panel)
 	_tower_visual_nodes.append(base_panel)
 
@@ -693,34 +779,55 @@ func _rebuild_tower_mounts() -> void:
 	for idx in range(GlobalData.MAX_TOWER_SLOTS):
 		var tid: String = GlobalData.equipped_tower_slots[idx] if idx < GlobalData.equipped_tower_slots.size() else ""
 		var t_tpl: Dictionary = DataManager.get_tower(tid) if not tid.is_empty() else {}
-		var mount_rect := ColorRect.new()
+		var mount_rect := Panel.new()
 		mount_rect.position = Vector2(18, mount_ys[idx])
 		mount_rect.size = Vector2(84, 78)
 		mount_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var vb := VBoxContainer.new()
+		vb.set_anchors_preset(Control.PRESET_FULL_RECT)
+		vb.alignment = BoxContainer.ALIGNMENT_CENTER
+		mount_rect.add_child(vb)
 		var lbl := Label.new()
-		lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		lbl.add_theme_font_size_override("font_size", 11)
+		lbl.add_theme_font_size_override("font_size", 10)
 		if t_tpl.is_empty():
-			mount_rect.color = Color(0.18, 0.20, 0.24, 0.85)
+			mount_rect.add_theme_stylebox_override("panel", AssetManager.make_panel_style(Color(0.14, 0.16, 0.21, 0.88), AssetManager.COL_BORDER, 8, 1, 4))
 			lbl.text = "타워%d\n(빈슬롯)" % (idx + 1)
 		else:
-			mount_rect.color = DataManager.get_element_color(str(t_tpl.get("element", "FIRE"))).darkened(0.25)
+			var t_col: Color = DataManager.get_element_color(str(t_tpl.get("element", "FIRE")))
+			mount_rect.add_theme_stylebox_override("panel", AssetManager.make_panel_style(t_col.darkened(0.55), t_col, 8, 2, 4))
+			var t_icon := TextureRect.new()
+			t_icon.custom_minimum_size = Vector2(28, 28)
+			t_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			t_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			t_icon.texture = AssetManager.get_tower_sprite(tid, str(t_tpl.get("sprite_path", "")))
+			t_icon.modulate = t_col.lightened(0.35)
+			vb.add_child(t_icon)
 			lbl.text = "%s\n(%s)" % [str(t_tpl.get("name", "타워")).left(4), str(t_tpl.get("target_scope", "SINGLE_FRONT")).left(4)]
-		mount_rect.add_child(lbl)
+		vb.add_child(lbl)
 		slots_container.add_child(mount_rect)
 		_tower_visual_nodes.append(mount_rect)
 
 
+func _get_tower_haste_cooldown_mult() -> float:
+	var haste: float = float(GlobalData.get_party_exploration_bonuses().get("tower_haste_bonus", 0.0))
+	for s in _slots:
+		if not s["unit"].is_empty() and int(s["hp"]) > 0:
+			var st: String = str(s.get("sub_trait", ""))
+			if st == "TOWER_HASTE" or st == "WALL_GUARD":
+				haste = maxf(haste, 0.20)
+	return 1.0 / (1.0 + haste)
+
+
 func _process_towers(sim_dt: float) -> void:
+	var tower_cd_mult: float = _get_tower_haste_cooldown_mult()
 	# 1) 성벽 기본 포탑 자동 공격
 	_base_tower_cd -= sim_dt
 	if _base_tower_cd <= 0.0:
 		var base_stats: Dictionary = GlobalData.get_base_tower_stats()
 		var target := _find_closest_monster_in_range(Vector2(WALL_X, 376.0), 540.0)
 		if target != null:
-			_base_tower_cd = float(base_stats["attack_interval"])
+			_base_tower_cd = float(base_stats["attack_interval"]) * tower_cd_mult
 			var dummy_caster: Dictionary = {
 				"name": "성벽 기본 타워",
 				"atk": int(base_stats["atk"]),
@@ -734,7 +841,9 @@ func _process_towers(sim_dt: float) -> void:
 				"passive_bonuses": {},
 			}
 			var calc: Dictionary = CombatCalculator.calculate_skill_damage(dummy_caster, target.combat_state, {"multiplier": 1.0})
-			target.take_damage(int(calc["damage"]))
+			var base_dmg: int = int(calc["damage"])
+			target.take_damage(base_dmg)
+			_spawn_defense_damage_float(target.position, base_dmg, bool(calc.get("is_crit", false)), float(calc.get("element_multiplier", 1.0)))
 
 	# 2) 커스텀 타워 3슬롯 자동 공격 (단일/광역 + on_hit_effect_id)
 	var mount_ys: Array[float] = [140.0, 460.0, 620.0]
@@ -753,7 +862,7 @@ func _process_towers(sim_dt: float) -> void:
 		if anchor_m == null:
 			continue
 
-		_custom_tower_cds[idx] = float(t_tpl.get("attack_interval", 1.5))
+		_custom_tower_cds[idx] = float(t_tpl.get("attack_interval", 1.5)) * tower_cd_mult
 		var t_scope: String = str(t_tpl.get("target_scope", "SINGLE_FRONT"))
 		var targets: Array[DefenseMonster] = _get_monsters_in_defense_scope(t_scope, anchor_m)
 		var tower_caster: Dictionary = {
@@ -774,7 +883,9 @@ func _process_towers(sim_dt: float) -> void:
 			if not m.is_active or m.hp <= 0:
 				continue
 			var calc: Dictionary = CombatCalculator.calculate_skill_damage(tower_caster, m.combat_state, {"multiplier": 1.0})
-			m.take_damage(int(calc["damage"]))
+			var t_dmg: int = int(calc["damage"])
+			m.take_damage(t_dmg)
+			_spawn_defense_damage_float(m.position, t_dmg, bool(calc.get("is_crit", false)), float(calc.get("element_multiplier", 1.0)))
 			if m.is_active and m.hp > 0 and not on_hit_skill.is_empty():
 				for eff in on_hit_skill.get("effects", []):
 					StatusEffectManager.apply_effect(
@@ -863,20 +974,34 @@ func _process_spawning(sim_dt: float) -> void:
 		elif idx_1 % 5 == 0:
 			target_type = "ELITE"
 
-		var candidates: Array[Dictionary] = DataManager.get_enemies_for_season(season_key, target_type, GlobalData.upcoming_defense_elements)
+		var candidates: Array[Dictionary] = DataManager.get_enemies_for_context(season_key, target_type, GlobalData.upcoming_defense_elements, GlobalData.is_rebellion_humanoid_preferred())
 		var m_hp: int = 55
 		var m_spd: float = 95.0
 		var m_atk: int = 7
 		var m_def: int = 5
 		var m_elem: String = "FIRE"
+		var m_enemy_id: String = ""
+		var m_sprite_path: String = ""
+		var m_category: String = "MONSTER"
+		var m_archetype: String = "SWARMER"
+		var m_tint: String = ""
+		var m_pal_swap: bool = false
 		var passive_ids: Array = []
 
 		if not candidates.is_empty():
 			var tpl: Dictionary = candidates[_spawned_count % candidates.size()]
+			m_enemy_id = str(tpl.get("id", ""))
+			m_sprite_path = str(tpl.get("sprite_path", ""))
+			m_category = str(tpl.get("category", "MONSTER"))
+			m_archetype = str(tpl.get("archetype", "SWARMER"))
+			m_tint = str(tpl.get("tint_color", ""))
+			m_pal_swap = bool(tpl.get("palette_swapped", false))
 			m_hp = maxi(15, roundi(float(tpl.get("max_hp", 55)) * 1.1 * hp_mult * weaken_mult))
 			m_atk = maxi(3, roundi(float(tpl.get("atk", 10)) * 0.65 * atk_mult * weaken_mult))
 			m_def = maxi(0, roundi(float(tpl.get("def", 6)) * def_mult))
 			m_spd = clampf(float(tpl.get("speed", 12)) * 7.2 * spd_mult, 55.0, 145.0)
+			if m_archetype == "CUTTHROAT":
+				m_spd = minf(165.0, m_spd * 1.18)
 			m_elem = str(tpl.get("element", "FIRE"))
 			passive_ids = tpl.get("passive_skill_ids", [])
 		else:
@@ -895,7 +1020,7 @@ func _process_spawning(sim_dt: float) -> void:
 		if target_type != "NORMAL":
 			m_color = m_color.darkened(0.25)
 
-		monster.activate(_next_monster_id, spawn_pos, lane, m_hp, m_spd, m_atk, m_color, m_def, m_elem)
+		monster.activate(_next_monster_id, spawn_pos, lane, m_hp, m_spd, m_atk, m_color, m_def, m_elem, m_enemy_id, target_type, m_sprite_path, m_category, m_archetype, m_tint, m_pal_swap, false)
 		monster.combat_state["season_bonus_effect"] = season_bonus_eff
 		for pid in passive_ids:
 			var psk := DataManager.get_skill(str(pid))
@@ -907,6 +1032,12 @@ func _process_spawning(sim_dt: float) -> void:
 					999.0,
 					monster.combat_state
 				)
+		if m_archetype == "VOLATILE" and not StatusEffectManager.has_effect(monster.combat_state, "EXPLODE_ON_DEATH"):
+			StatusEffectManager.apply_effect(monster.combat_state, "EXPLODE_ON_DEATH", 1.6, 999.0, monster.combat_state)
+		elif m_archetype == "THORNBACK" and not StatusEffectManager.has_effect(monster.combat_state, "REFLECT"):
+			StatusEffectManager.apply_effect(monster.combat_state, "REFLECT", 0.25, 999.0, monster.combat_state)
+		elif m_archetype == "PHALANX" and StatusEffectManager.get_total_shield(monster.combat_state) <= 0:
+			StatusEffectManager.apply_effect(monster.combat_state, "SHIELD", 0.8, 999.0, monster.combat_state)
 		_next_monster_id += 1
 		_spawned_count += 1
 		_spawn_timer += SPAWN_INTERVAL
@@ -918,8 +1049,12 @@ func _process_monsters(sim_dt: float) -> void:
 			continue
 
 		# 실시간 1초 DoT(화상/독) 및 상태이상 지속시간 틱 처리
+		var prev_dot_hp: int = monster.hp
 		StatusEffectManager.tick_realtime_effects(monster.combat_state, sim_dt)
 		monster.sync_hp_from_combat_state()
+		var dot_delta: int = prev_dot_hp - monster.hp
+		if dot_delta > 0:
+			_spawn_defense_damage_float(monster.position, dot_delta, false, 1.0, true)
 		if not monster.is_active or monster.hp <= 0:
 			continue
 
@@ -927,6 +1062,26 @@ func _process_monsters(sim_dt: float) -> void:
 			continue
 
 		var spd_factor: float = StatusEffectManager.get_speed_factor(monster.combat_state)
+
+		# PREACHER 아키타입: 주변 아군 적 주기적 회복 + 공격력 버프 오라
+		if monster.archetype == "PREACHER":
+			monster.support_aura_cd -= sim_dt * spd_factor
+			if monster.support_aura_cd <= 0.0:
+				monster.support_aura_cd = 3.5
+				var healed_any: bool = false
+				for mate in _active_monsters:
+					if not mate.is_active or mate.hp <= 0:
+						continue
+					if mate.position.distance_to(monster.position) <= 240.0:
+						StatusEffectManager.apply_effect(mate.combat_state, "BUFF_ATK", 0.15, 2.5, monster.combat_state)
+						if mate.hp < mate.max_hp:
+							var h_val: int = maxi(8, roundi(float(monster.atk) * 0.7))
+							mate.hp = mini(mate.max_hp, mate.hp + h_val)
+							mate.combat_state["hp"] = mate.hp
+							mate._update_hp_bar()
+							healed_any = true
+				if healed_any:
+					_spawn_defense_text(monster.position, "교단 치유·축복!", "HEAL")
 
 		# 저지 중이던 유닛이 회수/사망했으면 저지 해제
 		if not monster.blocked_by_slot.is_empty():
@@ -946,11 +1101,23 @@ func _process_monsters(sim_dt: float) -> void:
 				monster.attack_cooldown = monster.attack_interval
 				_damage_deployed_unit(blocker_slot, monster)
 		elif monster.reached_wall:
-			# 성벽 공격
+			if monster.archetype == "VOLATILE":
+				# VOLATILE 성벽 접촉 즉시 자폭
+				var wall_boom: int = maxi(8, roundi(float(monster.atk) * 1.6))
+				GlobalData.damage_wall(wall_boom)
+				_spawn_defense_text(Vector2(WALL_X + 12.0, monster.position.y), "자폭! -%d" % wall_boom, "CRIT")
+				monster.take_damage(monster.max_hp + 999)
+				continue
+			# 성벽 공격 (SIEGE_CREW는 2.5배 공성 피해!)
 			monster.attack_cooldown -= sim_dt * spd_factor
 			if monster.attack_cooldown <= 0.0:
 				monster.attack_cooldown = monster.attack_interval
-				GlobalData.damage_wall(monster.atk)
+				var wall_dmg: int = roundi(float(monster.atk) * 2.5) if monster.archetype == "SIEGE_CREW" else monster.atk
+				GlobalData.damage_wall(wall_dmg)
+				if monster.archetype == "SIEGE_CREW":
+					_spawn_defense_text(Vector2(WALL_X + 12.0, monster.position.y), "공성2.5x -%d" % wall_dmg, "CRIT")
+				else:
+					_spawn_defense_damage_float(Vector2(WALL_X + 12.0, monster.position.y), wall_dmg)
 
 
 func _try_block_monster(monster: DefenseMonster) -> void:
@@ -960,14 +1127,42 @@ func _try_block_monster(monster: DefenseMonster) -> void:
 		if slot["unit"].is_empty() or int(slot["hp"]) <= 0:
 			continue
 		var blocked: Array = slot["blocked_monsters"]
-		if blocked.size() >= MAX_BLOCK_COUNT:
+		var slot_max_block: int = int(slot.get("max_block", MAX_BLOCK_COUNT))
+		if blocked.size() >= slot_max_block:
 			continue
 
 		var block_area: Area2D = slot["block_area"]
 		if block_area.get_overlapping_areas().has(monster):
 			monster.blocked_by_slot = slot
 			blocked.append(monster)
+			if monster.archetype == "VOLATILE":
+				var contact_dmg: int = maxi(4, roundi(float(monster.atk) * 0.6))
+				StatusEffectManager.apply_damage_with_shield(slot, contact_dmg)
+				_spawn_defense_text(slot["world_pos"], "접촉 폭발 -%d" % contact_dmg, "CRIT")
+				if int(slot["hp"]) <= 0 and not _try_slot_miracle_survival(slot):
+					_sync_slot_hp_to_global(slot, 0)
+					_clear_slot(slot)
+					_refresh_roster_ui()
 			return
+
+
+func _try_slot_miracle_survival(slot: Dictionary) -> bool:
+	if slot.is_empty() or slot["unit"].is_empty() or int(slot.get("hp", 0)) > 0:
+		return false
+	if bool(slot.get("_miracle_revived", false)):
+		return false
+	var unit: Dictionary = slot["unit"]
+	var uid: int = int(unit.get("uid", -1))
+	if not GlobalData.roll_miracle_survival(uid):
+		return false
+	slot["_miracle_revived"] = true
+	var rev_hp: int = maxi(1, roundi(float(slot.get("max_hp", 60)) * 0.15))
+	slot["hp"] = rev_hp
+	if uid > 0 and not _pending_miracle_uids.has(uid):
+		_pending_miracle_uids.append(uid)
+	_spawn_defense_text(slot["world_pos"], "★ 기적적 생환! (+%d HP)" % rev_hp, "CRIT")
+	_set_status("★ [기적적 생환!] [%s]이(가) 죽음의 문턱에서 HP %d로 다시 일어섰습니다!" % [str(unit.get("name", "영웅")), rev_hp])
+	return true
 
 
 func _damage_deployed_unit(slot: Dictionary, attacker_monster: DefenseMonster) -> void:
@@ -977,17 +1172,22 @@ func _damage_deployed_unit(slot: Dictionary, attacker_monster: DefenseMonster) -
 	if slot["unit"].is_empty():
 		return
 
-	var dmg: int = CombatCalculator.calculate_skill_damage(attacker_monster.combat_state, slot, {"multiplier": 1.0})["damage"]
-	StatusEffectManager.apply_damage_with_shield(slot, dmg)
+	var calc_u: Dictionary = CombatCalculator.calculate_skill_damage(attacker_monster.combat_state, slot, {"multiplier": 1.0})
+	var dmg: int = int(calc_u["damage"])
+	var hit_res_u: Dictionary = StatusEffectManager.apply_damage_with_shield(slot, dmg)
+	_spawn_defense_damage_float(slot["world_pos"], dmg, bool(calc_u.get("is_crit", false)), float(calc_u.get("element_multiplier", 1.0)))
+	if int(hit_res_u.get("shield_absorbed", 0)) > 0:
+		_spawn_defense_text(slot["world_pos"] + Vector2(0, -18), "보호막 -%d" % int(hit_res_u["shield_absorbed"]), "SHIELD")
 	var s_bonus_eff: String = str(attacker_monster.combat_state.get("season_bonus_effect", ""))
 	if not s_bonus_eff.is_empty() and int(slot["hp"]) > 0:
 		StatusEffectManager.apply_effect(slot, s_bonus_eff, 0.20, 2.0, attacker_monster.combat_state)
 	if int(slot["hp"]) <= 0:
-		var fallen_name: String = slot["unit"]["name"]
-		_sync_slot_hp_to_global(slot, 0)
-		_clear_slot(slot)
-		_set_status("[전사] 성벽 밖의 [%s]이(가) 쓰러져 저지가 해제되었습니다!" % fallen_name)
-		_refresh_roster_ui()
+		if not _try_slot_miracle_survival(slot):
+			var fallen_name: String = slot["unit"]["name"]
+			_sync_slot_hp_to_global(slot, 0)
+			_clear_slot(slot)
+			_set_status("[전사] 성벽 밖의 [%s]이(가) 쓰러져 저지가 해제되었습니다!" % fallen_name)
+			_refresh_roster_ui()
 
 
 func _process_units(sim_dt: float) -> void:
@@ -997,10 +1197,11 @@ func _process_units(sim_dt: float) -> void:
 
 		StatusEffectManager.tick_realtime_effects(slot, sim_dt)
 		if int(slot["hp"]) <= 0:
-			_sync_slot_hp_to_global(slot, 0)
-			_clear_slot(slot)
-			_refresh_roster_ui()
-			continue
+			if not _try_slot_miracle_survival(slot):
+				_sync_slot_hp_to_global(slot, 0)
+				_clear_slot(slot)
+				_refresh_roster_ui()
+				continue
 
 		if float(slot["flash_timer"]) > 0.0:
 			slot["flash_timer"] = maxf(0.0, float(slot["flash_timer"]) - sim_dt)
@@ -1020,13 +1221,22 @@ func _process_units(sim_dt: float) -> void:
 
 		var unit: Dictionary = slot["unit"]
 		var heal_power: int = int(unit.get("heal_power", 0))
-		var is_healer: bool = (str(unit.get("role", "")) == "힐러" or heal_power > 0)
+		var is_healer: bool = (str(slot.get("class_group", "")) == "의료" or str(unit.get("role", "")) == "힐러" or heal_power > 0)
 
 		if is_healer:
 			var injured_slot: Dictionary = _find_injured_ally_in_range(slot)
 			if not injured_slot.is_empty():
 				var heal_amount: int = heal_power if heal_power > 0 else maxi(10, roundi(StatusEffectManager.get_effective_stat(slot, "atk")))
-				heal_deployed_slot(injured_slot, heal_amount)
+				if str(slot.get("sub_trait", "")) == "EMERGENCY_HEAL" and float(injured_slot["hp"]) / maxf(1.0, float(injured_slot["max_hp"])) <= 0.40:
+					heal_amount = roundi(float(heal_amount) * 1.40)
+				var healed_rt: int = heal_deployed_slot(injured_slot, heal_amount)
+				var h_uid: int = int(unit.get("uid", -1))
+				if h_uid > 0 and healed_rt > 0:
+					_defense_healed_by_uid[h_uid] = int(_defense_healed_by_uid.get(h_uid, 0)) + healed_rt
+				if str(slot.get("class_group", "")) == "의료":
+					StatusEffectManager.apply_effect(injured_slot, "DMG_REDUCE", 0.10, 2.0, slot)
+				if str(slot.get("sub_trait", "")) == "WARD_PURIFY":
+					StatusEffectManager.clear_debuffs(injured_slot)
 				slot["attack_cooldown"] = 1.0 / float(unit["atk_speed"])
 				slot["heal_flash_timer"] = 0.14
 				slot["attack_count"] = int(slot.get("attack_count", 0)) + 1
@@ -1045,6 +1255,13 @@ func _process_units(sim_dt: float) -> void:
 			var calc: Dictionary = CombatCalculator.calculate_skill_damage(slot, target.combat_state, {"multiplier": 1.0})
 			var hit_dmg: int = int(calc["damage"])
 			target.take_damage(hit_dmg)
+			if target.hp <= 0:
+				var k_uid: int = int(unit.get("uid", -1))
+				if k_uid > 0:
+					_defense_kills_by_uid[k_uid] = int(_defense_kills_by_uid.get(k_uid, 0)) + 1
+				if str(slot.get("class_group", "")) == "근위":
+					StatusEffectManager.apply_effect(slot, "BUFF_SPEED", 0.15, 3.0, slot)
+			_spawn_defense_damage_float(target.position, hit_dmg, bool(calc.get("is_crit", false)), float(calc.get("element_multiplier", 1.0)))
 			_apply_monster_reflect_to_slot(slot, target, hit_dmg)
 
 
@@ -1145,7 +1362,9 @@ func _execute_realtime_skill(slot: Dictionary, skill: Dictionary, primary_target
 			if eff_type == "HEAL":
 				heal_deployed_slot(slot, maxi(1, roundi(StatusEffectManager.get_effective_stat(slot, "atk") * mult)))
 			else:
-				StatusEffectManager.apply_effect(slot, eff_type, mult, dur, slot)
+				var self_eff: Dictionary = StatusEffectManager.apply_effect(slot, eff_type, mult, dur, slot)
+				if eff_type == "SHIELD" and int(self_eff.get("value", 0)) > 0:
+					_spawn_defense_text(slot["world_pos"], "보호막 +%d" % int(self_eff["value"]), "SHIELD")
 		elif scope == "SINGLE_ALLY" or scope == "ALL_ALLIES":
 			var ally_candidates: Array[Dictionary] = []
 			for ally_slot in _slots:
@@ -1158,9 +1377,20 @@ func _execute_realtime_skill(slot: Dictionary, skill: Dictionary, primary_target
 				if eff_type == "HEAL":
 					var h_base: float = float(ally_slot["unit"].get("heal_power", 0))
 					var amt: int = maxi(10, roundi((h_base if h_base > 0.0 else StatusEffectManager.get_effective_stat(slot, "atk")) * mult))
-					heal_deployed_slot(ally_slot, amt)
+					if str(slot.get("sub_trait", "")) == "EMERGENCY_HEAL" and float(ally_slot["hp"]) / maxf(1.0, float(ally_slot["max_hp"])) <= 0.40:
+						amt = roundi(float(amt) * 1.40)
+					var healed_sk: int = heal_deployed_slot(ally_slot, amt)
+					var s_huid: int = int(slot["unit"].get("uid", -1))
+					if s_huid > 0 and healed_sk > 0:
+						_defense_healed_by_uid[s_huid] = int(_defense_healed_by_uid.get(s_huid, 0)) + healed_sk
+					if str(slot.get("class_group", "")) == "의료":
+						StatusEffectManager.apply_effect(ally_slot, "DMG_REDUCE", 0.10, 2.0, slot)
+					if str(slot.get("sub_trait", "")) == "WARD_PURIFY":
+						StatusEffectManager.clear_debuffs(ally_slot)
 				else:
-					StatusEffectManager.apply_effect(ally_slot, eff_type, mult, dur, slot)
+					var ally_eff: Dictionary = StatusEffectManager.apply_effect(ally_slot, eff_type, mult, dur, slot)
+					if eff_type == "SHIELD" and int(ally_eff.get("value", 0)) > 0:
+						_spawn_defense_text(ally_slot["world_pos"], "보호막 +%d" % int(ally_eff["value"]), "SHIELD")
 				if scope == "SINGLE_ALLY":
 					break
 		else:
@@ -1173,6 +1403,11 @@ func _execute_realtime_skill(slot: Dictionary, skill: Dictionary, primary_target
 					var calc: Dictionary = CombatCalculator.calculate_skill_damage(slot, m.combat_state, eff)
 					var hit_dmg: int = int(calc["damage"])
 					m.take_damage(hit_dmg)
+					if m.hp <= 0:
+						var sk_uid: int = int(slot["unit"].get("uid", -1))
+						if sk_uid > 0:
+							_defense_kills_by_uid[sk_uid] = int(_defense_kills_by_uid.get(sk_uid, 0)) + 1
+					_spawn_defense_damage_float(m.position, hit_dmg, bool(calc.get("is_crit", false)), float(calc.get("element_multiplier", 1.0)))
 					_apply_monster_reflect_to_slot(slot, m, hit_dmg)
 					dealt_skill_damage = true
 				else:
@@ -1187,10 +1422,23 @@ func _apply_monster_reflect_to_slot(attacker_slot: Dictionary, victim: DefenseMo
 	if reflect_ratio > 0.0 and hit_dmg > 0:
 		var ref_dmg: int = maxi(1, roundi(float(hit_dmg) * reflect_ratio))
 		StatusEffectManager.apply_damage_with_shield(attacker_slot, ref_dmg)
+		_spawn_defense_damage_float(attacker_slot["world_pos"], ref_dmg, false, 1.0, true)
 		if int(attacker_slot["hp"]) <= 0:
-			_sync_slot_hp_to_global(attacker_slot, 0)
-			_clear_slot(attacker_slot)
-			_refresh_roster_ui()
+			if not _try_slot_miracle_survival(attacker_slot):
+				_sync_slot_hp_to_global(attacker_slot, 0)
+				_clear_slot(attacker_slot)
+				_refresh_roster_ui()
+
+
+func _spawn_defense_text(world_pos: Vector2, text: String, kind: String = "NORMAL") -> void:
+	if battlefield == null or not is_instance_valid(battlefield):
+		return
+	CombatFeedbackUI.spawn_floating_text(battlefield, world_pos + Vector2(0.0, -34.0), text, kind, _speed_scale)
+
+
+func _spawn_defense_damage_float(world_pos: Vector2, dmg: int, is_crit: bool = false, elem_mult: float = 1.0, is_dot: bool = false) -> void:
+	var info: Dictionary = CombatFeedbackUI.classify_damage_display(dmg, is_crit, elem_mult, is_dot)
+	_spawn_defense_text(world_pos, str(info["text"]), str(info["kind"]))
 
 
 func heal_deployed_slot(target_slot: Dictionary, amount: int) -> int:
@@ -1203,7 +1451,10 @@ func heal_deployed_slot(target_slot: Dictionary, amount: int) -> int:
 	var new_hp: int = mini(max_hp, cur_hp + amount)
 	target_slot["hp"] = new_hp
 	target_slot["heal_flash_timer"] = 0.16
-	return new_hp - cur_hp
+	var healed: int = new_hp - cur_hp
+	if healed > 0:
+		_spawn_defense_text(target_slot["world_pos"], "+%d" % healed, "HEAL")
+	return healed
 
 
 func _find_injured_ally_in_range(healer_slot: Dictionary) -> Dictionary:
@@ -1291,10 +1542,27 @@ func _on_monster_died(monster: DefenseMonster) -> void:
 			if s["zone"] == ZoneType.OUTSIDE_WALL and not s["unit"].is_empty() and int(s["hp"]) > 0:
 				if (s["world_pos"] as Vector2).distance_to(monster.position) <= 130.0:
 					StatusEffectManager.apply_damage_with_shield(s, exp_dmg)
+					_spawn_defense_damage_float(s["world_pos"], exp_dmg, true, 1.0)
 					if int(s["hp"]) <= 0:
 						_sync_slot_hp_to_global(s, 0)
 						_clear_slot(s)
 						_refresh_roster_ui()
+
+	# BROODMOTHER 아키타입: 사망 시 소형 군집 유충 2기 분열 소환
+	if monster.archetype == "BROODMOTHER" and not monster.is_summoned_spawn:
+		var m_hp_sub: int = maxi(12, roundi(float(monster.max_hp) * 0.30))
+		var m_atk_sub: int = maxi(4, roundi(float(monster.atk) * 0.55))
+		var m_spd_sub: float = minf(160.0, monster.move_speed * 1.25)
+		var m_col_sub: Color = DataManager.get_element_color(monster.element)
+		for offset_y in [-24.0, 24.0]:
+			var spawn_m: DefenseMonster = _acquire_monster()
+			if spawn_m == null:
+				break
+			var sp_pos := Vector2(monster.position.x + 18.0, clampf(monster.position.y + offset_y, 80.0, 680.0))
+			spawn_m.activate(_next_monster_id, sp_pos, monster.lane_index, m_hp_sub, m_spd_sub, m_atk_sub, m_col_sub, 3, monster.element, "enemy_feral_swarmer", "NORMAL", "", "MONSTER", "SWARMER", "", false, true)
+			_next_monster_id += 1
+		_spawn_defense_text(monster.position, "군체 분열!", "CRIT")
+
 	_killed_count += 1
 	_release_monster(monster)
 
@@ -1304,14 +1572,79 @@ func stop_battle() -> void:
 	auto_deploy_button.disabled = true
 
 
+func _finalize_defense_service_and_traumas(victory: bool) -> PackedStringArray:
+	var report_logs: PackedStringArray = []
+	var processed_uids: Dictionary = {}
+
+	for uid in _pending_miracle_uids:
+		var hero: Dictionary = GlobalData.get_hero_by_uid(uid)
+		if hero.is_empty():
+			continue
+		var neg_id: String = GlobalData.grant_random_negative_temperament(uid)
+		if not neg_id.is_empty():
+			var neg_name: String = str(GlobalData.get_temperament_info(neg_id).get("name", neg_id))
+			report_logs.append("★ [기적적 생환] %s이(가) 죽음에서 돌아왔으나, 후유증 [%s] 기질을 얻었습니다!" % [str(hero.get("name", "영웅")), neg_name])
+
+	for slot in _slots:
+		if slot["unit"].is_empty():
+			continue
+		var uid: int = int(slot["unit"].get("uid", -1))
+		if uid <= 0 or processed_uids.has(uid):
+			continue
+		processed_uids[uid] = true
+		var survived_def: int = 1 if (victory and int(slot.get("hp", 0)) > 0) else 0
+		var was_miracle: int = 1 if _pending_miracle_uids.has(uid) else 0
+		var unlocked: Array[String] = GlobalData.record_hero_service(uid, {
+			"defenses_survived": survived_def,
+			"battles_fought": 1,
+			"total_kills": int(_defense_kills_by_uid.get(uid, 0)),
+			"total_healed": int(_defense_healed_by_uid.get(uid, 0)),
+			"near_deaths": was_miracle,
+		})
+		for vid in unlocked:
+			var vinfo: Dictionary = GlobalData.get_temperament_info(vid)
+			report_logs.append("• [실전 습관 해금] %s → [%s] (%s)" % [
+				str(slot["unit"].get("name", "영웅")),
+				str(vinfo.get("name", vid)),
+				str(vinfo.get("summary", "")),
+			])
+
+	# 생환 후 슬롯에서 쓰러졌거나 킬/힐 기록이 남은 나머지 영웅 이력 반영
+	for uid in _pending_miracle_uids:
+		if processed_uids.has(uid):
+			continue
+		processed_uids[uid] = true
+		var hero_m: Dictionary = GlobalData.get_hero_by_uid(uid)
+		var unlocked_m: Array[String] = GlobalData.record_hero_service(uid, {
+			"battles_fought": 1,
+			"total_kills": int(_defense_kills_by_uid.get(uid, 0)),
+			"total_healed": int(_defense_healed_by_uid.get(uid, 0)),
+			"near_deaths": 1,
+		})
+		for vid in unlocked_m:
+			var vinfo_m: Dictionary = GlobalData.get_temperament_info(vid)
+			report_logs.append("• [실전 습관 해금] %s → [%s] (%s)" % [
+				str(hero_m.get("name", "영웅")),
+				str(vinfo_m.get("name", vid)),
+				str(vinfo_m.get("summary", "")),
+			])
+
+	_pending_miracle_uids.clear()
+	return report_logs
+
+
 func _check_battle_end() -> void:
 	var wave_total: int = _get_wave_total_monsters()
 	if GlobalData.wall_hp <= 0:
 		_battle_state = BattleState.FINISHED
 		_sync_all_slots_hp_to_global()
+		var lose_svc: PackedStringArray = _finalize_defense_service_and_traumas(false)
 		GlobalData.outpost_weakened_stacks = 0
 		GlobalData.defense_wall_atk_bonus = 0
-		_set_status("패배... 성벽이 붕괴되었습니다! (처치: %d / %d)" % [_killed_count, wave_total])
+		var lose_str: String = "패배... 성벽이 붕괴되었습니다! (처치: %d / %d)" % [_killed_count, wave_total]
+		if not lose_svc.is_empty():
+			lose_str += "  |  " + " / ".join(lose_svc)
+		_set_status(lose_str)
 		finish_phase_button.disabled = false
 		auto_deploy_button.disabled = true
 		defense_finished.emit(false)
@@ -1320,22 +1653,31 @@ func _check_battle_end() -> void:
 	if _spawned_count >= wave_total and _active_monsters.is_empty():
 		_battle_state = BattleState.FINISHED
 		_sync_all_slots_hp_to_global()
+		var win_svc: PackedStringArray = _finalize_defense_service_and_traumas(true)
 		GlobalData.outpost_weakened_stacks = 0
 		GlobalData.defense_wall_atk_bonus = 0
 		GlobalData.clear_field_dungeon_state()
 		GlobalData.apply_deltas({"gold": 80, "materials": 30})
-		_set_status("디펜스 승리! 몬스터 %d마리를 모두 막아냈습니다! (보상: 골드 +80, 자재 +30 / 다음 평일 던전 맵 초기화)" % wave_total)
+		GlobalData.record_defense_won()
+		var is_final_victory: bool = TimeManager.is_final_battle_day()
+		var status_str: String = "디펜스 승리! 몬스터 %d마리를 모두 막아냈습니다! (보상: 골드 +80, 자재 +30 / 다음 평일 던전 맵 초기화)" % wave_total
+		if not win_svc.is_empty():
+			status_str += "  |  " + " / ".join(win_svc)
+		_set_status(status_str)
 		finish_phase_button.disabled = false
 		auto_deploy_button.disabled = true
 		defense_item_overlay.visible = false
-		defense_victory_title_label.text = "★ 제%d차 성벽 디펜스 승리!" % GlobalData.defense_wave
+		var cleared_wave: int = GlobalData.defense_wave
+		GlobalData.defense_wave += 1
+		defense_victory_title_label.text = "★ 제%d차 성벽 디펜스 승리!" % cleared_wave
+		var svc_note: String = ("\n\n" + "\n".join(win_svc)) if not win_svc.is_empty() else ""
 		defense_victory_summary_label.text = (
 			"공성 웨이브(%d마리)를 완전히 격퇴했습니다!\n\n"
 			+ "남은 성벽 내구도: %d / %d\n"
 			+ "방어 보상: 골드 +80, 자재 +30\n"
-			+ "(다음 평일 던전 지형이 새롭게 생성됩니다)"
-		) % [wave_total, GlobalData.wall_hp, GlobalData.wall_max_hp]
-		defense_victory_overlay.visible = true
+			+ "(다음 평일 던전 지형이 새롭게 생성됩니다)%s"
+		) % [wave_total, GlobalData.wall_hp, GlobalData.wall_max_hp, svc_note]
+		defense_victory_overlay.visible = not is_final_victory
 		defense_finished.emit(true)
 
 
@@ -1385,40 +1727,50 @@ func _update_hud() -> void:
 func _refresh_slots_ui() -> void:
 	for slot in _slots:
 		var btn: Button = slot["button"]
-		var bg: ColorRect = slot["bg"]
+		var bg: Panel = slot["bg"]
 		var unit: Dictionary = slot["unit"]
 		var is_wall: bool = (slot["zone"] == ZoneType.ON_WALL)
 
 		if unit.is_empty():
 			btn.text = "성벽 위\n(사거리↑/면역)" if is_wall else "성벽 밖\n(최대 3저지)"
-			bg.color = COLOR_SLOT_WALL_EMPTY if is_wall else COLOR_SLOT_OUTSIDE_EMPTY
+			btn.icon = null
+			var empty_col: Color = COLOR_SLOT_WALL_EMPTY if is_wall else COLOR_SLOT_OUTSIDE_EMPTY
+			bg.add_theme_stylebox_override("panel", AssetManager.make_panel_style(empty_col, Color(0.28, 0.34, 0.44, 0.7), 8, 1, 0))
 			continue
 
+		btn.icon = AssetManager.get_hero_sprite(unit)
 		var flash: bool = float(slot["flash_timer"]) > 0.0
 		var heal_flash: bool = float(slot["heal_flash_timer"]) > 0.0
+		var fill_col: Color
+		var border_col: Color = DataManager.get_rarity_color(DataManager.normalize_rarity(unit.get("rarity", "N")))
 		if heal_flash:
-			bg.color = COLOR_SLOT_HEAL_FLASH
+			fill_col = COLOR_SLOT_HEAL_FLASH.darkened(0.2)
+			border_col = Color(0.45, 1.0, 0.80)
 		elif flash:
-			bg.color = COLOR_SLOT_FLASH
+			fill_col = COLOR_SLOT_FLASH.darkened(0.25)
+			border_col = Color(1.0, 0.90, 0.40)
 		else:
-			bg.color = COLOR_SLOT_WALL_OCCUPIED if is_wall else COLOR_SLOT_OUTSIDE_OCCUPIED
+			fill_col = (COLOR_SLOT_WALL_OCCUPIED if is_wall else COLOR_SLOT_OUTSIDE_OCCUPIED).darkened(0.25)
+		bg.add_theme_stylebox_override("panel", AssetManager.make_panel_style(fill_col, border_col, 8, 2 if bool(unit.get("is_named", false)) else 1, 0))
 
 		var heal_power: int = int(unit.get("heal_power", 0))
 		var eff_atk: int = roundi(StatusEffectManager.get_effective_stat(slot, "atk"))
 		var shield_val: int = StatusEffectManager.get_total_shield(slot)
 		var shield_txt: String = " (+%d)" % shield_val if shield_val > 0 else ""
 		if is_wall:
-			var stat_str: String = "HEAL %d" % heal_power if str(unit.get("role", "")) == "힐러" else "ATK %d" % eff_atk
+			var is_med: bool = (str(slot.get("class_group", "")) == "의료" or str(unit.get("role", "")) == "힐러")
+			var stat_str: String = "HEAL %d" % heal_power if is_med else "ATK %d" % eff_atk
 			btn.text = "%s\n[근접면역]\n%s" % [unit["name"], stat_str]
 		else:
 			var blocked_cnt: int = (slot["blocked_monsters"] as Array).size()
+			var max_blk: int = int(slot.get("max_block", MAX_BLOCK_COUNT))
 			btn.text = "%s\nHP %d/%d%s\n저지 %d/%d" % [
 				unit["name"],
 				slot["hp"],
 				slot["max_hp"],
 				shield_txt,
 				blocked_cnt,
-				MAX_BLOCK_COUNT,
+				max_blk,
 			]
 
 
@@ -1546,6 +1898,7 @@ func _on_defense_use_item_pressed(item_id: String) -> void:
 		var dmg_amt: int = maxi(1, int(round(pwr)))
 		for m in living_monsters:
 			m.take_damage(dmg_amt)
+			_spawn_defense_damage_float(m.position, dmg_amt)
 		_set_status("[아이템: %s] 활성 적 %d마리에게 %d 화염 폭격 피해!" % [iname, living_monsters.size(), dmg_amt])
 	else:
 		var deployed_slots: Array[Dictionary] = []
@@ -1582,7 +1935,9 @@ func _on_defense_use_item_pressed(item_id: String) -> void:
 			"SHIELD_ALL":
 				for s in deployed_slots:
 					StatusEffectManager.clear_debuffs(s)
-					StatusEffectManager.add_flat_shield(s, int(round(pwr)), dur_sec, iname)
+					var sh_amt: int = int(round(pwr))
+					StatusEffectManager.add_flat_shield(s, sh_amt, dur_sec, iname)
+					_spawn_defense_text(s["world_pos"], "보호막 +%d" % sh_amt, "SHIELD")
 				_set_status("[아이템: %s] 아군 전원 상태이상 정화 및 보호막 +%d!" % [iname, int(round(pwr))])
 			"CLEANSE":
 				for s in deployed_slots:

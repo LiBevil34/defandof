@@ -17,6 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+AssetManager="*res://scripts/autoload/AssetManager.gd"
 GlobalData="*res://scripts/autoload/GlobalData.gd"
 TimeManager="*res://scripts/autoload/TimeManager.gd"
 SaveManager="*res://scripts/autoload/SaveManager.gd"

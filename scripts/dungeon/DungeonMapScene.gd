@@ -6,7 +6,7 @@ extends Control
 ## 2) MINI_ROGUE (분기형 미니 파밍 던전): 포탈 진입 시 4~5단계 갈림길 트리 생성
 ##    - 노드 타입: BATTLE, ELITE, MYSTERY(?), CAMP(식량 소모 피로 회복), TREASURE(드랍 장비 파밍), BOSS(클리어 시 외곽 귀환)
 
-signal combat_requested(is_boss: bool, atk_bonus: int, hp_bonus: int, is_elite: bool)
+signal combat_requested(is_boss: bool, atk_bonus: int, hp_bonus: int, is_elite: bool, encounter_type: String)
 signal return_to_town_requested()
 
 @export var managed_externally: bool = false
@@ -120,6 +120,8 @@ const COLOR_LINE_TRAVELED := Color(0.35, 0.85, 0.55, 0.95)
 const NODE_SIZE := Vector2(198, 96)
 const CALENDAR_SCENE: PackedScene = preload("res://scenes/ui/CalendarOverlay.tscn")
 
+@onready var bg_rect: ColorRect = %BgRect
+@onready var canvas_bg: ColorRect = %CanvasBg
 @onready var map_root: Control = %MapRoot
 @onready var title_label: Label = %TitleLabel
 @onready var mode_badge_label: Label = %ModeBadgeLabel
@@ -190,10 +192,22 @@ var _rogue_traveled_edges: Array[Vector2i] = []
 var _awaiting_modal: bool = false
 var _run_atk_bonus: int = 0
 var _run_hp_bonus: int = 0
-var _pending_combat_context: String = "" # "OUTPOST", "ROGUE_BATTLE", "ROGUE_ELITE", "ROGUE_BOSS"
+var _pending_combat_context: String = "" # "OUTPOST", "FIELD_BOSS", "AMBUSH", "ROGUE_BATTLE", "ROGUE_ELITE", "ROGUE_BOSS"
+var _debug_reveal_all: bool = false
+var _void_tile_style: StyleBoxEmpty = StyleBoxEmpty.new()
+
+const BLIND_SPECIAL_TYPES: Array[int] = [
+	FieldTileType.OUTPOST,
+	FieldTileType.SUPPLY,
+	FieldTileType.TREASURE,
+	FieldTileType.EVENT,
+	FieldTileType.MINI_DUNGEON_PORTAL,
+]
 
 
 func _ready() -> void:
+	AssetManager.apply_backdrop(bg_rect, "dungeon_bg", Color(0.08, 0.10, 0.16), Color(0.04, 0.05, 0.08), 0.03)
+	AssetManager.apply_backdrop(canvas_bg, "dungeon_canvas_bg", Color(0.09, 0.11, 0.16), Color(0.05, 0.06, 0.09), 0.05)
 	GlobalData.phase_changed.connect(_on_phase_changed)
 	GlobalData.roster_changed.connect(_on_state_updated)
 	GlobalData.resources_changed.connect(_on_state_updated)
@@ -320,12 +334,12 @@ func generate_new_map(force_regenerate: bool = false) -> void:
 
 	_build_field_grid()
 	_save_field_state_to_global()
-	var style_name: String = str(LAYOUT_STYLE_LABELS.get(_layout_style, "미궁"))
-	_set_status("[%s · %s] %dx%d 대규모 외곽 미궁 진입 완료! 드래그로 맵을 살피며 보스가 지키는 귀환 포탈로 돌파하세요." % [
-		style_name,
+	var exp_bonus: Dictionary = GlobalData.get_party_exploration_bonuses()
+	var sense_tag: String = " | 매복감지 활성" if bool(exp_bonus["danger_sense"]) else ""
+	_set_status("외곽 미궁 진입 완료! (%s 진입 | 시야 반경 %d칸%s) 드래그로 지도를 살피며 보스가 지키는 귀환 포탈로 돌파하세요." % [
 		ENTRY_DIR_LABELS.get(_entry_direction, _entry_direction),
-		_grid_width,
-		_grid_height,
+		int(exp_bonus["vision_radius"]),
+		sense_tag,
 	])
 	_refresh_all_ui()
 	call_deferred("_center_camera_on_player")
@@ -353,7 +367,7 @@ func _build_field_grid() -> void:
 
 	# 현재 계절에 출현 가능한 적 속성 추출 -> 다음 디펜스 웨이브 예상 속성 동기화
 	var season_key: String = TimeManager.get_season_key()
-	var season_enemies: Array[Dictionary] = DataManager.get_enemies_for_season(season_key)
+	var season_enemies: Array[Dictionary] = DataManager.get_enemies_for_context(season_key, "", [], GlobalData.is_rebellion_humanoid_preferred())
 	var elem_pool: Array[String] = []
 	for e in season_enemies:
 		var el: String = str(e.get("element", "")).strip_edges().to_upper()
@@ -378,6 +392,9 @@ func _build_field_grid() -> void:
 				"visited": false,
 				"boss_defeated": false,
 				"locked_wall": false,
+				"identity_known": true,
+				"scout_rolled": false,
+				"ambush_armed": false,
 				"element": dominant_elems[randi() % dominant_elems.size()],
 			}
 
@@ -431,6 +448,9 @@ func _build_field_grid() -> void:
 				break
 			var p: Vector2i = candidates.pop_back()
 			_field_tiles[p]["type"] = t_type
+			# 특수 타일의 65~75%는 진입 전까지 '? 미확인 구역'(identity_known=false)으로 숨김
+			if BLIND_SPECIAL_TYPES.has(int(t_type)):
+				_field_tiles[p]["identity_known"] = (randf() < 0.30)
 
 	_reveal_around(_player_pos)
 	_create_field_grid_buttons()
@@ -744,8 +764,11 @@ func _create_field_grid_buttons() -> void:
 			var pos := Vector2i(x, y)
 			var btn := Button.new()
 			btn.custom_minimum_size = Vector2(FIELD_TILE_W, FIELD_TILE_H)
-			btn.add_theme_font_size_override("font_size", 12)
+			btn.add_theme_font_size_override("font_size", 11)
 			btn.clip_text = true
+			btn.expand_icon = true
+			btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 			btn.mouse_filter = Control.MOUSE_FILTER_PASS
 			btn.pressed.connect(_on_field_tile_pressed.bind(pos))
 			field_grid.add_child(btn)
@@ -769,6 +792,9 @@ func _save_field_state_to_global() -> void:
 			"visited": bool(t["visited"]),
 			"boss_defeated": bool(t.get("boss_defeated", false)),
 			"locked_wall": bool(t.get("locked_wall", false)),
+			"identity_known": bool(t.get("identity_known", true)),
+			"scout_rolled": bool(t.get("scout_rolled", false)),
+			"ambush_armed": bool(t.get("ambush_armed", false)),
 			"element": str(t.get("element", "FIRE")),
 		})
 	GlobalData.set_field_dungeon_state({
@@ -817,6 +843,9 @@ func _restore_field_state_from_global() -> bool:
 			"visited": bool(raw_t.get("visited", false)),
 			"boss_defeated": bool(raw_t.get("boss_defeated", false)),
 			"locked_wall": bool(raw_t.get("locked_wall", false)),
+			"identity_known": bool(raw_t.get("identity_known", true)),
+			"scout_rolled": bool(raw_t.get("scout_rolled", false)),
+			"ambush_armed": bool(raw_t.get("ambush_armed", false)),
 			"element": str(raw_t.get("element", "FIRE")),
 		}
 
@@ -826,12 +855,21 @@ func _restore_field_state_from_global() -> bool:
 	return true
 
 
-func _reveal_around(center: Vector2i, radius: int = 1) -> void:
+func _reveal_around(center: Vector2i, min_radius: int = -1) -> void:
+	var exp_bonus: Dictionary = GlobalData.get_party_exploration_bonuses()
+	var party_radius: int = maxi(1, int(exp_bonus.get("vision_radius", 1)))
+	var radius: int = party_radius if min_radius < 0 else maxi(min_radius, party_radius)
+	var vision_bonus: int = int(exp_bonus.get("vision_bonus", 0))
 	for dy in range(-radius, radius + 1):
 		for dx in range(-radius, radius + 1):
 			var p := Vector2i(center.x + dx, center.y + dy)
 			if _field_tiles.has(p):
-				_field_tiles[p]["revealed"] = true
+				var t: Dictionary = _field_tiles[p]
+				t["revealed"] = true
+				if BLIND_SPECIAL_TYPES.has(int(t.get("type", 0))) and not bool(t.get("scout_rolled", false)):
+					t["scout_rolled"] = true
+					if not bool(t.get("identity_known", false)) and vision_bonus > 0 and randf() < 0.25 * float(vision_bonus):
+						t["identity_known"] = true
 
 
 func _has_deployable_hero() -> bool:
@@ -951,7 +989,7 @@ func _on_field_tile_pressed(pos: Vector2i) -> void:
 				_open_exit_modal()
 			else:
 				_pending_combat_context = "FIELD_BOSS"
-				_launch_offense_combat(true, false)
+				_launch_offense_combat(true, false, "NORMAL")
 		return
 
 	if dist != 1:
@@ -959,31 +997,53 @@ func _on_field_tile_pressed(pos: Vector2i) -> void:
 		return
 
 	if int(tile["type"]) == FieldTileType.WALL:
-		_set_status("바위 장벽으로 막혀 있어 통과할 수 없습니다. 우회 경로를 찾으세요.")
+		_set_status("빈 공간이 아닌 장벽으로 막혀 있습니다. 통로를 따라 우회하세요.")
 		return
 
 	if not _has_deployable_hero():
 		_show_info_modal("파티 전원 탈진/전투불능!", "출정 가능한 영웅이 없습니다 (피로도 100 [탈진] 또는 전투불능).\n우측 상단 [귀환] 버튼으로 마을로 복귀해 휴식하세요.")
 		return
 
-	# 1칸 이동 처리: 위치 이동, 안개 해제, 위협도 증가, 직군별 이동 피로도 누적
-	_player_pos = pos
-	tile["visited"] = true
-	_reveal_around(pos)
-	_threat_level = mini(100, _threat_level + 5)
-	var f_changes: Array[Dictionary] = GlobalData.apply_party_move_fatigue()
-	var sample_note: String = ""
-	if not f_changes.is_empty():
-		var parts: PackedStringArray = []
-		for ch in f_changes.slice(0, mini(3, f_changes.size())):
-			parts.append("%s+%d" % [ch["name"], int(ch["cost"])])
-		sample_note = " (이동 피로: %s)" % ", ".join(parts)
+	var was_cleared: bool = bool(tile.get("cleared", false))
+	var t_type_int: int = int(tile["type"])
+	var exp_bonus: Dictionary = GlobalData.get_party_exploration_bonuses()
+	var has_danger_sense: bool = bool(exp_bonus.get("danger_sense", false))
 
-	_save_field_state_to_global()
-	_refresh_all_ui()
-	call_deferred("_center_camera_on_player")
+	# 기탐사(지나온) 타일 매복 인카운터 판정
+	if was_cleared and t_type_int != FieldTileType.START and t_type_int != FieldTileType.EXIT and bool(tile.get("ambush_armed", false)):
+		if has_danger_sense:
+			var tile_lbl: String = str(FIELD_TILE_LABELS.get(t_type_int, "지나온 구역"))
+			_show_choice_modal(
+				"⚠ 매복 감지! (척후 정찰)",
+				"정리했던 [%s] 구역에 적의 매복 기척이 포착되었습니다!\n어떻게 대응하시겠습니까?" % tile_lbl,
+				[
+					{
+						"label": "★ 매복 간파 · 선제 기습! (아군 전원 1턴 SPD +10)",
+						"action": _on_ambush_choice_engage.bind(pos, "AMBUSH_ALLY"),
+					},
+					{
+						"label": "정면 돌파 교전 (일반 조우)",
+						"action": _on_ambush_choice_engage.bind(pos, "NORMAL"),
+					},
+					{
+						"label": "우회하기 (이동 취소 · 피로도 미소모)",
+						"action": _on_ambush_choice_evade.bind(tile_lbl),
+					},
+				]
+			)
+			return
+		else:
+			tile["ambush_armed"] = false
+			_execute_field_step_to(pos)
+			_pending_combat_context = "AMBUSH"
+			_set_status("⚠ 지나온 길에서 적의 매복 기습을 받았습니다!")
+			_launch_offense_combat(false, false, "AMBUSH_ENEMY")
+			return
 
-	if bool(tile["cleared"]) and tile["type"] != FieldTileType.EXIT:
+	var was_known_before: bool = bool(tile.get("identity_known", false))
+	var sample_note: String = _execute_field_step_to(pos)
+
+	if was_cleared and tile["type"] != FieldTileType.EXIT:
 		_set_status("이미 정리된 [%s] 지점입니다.%s" % [FIELD_TILE_LABELS[tile["type"]], sample_note])
 		return
 
@@ -995,10 +1055,11 @@ func _on_field_tile_pressed(pos: Vector2i) -> void:
 			_refresh_field_grid_ui()
 		FieldTileType.OUTPOST:
 			_pending_combat_context = "OUTPOST"
-			_launch_offense_combat(false, false)
+			var enc_type: String = "AMBUSH_ALLY" if was_known_before else "NORMAL"
+			_launch_offense_combat(false, false, enc_type)
 		FieldTileType.BOSS:
 			_pending_combat_context = "FIELD_BOSS"
-			_launch_offense_combat(true, false)
+			_launch_offense_combat(true, false, "NORMAL")
 		FieldTileType.SUPPLY:
 			_trigger_supply_tile(tile)
 		FieldTileType.TREASURE:
@@ -1012,14 +1073,72 @@ func _on_field_tile_pressed(pos: Vector2i) -> void:
 				_open_exit_modal()
 			else:
 				_pending_combat_context = "FIELD_BOSS"
-				_launch_offense_combat(true, false)
+				_launch_offense_combat(true, false, "NORMAL")
+
+
+## 1칸 이동 실행: 이전 타일 기탐사 매복 롤링, 시야 개방, 위협도 및 직군별 이동 피로도 반영
+func _execute_field_step_to(pos: Vector2i) -> String:
+	var prev_pos: Vector2i = _player_pos
+	if _field_tiles.has(prev_pos):
+		var prev_tile: Dictionary = _field_tiles[prev_pos]
+		var prev_type: int = int(prev_tile.get("type", FieldTileType.EMPTY))
+		if bool(prev_tile.get("cleared", false)) and prev_type != FieldTileType.START and prev_type != FieldTileType.EXIT:
+			prev_tile["ambush_armed"] = (randf() < 0.10)
+
+	var tile: Dictionary = _field_tiles[pos]
+	_player_pos = pos
+	tile["visited"] = true
+	tile["identity_known"] = true
+	_reveal_around(pos)
+	_threat_level = mini(100, _threat_level + 5)
+	var f_changes: Array[Dictionary] = GlobalData.apply_party_move_fatigue()
+	var sample_note: String = ""
+	if not f_changes.is_empty():
+		var parts: PackedStringArray = []
+		for ch in f_changes.slice(0, mini(3, f_changes.size())):
+			var t_id: String = str(ch.get("trauma_id", ""))
+			if t_id.is_empty():
+				parts.append("%s+%d" % [ch["name"], int(ch["cost"])])
+			else:
+				var t_name: String = str(GlobalData.get_temperament_info(t_id).get("name", t_id))
+				parts.append("%s+%d[탈진:%s]" % [ch["name"], int(ch["cost"]), t_name])
+		sample_note = " (이동 피로: %s)" % ", ".join(parts)
+
+	var vet_unlocks: Array[Dictionary] = GlobalData.record_party_service({"dungeon_steps": 1})
+	if not vet_unlocks.is_empty():
+		var v_notes: PackedStringArray = []
+		for vu in vet_unlocks:
+			v_notes.append("%s→[%s]" % [str(vu["hero_name"]), str(vu["temp_name"])])
+		sample_note += " ★습관 해금: " + ", ".join(v_notes)
+
+	_save_field_state_to_global()
+	_refresh_all_ui()
+	call_deferred("_center_camera_on_player")
+	return sample_note
+
+
+func _on_ambush_choice_engage(pos: Vector2i, encounter_type: String) -> void:
+	_close_modal()
+	if _field_tiles.has(pos):
+		_field_tiles[pos]["ambush_armed"] = false
+	_execute_field_step_to(pos)
+	_pending_combat_context = "AMBUSH"
+	_launch_offense_combat(false, false, encounter_type)
+
+
+func _on_ambush_choice_evade(tile_lbl: String) -> void:
+	_close_modal()
+	_set_status("척후 감지로 [%s] 구역의 매복을 사전에 회피했습니다." % tile_lbl)
 
 
 func _trigger_supply_tile(tile: Dictionary) -> void:
 	tile["cleared"] = true
-	var food_gain: int = randi_range(12, 20)
-	var mat_gain: int = randi_range(10, 18)
-	var gold_gain: int = randi_range(15, 28)
+	var exp_b: Dictionary = GlobalData.get_party_exploration_bonuses()
+	var sup_mult: float = float(exp_b.get("supply_bonus_mult", 1.0))
+	var gold_mult: float = float(exp_b.get("gold_bonus_mult", 1.0))
+	var food_gain: int = roundi(float(randi_range(12, 20)) * sup_mult)
+	var mat_gain: int = roundi(float(randi_range(10, 18)) * sup_mult)
+	var gold_gain: int = roundi(float(randi_range(15, 28)) * sup_mult * gold_mult)
 	GlobalData.apply_deltas({
 		"food": food_gain,
 		"materials": mat_gain,
@@ -1027,15 +1146,19 @@ func _trigger_supply_tile(tile: Dictionary) -> void:
 	})
 	_save_field_state_to_global()
 	_refresh_field_grid_ui()
+	var bonus_note: String = " [직군 보급/골드 보너스 적용]" if (sup_mult > 1.01 or gold_mult > 1.01) else ""
 	_show_info_modal(
 		"보급 지점 확보!",
-		"방치된 군수 물자를 회수했습니다.\n식량 +%d, 자재 +%d, 골드 +%d 획득!" % [food_gain, mat_gain, gold_gain]
+		"방치된 군수 물자를 회수했습니다.%s\n식량 +%d, 자재 +%d, 골드 +%d 획득!" % [bonus_note, food_gain, mat_gain, gold_gain]
 	)
 
 
 func _trigger_treasure_tile(tile: Dictionary) -> void:
 	tile["cleared"] = true
-	var gold_gain: int = randi_range(22, 48)
+	var exp_b: Dictionary = GlobalData.get_party_exploration_bonuses()
+	var sup_mult: float = float(exp_b.get("supply_bonus_mult", 1.0))
+	var gold_mult: float = float(exp_b.get("gold_bonus_mult", 1.0))
+	var gold_gain: int = roundi(float(randi_range(22, 48)) * sup_mult * gold_mult)
 	GlobalData.apply_deltas({"gold": gold_gain})
 
 	var reward_lines: PackedStringArray = ["골드 +%d" % gold_gain]
@@ -1224,7 +1347,7 @@ func _build_rogue_views() -> void:
 		var root := Control.new()
 		root.size = NODE_SIZE
 
-		var bg := ColorRect.new()
+		var bg := Panel.new()
 		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		root.add_child(bg)
@@ -1232,7 +1355,10 @@ func _build_rogue_views() -> void:
 		var btn := Button.new()
 		btn.set_anchors_preset(Control.PRESET_FULL_RECT)
 		btn.flat = true
-		btn.add_theme_font_size_override("font_size", 15)
+		btn.expand_icon = true
+		btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
+		btn.add_theme_font_size_override("font_size", 14)
 		btn.pressed.connect(_on_rogue_node_pressed.bind(n_id))
 		root.add_child(btn)
 
@@ -1308,17 +1434,17 @@ func _on_rogue_node_pressed(node_id: int) -> void:
 # ==========================================
 # 전투 연결 & 이벤트/캠프/장비 드랍 처리
 # ==========================================
-func _launch_offense_combat(is_boss: bool, is_elite: bool) -> void:
+func _launch_offense_combat(is_boss: bool, is_elite: bool, encounter_type: String = "NORMAL") -> void:
 	if not _has_deployable_hero():
 		_show_info_modal("출정 불가!", "전투에 나설 수 있는 영웅이 없습니다 (전원 탈진 또는 전투불능).\n마을로 귀환해 휴식하세요.")
 		return
 
 	if managed_externally:
-		combat_requested.emit(is_boss, _run_atk_bonus, _run_hp_bonus, is_elite)
+		combat_requested.emit(is_boss, _run_atk_bonus, _run_hp_bonus, is_elite, encounter_type)
 	else:
 		map_root.visible = false
 		offense_scene.visible = true
-		offense_scene.start_battle(is_boss, _run_atk_bonus, _run_hp_bonus, is_elite)
+		offense_scene.start_battle(is_boss, _run_atk_bonus, _run_hp_bonus, is_elite, encounter_type)
 
 
 func _on_offense_return_requested(victory: bool, is_boss: bool) -> void:
@@ -1350,10 +1476,16 @@ func on_external_combat_victory(is_boss: bool) -> void:
 					broken_note = " / 인접 바위 장벽이 무너져 비밀 통로가 열렸습니다!"
 					break
 			_set_status("적 전초기지 격파! 다음 디펜스 웨이브 약화 (스택: %d) + 반경 2칸 시야 확보%s" % [GlobalData.outpost_weakened_stacks, broken_note])
+		elif _pending_combat_context == "AMBUSH":
+			var gold_gain: int = randi_range(8, 16)
+			GlobalData.apply_deltas({"gold": gold_gain})
+			_set_status("매복 적 격파 완료! 전리품 골드 +%d을 획득했습니다." % gold_gain)
 		elif _pending_combat_context == "FIELD_BOSS":
 			if _field_tiles.has(_player_pos):
 				_field_tiles[_player_pos]["boss_defeated"] = true
 				_field_tiles[_player_pos]["cleared"] = true
+			GlobalData.record_boss_defeated()
+			GlobalData.record_dungeon_cleared()
 			GlobalData.apply_deltas({"gold": 120, "materials": 45, "food": 25})
 			var boss_drop: Dictionary = _roll_high_tier_equipment_drop()
 			var b_msg: String = "귀환 포탈을 수호하던 던전 보스를 격파했습니다!\n대량 보상: 골드 +120, 자재 +45, 식량 +25"
@@ -1367,16 +1499,12 @@ func on_external_combat_victory(is_boss: bool) -> void:
 				b_msg += "\n포션 획득: [%s] %s x1" % [str(bonus_it.get("rarity", "R")), str(bonus_it.get("name", ""))]
 			if not boss_drop.is_empty():
 				b_msg += "\n\n★ 보스 확정 고등급 장비 획득:\n[%s] %s" % [str(boss_drop.get("rarity", "SR")), str(boss_drop.get("name", ""))]
-			b_msg += "\n\n귀환 포탈이 해방되었습니다! 다음 행동을 선택하세요."
-			_show_choice_modal(
-				"★ 던전 클리어 · 보스 격파 & 포탈 해방!",
-				b_msg,
-				[
-					{"label": "바로 다음으로 진행 (마을 귀환 · 정산)", "action": _on_confirm_return_to_town},
-					{"label": "전투 후 가방/포션 정비 (계속 탐색)", "action": _on_open_bag_after_clear},
-					{"label": "남은 던전 계속 탐색", "action": _close_modal},
-				]
-			)
+
+			var rescue_hero: Dictionary = _roll_field_boss_story_hero()
+			if not rescue_hero.is_empty():
+				_show_story_hero_rescue_modal(rescue_hero, b_msg)
+			else:
+				_show_field_boss_clear_modal(b_msg)
 			_set_status("보스 격파! 귀환 포탈이 해방되었습니다.")
 		else:
 			_set_status("전투 승리! 다음 타일로 이동하세요.")
@@ -1391,6 +1519,8 @@ func on_external_combat_victory(is_boss: bool) -> void:
 
 	if is_boss or _pending_combat_context == "ROGUE_BOSS":
 		_pending_combat_context = ""
+		GlobalData.record_boss_defeated()
+		GlobalData.record_dungeon_cleared()
 		var drop_tpl: Dictionary = _roll_equipment_drop(_active_mini_dungeon.get("drop_equipment_ids", []))
 		if _field_tiles.has(_active_portal_pos):
 			_field_tiles[_active_portal_pos]["cleared"] = true
@@ -1428,6 +1558,101 @@ func on_external_combat_victory(is_boss: bool) -> void:
 	_pending_combat_context = ""
 	_set_status("전투 승리! 다음 분기 노드를 선택하세요.")
 	_refresh_all_ui()
+
+
+func _roll_field_boss_story_hero() -> Dictionary:
+	var unowned: Array[Dictionary] = GlobalData.get_unowned_story_heroes()
+	if unowned.is_empty():
+		return {}
+
+	var stage: int = TimeManager.get_event_stage()
+	var is_first_boss: bool = int(GlobalData.run_stats.get("bosses_defeated", 0)) <= 1
+	var trigger_chance: float = 1.0 if is_first_boss else (0.50 + float(stage) * 0.08)
+	if randf() > trigger_chance:
+		return {}
+
+	var preferred_ids: Array[String] = []
+	if stage <= 2:
+		preferred_ids = ["hero_named_seraphina", "hero_named_leon", "hero_named_moros"]
+	elif stage <= 4:
+		preferred_ids = ["hero_named_leon", "hero_named_seraphina", "hero_named_moros"]
+	else:
+		preferred_ids = ["hero_named_moros", "hero_named_leon", "hero_named_seraphina"]
+
+	for pid in preferred_ids:
+		for h in unowned:
+			if str(h.get("id", "")) == pid:
+				return h
+	return unowned[randi() % unowned.size()]
+
+
+func _show_story_hero_rescue_modal(hero_tpl: Dictionary, boss_msg: String) -> void:
+	var h_name: String = str(hero_tpl.get("name", "네임드 영웅"))
+	var h_rarity: String = DataManager.normalize_rarity(hero_tpl.get("rarity", "SR"))
+	var h_title: String = str(hero_tpl.get("named_title", ""))
+	var h_job: String = str(hero_tpl.get("job_class", ""))
+	var h_elem: String = DataManager.get_element_name(str(hero_tpl.get("element", "")))
+	var h_lore: String = str(hero_tpl.get("lore", ""))
+	var title_part: String = " «%s»" % h_title if not h_title.is_empty() else ""
+
+	var rescue_desc: String = (
+		"%s\n\n"
+		+ "━━━━━━━━━━━━━━━━━━━━━━\n"
+		+ "★ [구출 이벤트] 던전 보스에게 붙잡혀 있던 스토리 네임드 영웅을 발견했습니다!\n\n"
+		+ "[%s] %s%s (%s · %s)\n%s"
+	) % [boss_msg, h_rarity, h_name, title_part, h_job, h_elem, h_lore]
+
+	_show_choice_modal(
+		"★ 스토리 영웅 구출 · %s 합류!" % h_name,
+		rescue_desc,
+		[
+			{
+				"label": "★ [%s] %s을(를) 동료로 영입한다" % [h_rarity, h_name],
+				"action": _on_story_hero_rescue_accepted.bind(hero_tpl, boss_msg),
+			},
+			{
+				"label": "안전하게 호송만 돕고 지원 물자를 받는다 (골드 +60, 사기 +6)",
+				"action": _on_story_hero_rescue_declined.bind(h_name, boss_msg),
+			},
+		]
+	)
+
+
+func _on_story_hero_rescue_accepted(hero_tpl: Dictionary, boss_msg: String) -> void:
+	var recruited: Dictionary = GlobalData.recruit_hero(hero_tpl)
+	GlobalData.record_event_resolved()
+	var h_name: String = str(hero_tpl.get("name", "영웅"))
+	var join_note: String = ""
+	if not recruited.is_empty():
+		join_note = "\n\n★ [%s] %s이(가) 아군 로스터에 정식으로 합류했습니다!" % [
+			DataManager.normalize_rarity(hero_tpl.get("rarity", "SR")),
+			h_name,
+		]
+		_set_status("스토리 네임드 영웅 [%s] 구출 및 합류 완료!" % h_name)
+	else:
+		GlobalData.apply_deltas({"gold": 60, "materials": 25})
+		join_note = "\n\n★ [%s] 이미 보유 중 → 대체 보상: 골드 +60, 자재 +25" % h_name
+	_show_field_boss_clear_modal(boss_msg + join_note)
+
+
+func _on_story_hero_rescue_declined(h_name: String, boss_msg: String) -> void:
+	GlobalData.apply_deltas({"gold": 60, "morale": 6})
+	GlobalData.record_event_resolved()
+	var note: String = "\n\n%s의 무사 귀환을 호송하고 감사의 보답을 받았습니다. (골드 +60, 시민 사기 +6)" % h_name
+	_show_field_boss_clear_modal(boss_msg + note)
+
+
+func _show_field_boss_clear_modal(b_msg: String) -> void:
+	var full_msg: String = b_msg + "\n\n귀환 포탈이 해방되었습니다! 다음 행동을 선택하세요."
+	_show_choice_modal(
+		"★ 던전 클리어 · 보스 격파 & 포탈 해방!",
+		full_msg,
+		[
+			{"label": "바로 다음으로 진행 (마을 귀환 · 정산)", "action": _on_confirm_return_to_town},
+			{"label": "전투 후 가방/포션 정비 (계속 탐색)", "action": _on_open_bag_after_clear},
+			{"label": "남은 던전 계속 탐색", "action": _close_modal},
+		]
+	)
 
 
 func _roll_equipment_drop(drop_ids: Array) -> Dictionary:
@@ -1557,6 +1782,7 @@ func _apply_event_choice_effects(ch: Dictionary) -> void:
 	if _mode == ExploreMode.MINI_ROGUE and not _rogue_cleared_ids.has(_rogue_current_id):
 		_rogue_cleared_ids.append(_rogue_current_id)
 
+	GlobalData.record_event_resolved()
 	_close_modal()
 	var raw_res: String = str(ch.get("result_text", "")).strip_edges()
 	var auto_summary: String = _format_delta_dict(rewards)
@@ -1570,17 +1796,23 @@ func _apply_event_choice_effects(ch: Dictionary) -> void:
 func _trigger_camp_modal() -> void:
 	var camp_cost := {"food": 12}
 	var can_cook: bool = GlobalData.can_afford(camp_cost)
+	var exp_b: Dictionary = GlobalData.get_party_exploration_bonuses()
+	var camp_mult: float = float(exp_b.get("camp_bonus_mult", 1.0))
+	var fat_food: int = roundi(35.0 * camp_mult)
+	var hp_food: int = roundi(20.0 * camp_mult)
+	var fat_free: int = roundi(15.0 * camp_mult)
+	var bonus_tag: String = " [야영특성+50%!]" if camp_mult > 1.01 else ""
 	_show_choice_modal(
 		"던전 야영지 (CAMP)",
-		"잠시 안전을 확보하고 파티의 피로와 체력을 회복할 수 있습니다.",
+		"잠시 안전을 확보하고 파티의 피로와 체력을 회복할 수 있습니다." + bonus_tag,
 		[
 			{
-				"label": "식량 12 소비 → 파티 전원 피로도 -35 & HP +20 회복",
+				"label": "식량 12 소비 → 파티 전원 피로도 -%d & HP +%d 회복" % [fat_food, hp_food],
 				"disabled": not can_cook,
 				"action": _on_camp_rest_food.bind(camp_cost),
 			},
 			{
-				"label": "간단한 휴식 (식량 미소비) → 파티 피로도 -15",
+				"label": "간단한 휴식 (식량 미소비) → 파티 피로도 -%d" % fat_free,
 				"disabled": false,
 				"action": _on_camp_rest_free,
 			},
@@ -1591,31 +1823,39 @@ func _trigger_camp_modal() -> void:
 func _on_camp_rest_food(camp_cost: Dictionary) -> void:
 	if not GlobalData.spend_resources(camp_cost):
 		return
-	GlobalData.recover_all_roster_fatigue(35)
+	var camp_mult: float = float(GlobalData.get_party_exploration_bonuses().get("camp_bonus_mult", 1.0))
+	var fat_rec: int = roundi(35.0 * camp_mult)
+	var hp_rec: int = roundi(20.0 * camp_mult)
+	GlobalData.recover_all_roster_fatigue(fat_rec)
 	for h in GlobalData.hero_roster:
 		var uid: int = int(h.get("uid", -1))
 		if uid > 0 and int(h.get("hp", 0)) > 0:
 			var max_hp: int = roundi(GlobalData.get_effective_stat(h, "max_hp"))
-			GlobalData.set_hero_hp(uid, mini(max_hp, int(h.get("hp", 0)) + 20))
+			GlobalData.set_hero_hp(uid, mini(max_hp, int(h.get("hp", 0)) + hp_rec))
 	if not _rogue_cleared_ids.has(_rogue_current_id):
 		_rogue_cleared_ids.append(_rogue_current_id)
 	_close_modal()
-	_show_info_modal("야영 휴식 완료", "따뜻한 식사와 휴식으로 파티 피로도가 35 감소하고 체력이 회복되었습니다!")
+	_show_info_modal("야영 휴식 완료", "따뜻한 식사와 휴식으로 파티 피로도가 %d 감소하고 체력이 +%d 회복되었습니다!" % [fat_rec, hp_rec])
 
 
 func _on_camp_rest_free() -> void:
-	GlobalData.recover_all_roster_fatigue(15)
+	var camp_mult: float = float(GlobalData.get_party_exploration_bonuses().get("camp_bonus_mult", 1.0))
+	var fat_rec: int = roundi(15.0 * camp_mult)
+	GlobalData.recover_all_roster_fatigue(fat_rec)
 	if not _rogue_cleared_ids.has(_rogue_current_id):
 		_rogue_cleared_ids.append(_rogue_current_id)
 	_close_modal()
-	_show_info_modal("간단한 휴식 완료", "잠시 숨을 고르며 파티 피로도가 15 감소했습니다.")
+	_show_info_modal("간단한 휴식 완료", "잠시 숨을 고르며 파티 피로도가 %d 감소했습니다." % fat_rec)
 
 
 func _trigger_treasure_modal() -> void:
 	if not _rogue_cleared_ids.has(_rogue_current_id):
 		_rogue_cleared_ids.append(_rogue_current_id)
-	var gold_gain: int = randi_range(30, 55)
-	var mat_gain: int = randi_range(12, 22)
+	var exp_b: Dictionary = GlobalData.get_party_exploration_bonuses()
+	var sup_mult: float = float(exp_b.get("supply_bonus_mult", 1.0))
+	var gold_mult: float = float(exp_b.get("gold_bonus_mult", 1.0))
+	var gold_gain: int = roundi(float(randi_range(30, 55)) * sup_mult * gold_mult)
+	var mat_gain: int = roundi(float(randi_range(12, 22)) * sup_mult)
 	GlobalData.apply_deltas({"gold": gold_gain, "materials": mat_gain})
 	var drop_tpl: Dictionary = _roll_equipment_drop(_active_mini_dungeon.get("drop_equipment_ids", []))
 	var msg: String = "미니 던전의 보물 상자를 열었습니다!\n골드 +%d, 자재 +%d 획득!" % [gold_gain, mat_gain]
@@ -1701,14 +1941,17 @@ func _refresh_all_ui() -> void:
 
 
 func _refresh_header_labels() -> void:
+	var exp_bonus: Dictionary = GlobalData.get_party_exploration_bonuses()
 	if _mode == ExploreMode.FIELD_GRID:
 		title_label.text = str(_active_field_dungeon.get("name", "외곽 황무지 경계선"))
-		mode_badge_label.text = "[%s · %dx%d · %s 진입 | %d번 파티]" % [
-			LAYOUT_STYLE_LABELS.get(_layout_style, "외곽 미궁"),
-			_grid_width,
-			_grid_height,
+		var sense_str: String = " · 매복감지" if bool(exp_bonus.get("danger_sense", false)) else ""
+		var dbg_str: String = " · [디버그 전체시야 ON]" if _debug_reveal_all else ""
+		mode_badge_label.text = "[외곽 미궁 · %s 진입 | %d번 파티 | 시야 %d칸%s%s]" % [
 			ENTRY_DIR_LABELS.get(_entry_direction, _entry_direction),
 			GlobalData.selected_party_index + 1,
+			int(exp_bonus.get("vision_radius", 1)),
+			sense_str,
+			dbg_str,
 		]
 		mode_badge_label.modulate = Color(0.55, 0.90, 1.0)
 	else:
@@ -1729,7 +1972,56 @@ func _refresh_header_labels() -> void:
 	]
 
 
+func _get_field_tile_icon_key(t_type: FieldTileType, boss_done: bool, is_player: bool) -> String:
+	if is_player:
+		return "tile_player"
+	match t_type:
+		FieldTileType.WALL:
+			return "tile_wall"
+		FieldTileType.OUTPOST:
+			return "tile_outpost"
+		FieldTileType.SUPPLY:
+			return "tile_supply"
+		FieldTileType.TREASURE:
+			return "tile_treasure"
+		FieldTileType.EVENT:
+			return "tile_event"
+		FieldTileType.MINI_DUNGEON_PORTAL:
+			return "tile_portal"
+		FieldTileType.BOSS:
+			return "tile_boss"
+		FieldTileType.EXIT:
+			return "tile_exit" if boss_done else "tile_boss"
+		_:
+			return ""
+
+
+func _apply_field_tile_style(btn: Button, fill_col: Color, border_col: Color, border_w: int = 1) -> void:
+	var sb := AssetManager.make_panel_style(fill_col, border_col, 6, border_w, 3)
+	btn.add_theme_stylebox_override("normal", sb)
+	btn.add_theme_stylebox_override("disabled", sb)
+	var hov := AssetManager.make_panel_style(fill_col.lightened(0.10), AssetManager.COL_BORDER_GOLD, 6, maxi(2, border_w), 3)
+	btn.add_theme_stylebox_override("hover", hov)
+	btn.add_theme_stylebox_override("pressed", sb)
+	btn.modulate = Color.WHITE
+
+
+func _apply_void_tile_style(btn: Button) -> void:
+	btn.text = ""
+	btn.icon = null
+	btn.add_theme_stylebox_override("normal", _void_tile_style)
+	btn.add_theme_stylebox_override("disabled", _void_tile_style)
+	btn.add_theme_stylebox_override("hover", _void_tile_style)
+	btn.add_theme_stylebox_override("pressed", _void_tile_style)
+	btn.add_theme_stylebox_override("focus", _void_tile_style)
+	btn.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	btn.disabled = true
+	btn.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+
 func _refresh_field_grid_ui() -> void:
+	var exp_bonus: Dictionary = GlobalData.get_party_exploration_bonuses()
+	var danger_sense: bool = bool(exp_bonus.get("danger_sense", false))
 	for pos in _field_tiles:
 		var tile: Dictionary = _field_tiles[pos]
 		var btn: Button = _field_buttons.get(pos)
@@ -1741,36 +2033,105 @@ func _refresh_field_grid_ui() -> void:
 		var is_cleared: bool = bool(tile["cleared"])
 		var t_type: FieldTileType = tile["type"]
 
-		if not is_revealed:
-			btn.text = "???\n(안개)"
-			btn.modulate = COLOR_FOG
-			btn.disabled = true
+		# 1) WALL 타일: 회색 장벽 버튼 대신 빈 공간(투명 공백 슬롯)으로 숨겨 던전 방과 통로 윤곽만 드러냄
+		if t_type == FieldTileType.WALL:
+			_apply_void_tile_style(btn)
 			continue
 
+		# 2) 미탐사(안개) 타일: 관측 반경 밖 미탐사 영역은 빈 배경(어둠/미지 공간)으로 완전히 숨김
+		if not is_revealed and not _debug_reveal_all:
+			_apply_void_tile_style(btn)
+			continue
+
+		btn.mouse_filter = Control.MOUSE_FILTER_PASS
+		var boss_done: bool = bool(tile.get("boss_defeated", false))
 		var type_label: String = FIELD_TILE_LABELS.get(t_type, "타일")
 		var tile_color: Color = FIELD_TILE_COLORS.get(t_type, Color.GRAY)
 		if t_type == FieldTileType.EXIT:
-			var boss_done: bool = bool(tile.get("boss_defeated", false))
-			type_label = "귀환 포탈(해방)" if boss_done else "★보스·귀환포탈"
+			type_label = "귀환 포탈" if boss_done else "★보스·포탈"
 			tile_color = FIELD_TILE_COLORS[FieldTileType.EXIT] if boss_done else FIELD_TILE_COLORS[FieldTileType.BOSS]
-		if t_type == FieldTileType.WALL:
-			btn.text = "■ %s\n(통행불가)" % type_label
-			btn.modulate = FIELD_TILE_COLORS[FieldTileType.WALL]
-			btn.disabled = true
+
+		var is_blind_unknown: bool = (
+			not _debug_reveal_all
+			and not is_player
+			and not is_cleared
+			and BLIND_SPECIAL_TYPES.has(int(t_type))
+			and not bool(tile.get("identity_known", true))
+		)
+		if is_blind_unknown:
+			btn.icon = AssetManager.get_tile_icon("tile_event")
+			btn.text = "? 미확인 구역\n▶ 탐색" if dist == 1 else "? 미확인 구역\n(미식별)"
+			var blind_fill := Color(0.28, 0.25, 0.42, 0.96) if dist == 1 else Color(0.20, 0.19, 0.30, 0.90)
+			var blind_bord := AssetManager.COL_BORDER_GOLD if dist == 1 else Color(0.38, 0.36, 0.54, 0.85)
+			_apply_field_tile_style(btn, blind_fill, blind_bord, 2 if dist == 1 else 1)
+			btn.disabled = (dist != 1) or _awaiting_modal
 			continue
+
+		var icon_key: String = _get_field_tile_icon_key(t_type, boss_done, is_player)
+		btn.icon = AssetManager.get_tile_icon(icon_key) if not icon_key.is_empty() else null
+		var ambush_sensed: bool = (is_cleared and danger_sense and bool(tile.get("ambush_armed", false)) and not is_player)
+
 		if is_player:
 			btn.text = "★ 현재 위치\n[%s]" % type_label
-			btn.modulate = COLOR_PLAYER_TILE
+			_apply_field_tile_style(btn, COLOR_PLAYER_TILE.darkened(0.18), Color(0.45, 0.92, 1.0, 1.0), 2)
 			btn.disabled = _awaiting_modal or (t_type != FieldTileType.MINI_DUNGEON_PORTAL and t_type != FieldTileType.EXIT)
 		elif dist == 1:
-			var status_tag: String = "(정리됨)" if is_cleared else ("▶ 보스전" if t_type == FieldTileType.EXIT else "▶ 이동")
+			var status_tag: String = "⚠ 매복 감지!" if ambush_sensed else ("(정리됨)" if is_cleared else ("▶ 보스전" if t_type == FieldTileType.EXIT else "▶ 이동"))
 			btn.text = "%s\n%s" % [type_label, status_tag]
-			btn.modulate = COLOR_CLEARED_TILE if is_cleared else tile_color
+			var fill_adj: Color = Color(0.42, 0.24, 0.18, 0.95) if ambush_sensed else (COLOR_CLEARED_TILE if is_cleared else tile_color.darkened(0.22))
+			var bord_adj: Color = Color(1.0, 0.55, 0.25, 1.0) if ambush_sensed else (Color(0.32, 0.42, 0.36) if is_cleared else AssetManager.COL_BORDER_GOLD)
+			_apply_field_tile_style(btn, fill_adj, bord_adj, 2 if (not is_cleared or ambush_sensed) else 1)
 			btn.disabled = _awaiting_modal
 		else:
-			btn.text = "%s\n%s" % [type_label, "(완료)" if is_cleared else "(탐사 가능)"]
-			btn.modulate = COLOR_CLEARED_TILE if is_cleared else tile_color.darkened(0.25)
+			var far_tag: String = "⚠ 매복 감지" if ambush_sensed else ("(완료)" if is_cleared else "(식별됨)")
+			btn.text = "%s\n%s" % [type_label, far_tag]
+			var fill_far: Color = Color(0.36, 0.20, 0.16, 0.90) if ambush_sensed else (COLOR_CLEARED_TILE if is_cleared else tile_color.darkened(0.38))
+			var bord_far: Color = Color(0.95, 0.50, 0.22, 0.85) if ambush_sensed else Color(0.24, 0.28, 0.36, 0.8)
+			_apply_field_tile_style(btn, fill_far, bord_far, 1)
 			btn.disabled = true
+
+		if _debug_reveal_all and not is_revealed:
+			btn.modulate = Color(0.68, 0.78, 0.95, 0.72)
+
+
+## 디버그 치트용: 현재 던전 형태/시야/매복 상태 반환
+func get_debug_map_info() -> Dictionary:
+	var exp_bonus: Dictionary = GlobalData.get_party_exploration_bonuses()
+	var armed_count: int = 0
+	var blind_count: int = 0
+	var revealed_count: int = 0
+	for pos in _field_tiles:
+		var t: Dictionary = _field_tiles[pos]
+		if int(t.get("type", 0)) == FieldTileType.WALL:
+			continue
+		if bool(t.get("revealed", false)):
+			revealed_count += 1
+		if bool(t.get("ambush_armed", false)):
+			armed_count += 1
+		if BLIND_SPECIAL_TYPES.has(int(t.get("type", 0))) and not bool(t.get("identity_known", true)):
+			blind_count += 1
+	return {
+		"layout_style": int(_layout_style),
+		"layout_label": str(LAYOUT_STYLE_LABELS.get(_layout_style, "알 수 없음")),
+		"entry_direction": _entry_direction,
+		"entry_label": str(ENTRY_DIR_LABELS.get(_entry_direction, _entry_direction)),
+		"grid_size": "%dx%d" % [_grid_width, _grid_height],
+		"vision_radius": int(exp_bonus.get("vision_radius", 1)),
+		"vision_bonus": int(exp_bonus.get("vision_bonus", 0)),
+		"danger_sense": bool(exp_bonus.get("danger_sense", false)),
+		"sources": exp_bonus.get("sources", PackedStringArray()),
+		"debug_reveal_all": _debug_reveal_all,
+		"revealed_count": revealed_count,
+		"armed_ambush_count": armed_count,
+		"blind_unknown_count": blind_count,
+	}
+
+
+## 디버그 치트용: 전체 안개(미탐사) 일시 해제 토글
+func toggle_debug_reveal_all() -> bool:
+	_debug_reveal_all = not _debug_reveal_all
+	_refresh_all_ui()
+	return _debug_reveal_all
 
 
 func _refresh_rogue_ui() -> void:
@@ -1798,28 +2159,46 @@ func _refresh_rogue_ui() -> void:
 		if not _rogue_node_views.has(n_id):
 			continue
 		var view: Dictionary = _rogue_node_views[n_id]
-		var bg: ColorRect = view["bg"]
+		var bg: Panel = view["bg"]
 		var btn: Button = view["button"]
-		var room_name: String = ROGUE_ROOM_NAMES.get(node["type"], "노드")
+		var r_type: RogueRoomType = node["type"]
+		var room_name: String = ROGUE_ROOM_NAMES.get(r_type, "노드")
+
+		var room_icon_key := ""
+		match r_type:
+			RogueRoomType.BATTLE, RogueRoomType.ELITE:
+				room_icon_key = "tile_outpost"
+			RogueRoomType.MYSTERY:
+				room_icon_key = "tile_event"
+			RogueRoomType.CAMP:
+				room_icon_key = "tile_supply"
+			RogueRoomType.TREASURE:
+				room_icon_key = "tile_treasure"
+			RogueRoomType.BOSS:
+				room_icon_key = "tile_boss"
+			_:
+				room_icon_key = "tile_portal"
+		btn.icon = AssetManager.get_tile_icon(room_icon_key)
 
 		var is_current: bool = (n_id == _rogue_current_id)
 		var is_cleared: bool = _rogue_cleared_ids.has(n_id)
 		var is_reachable: bool = reachable_ids.has(n_id) and not _awaiting_modal
 
 		if is_current:
-			bg.color = COLOR_NODE_CURRENT
+			bg.add_theme_stylebox_override("panel", AssetManager.make_panel_style(COLOR_NODE_CURRENT.darkened(0.2), Color(0.45, 0.92, 1.0, 1.0), 10, 2, 0))
 			btn.text = "%s\n[현재 위치]" % room_name
 			btn.disabled = true
 		elif is_reachable:
-			bg.color = ROGUE_ROOM_COLORS.get(node["type"], Color.GRAY)
+			var rc: Color = ROGUE_ROOM_COLORS.get(r_type, Color.GRAY)
+			bg.add_theme_stylebox_override("panel", AssetManager.make_panel_style(rc.darkened(0.2), AssetManager.COL_BORDER_GOLD, 10, 2, 0))
 			btn.text = "%s\n▶ [진입 가능]" % room_name
 			btn.disabled = false
 		elif is_cleared:
-			bg.color = COLOR_NODE_CLEARED
+			bg.add_theme_stylebox_override("panel", AssetManager.make_panel_style(COLOR_NODE_CLEARED, Color(0.32, 0.45, 0.36), 10, 1, 0))
 			btn.text = "%s\n[완료]" % room_name
 			btn.disabled = true
 		else:
-			bg.color = COLOR_NODE_LOCKED
+			bg.add_theme_stylebox_override("panel", AssetManager.make_panel_style(COLOR_NODE_LOCKED, AssetManager.COL_BORDER, 10, 1, 0))
 			btn.text = "%s\n[미개방]" % room_name
 			btn.disabled = true
 
@@ -1832,18 +2211,27 @@ func _refresh_party_hud() -> void:
 
 	for hero in GlobalData.get_active_party_heroes():
 		var card := PanelContainer.new()
-		card.custom_minimum_size = Vector2(246, 86)
+		card.custom_minimum_size = Vector2(276, 86)
 
 		var margin := MarginContainer.new()
 		margin.add_theme_constant_override("margin_left", 8)
 		margin.add_theme_constant_override("margin_right", 8)
-		margin.add_theme_constant_override("margin_top", 4)
-		margin.add_theme_constant_override("margin_bottom", 4)
+		margin.add_theme_constant_override("margin_top", 6)
+		margin.add_theme_constant_override("margin_bottom", 6)
 		card.add_child(margin)
 
+		var hb := HBoxContainer.new()
+		hb.add_theme_constant_override("separation", 8)
+		margin.add_child(hb)
+
+		var portrait := AssetManager.create_hero_portrait(hero, Vector2(52, 52))
+		portrait.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		hb.add_child(portrait)
+
 		var vb := VBoxContainer.new()
+		vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		vb.add_theme_constant_override("separation", 3)
-		margin.add_child(vb)
+		hb.add_child(vb)
 
 		var hp: int = int(hero.get("hp", 0))
 		var max_hp: int = maxi(1, roundi(GlobalData.get_effective_stat(hero, "max_hp")))

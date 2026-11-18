@@ -631,6 +631,37 @@ size_flags_horizontal = 3
 min_value = -10.0
 max_value = 10.0
 
+[node name="OptARewardsRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeroLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptARewardsRow"]
+layout_mode = 2
+text = "A 영웅 영입"
+
+[node name="OptAHeroOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptARewardsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EquipLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptARewardsRow"]
+layout_mode = 2
+text = "A 장비 지급"
+
+[node name="OptAEquipOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptARewardsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ItemLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptARewardsRow"]
+layout_mode = 2
+text = "A 아이템 지급"
+
+[node name="OptAItemOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptARewardsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="HSeparatorB" type="HSeparator" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox" unique_id=803448870]
 layout_mode = 2
 
@@ -707,6 +738,37 @@ layout_mode = 2
 size_flags_horizontal = 3
 min_value = -10.0
 max_value = 10.0
+
+[node name="OptBRewardsRow" type="HBoxContainer" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeroLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBRewardsRow"]
+layout_mode = 2
+text = "B 영웅 영입"
+
+[node name="OptBHeroOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBRewardsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EquipLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBRewardsRow"]
+layout_mode = 2
+text = "B 장비 지급"
+
+[node name="OptBEquipOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBRewardsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ItemLbl" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBRewardsRow"]
+layout_mode = 2
+text = "B 아이템 지급"
+
+[node name="OptBItemOption" type="OptionButton" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox/EventFormScroll/EventFormVBox/OptBRewardsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="EventStatusLabel" type="Label" parent="MarginContainer/RootVBox/TabContainer/2. 정책 이벤트 편집기/EventRightVBox" unique_id=1196561636]
 unique_name_in_owner = true

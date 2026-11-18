@@ -12,6 +12,7 @@ grow_vertical = 2
 script = ExtResource("1_offense")
 
 [node name="BgColorRect" type="ColorRect" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -75,6 +76,12 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 18
 text = "3x3 던전 오펜스 전투 (OFFENSE)"
+
+[node name="ElementChartButton" type="Button" parent="MarginContainer/MainVBox/HeaderBox/HeaderMargin/HeaderVBox/TopTitleHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "속성 상성표"
 
 [node name="AutoBattleButton" type="Button" parent="MarginContainer/MainVBox/HeaderBox/HeaderMargin/HeaderVBox/TopTitleHBox"]
 unique_name_in_owner = true

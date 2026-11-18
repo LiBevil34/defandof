@@ -5,14 +5,20 @@ const BUFF_TYPES: PackedStringArray = [
 	"BUFF_ATK",
 	"BUFF_DEF",
 	"BUFF_SPEED",
+	"BUFF_SPEED_FLAT",
 	"BUFF_DMG_BONUS",
 	"BUFF_CRIT_RATE",
 	"BUFF_CRIT_DMG",
 	"BUFF_ARMOR_PEN",
 	"BUFF_FINAL_DMG",
+	"DMG_REDUCE",
+	"VANGUARD_INIT_SPD",
+	"KILL_SPD_BOOST",
 	"SHIELD",
 	"REFLECT",
 	"EXPLODE_ON_DEATH",
+	"VISION_UP",
+	"DANGER_SENSE",
 ]
 
 const DEBUFF_TYPES: PackedStringArray = [
@@ -46,6 +52,12 @@ const EFFECT_LABELS: Dictionary = {
 	"PULL_FRONT": "강제 견인(끌어당김)",
 	"SWAP_POS": "진형 교체(스왑)",
 	"SHUFFLE_POS": "진형 교란(무작위 섞기)",
+	"BUFF_SPEED_FLAT": "기습/매복 속도 보너스(+SPD)",
+	"VANGUARD_INIT_SPD": "선봉 기동(+SPD)",
+	"KILL_SPD_BOOST": "근위 처치 가속(+SPD)",
+	"DMG_REDUCE": "보호 가호(피해 감소)",
+	"VISION_UP": "탐색 시야 반경 증가(+칸)",
+	"DANGER_SENSE": "매복/위험 사전 감지",
 }
 
 
@@ -94,15 +106,18 @@ func get_effective_stat(unit: Dictionary, stat_name: String) -> float:
 			return maxf(0.0, base_def * maxf(0.0, 1.0 + def_pct))
 		"speed":
 			var base_spd: float = float(unit.get("speed", 10)) + float(passives.get("speed", 0.0)) + float(ranks.get("speed", 0.0))
+			var spd_flat: float = 0.0
 			var spd_pct: float = 0.0
 			for eff in effects:
 				var eid: String = str(eff.get("id", ""))
-				if eid == "BUFF_SPEED":
+				if eid == "BUFF_SPEED_FLAT" or eid == "VANGUARD_INIT_SPD" or eid == "KILL_SPD_BOOST":
+					spd_flat += float(eff.get("value", 0.0))
+				elif eid == "BUFF_SPEED":
 					spd_pct += float(eff.get("value", 0.0))
 				elif eid == "SLOW":
 					spd_pct -= float(eff.get("value", 0.0))
 			var tired_spd_mult: float = 0.85 if bool(unit.get("is_tired", false)) else 1.0
-			return maxf(1.0, base_spd * maxf(0.15, 1.0 + spd_pct) * tired_spd_mult)
+			return maxf(1.0, (base_spd + spd_flat) * maxf(0.15, 1.0 + spd_pct) * tired_spd_mult)
 		"dmg_bonus":
 			var total_bonus: float = float(unit.get("dmg_bonus", 0.0)) + float(passives.get("dmg_bonus", 0.0)) + float(ranks.get("dmg_bonus", 0.0))
 			for eff in effects:
@@ -123,6 +138,8 @@ func get_effective_stat(unit: Dictionary, stat_name: String) -> float:
 			return maxf(1.0, total_cdmg)
 		"armor_pen":
 			var total_pen: float = float(unit.get("armor_pen", 0.0)) + float(passives.get("armor_pen", 0.0))
+			if str(unit.get("class_group", "")) == "근위":
+				total_pen += 0.10
 			for eff in effects:
 				if str(eff.get("id", "")) == "BUFF_ARMOR_PEN":
 					total_pen += float(eff.get("value", 0.0))
@@ -135,6 +152,25 @@ func get_effective_stat(unit: Dictionary, stat_name: String) -> float:
 			return maxf(0.1, total_mult)
 		_:
 			return float(unit.get(stat_name, 0.0))
+
+
+## 피격 시 받는 피해 배율(중장 전열 -10%, 의료 보호 가호 -10%, 방패기사 등) 계산
+func get_damage_taken_multiplier(unit: Dictionary) -> float:
+	if unit.is_empty():
+		return 1.0
+	var reduce_sum: float = 0.0
+	for eff in unit.get("status_effects", []):
+		if str(eff.get("id", "")) == "DMG_REDUCE" and float(eff.get("duration", 0.0)) > 0.0:
+			reduce_sum += float(eff.get("value", 0.0))
+	var cg: String = str(unit.get("class_group", ""))
+	var is_front_or_outside: bool = (unit.has("rank") and int(unit.get("rank", -1)) == 0) or (unit.has("zone") and int(unit.get("zone", -1)) == 1)
+	if cg == "중장" and is_front_or_outside:
+		reduce_sum += 0.10
+	if str(unit.get("sub_trait", "")) == "WALL_GUARD" and is_front_or_outside:
+		reduce_sum += 0.08
+	if str(unit.get("archetype", "")) == "PHALANX":
+		reduce_sum += 0.12
+	return maxf(0.25, 1.0 - reduce_sum)
 
 
 func is_stunned(unit: Dictionary) -> bool:
@@ -184,6 +220,9 @@ func apply_effect(
 	var effects: Array = target["status_effects"]
 
 	var dur: float = maxf(1.0, duration)
+	if duration > 0.0 and duration < 50.0 and not caster.is_empty():
+		if str(caster.get("class_group", "")) == "보조" and (is_buff(effect_id) or is_debuff(effect_id)):
+			dur += maxf(1.0, float(caster.get("_duration_ext", 1.0)))
 	var tick_dmg: int = 0
 	var shield_gain: int = 0
 

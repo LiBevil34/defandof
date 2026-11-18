@@ -43,6 +43,7 @@ const COLOR_HP_BG := Color(0.08, 0.08, 0.10, 1.0)
 const COLOR_HP_ALLY := Color(0.25, 0.82, 0.45, 1.0)
 const COLOR_HP_ENEMY := Color(0.92, 0.32, 0.28, 1.0)
 
+@onready var bg_color_rect: ColorRect = %BgColorRect
 @onready var round_label: Label = %RoundLabel
 @onready var turn_queue_label: Label = %TurnQueueLabel
 @onready var frontline_status_label: Label = %FrontlineStatusLabel
@@ -53,6 +54,7 @@ const COLOR_HP_ENEMY := Color(0.92, 0.32, 0.28, 1.0)
 @onready var skill2_action_button: Button = %Skill2ActionButton
 @onready var ultimate_action_button: Button = %UltimateActionButton
 @onready var auto_battle_button: Button = %AutoBattleButton
+@onready var element_chart_button: Button = %ElementChartButton
 @onready var speed_button: Button = %SpeedButton
 @onready var item_action_button: Button = %ItemActionButton
 @onready var item_overlay: ColorRect = %ItemOverlay
@@ -85,6 +87,7 @@ var _is_busy: bool = false
 var _next_unit_id: int = 1
 var _is_boss_battle: bool = false
 var _is_elite_battle: bool = false
+var _encounter_type: String = "NORMAL"
 var _last_victory: bool = false
 var _atk_bonus: int = 0
 var _hp_bonus: int = 0
@@ -94,9 +97,12 @@ var _item_targeting_mode: bool = false
 var _pending_item_id: String = ""
 var _prep_target_hero_uid: int = -1
 var _auto_turn_seq: int = 0
+var _floating_layer: Control = null
+var _element_chart_overlay: ColorRect = null
 
 
 func _ready() -> void:
+	AssetManager.apply_backdrop(bg_color_rect, "offense_bg", Color(0.10, 0.11, 0.17), Color(0.05, 0.05, 0.08), 0.04)
 	skill_action_button.pressed.connect(_on_skill_slot_pressed.bind("active1"))
 	skill2_action_button.pressed.connect(_on_skill_slot_pressed.bind("active2"))
 	ultimate_action_button.pressed.connect(_on_skill_slot_pressed.bind("ultimate"))
@@ -113,6 +119,17 @@ func _ready() -> void:
 
 	_build_grid_ui(Team.ALLY, ally_grid)
 	_build_grid_ui(Team.ENEMY, enemy_grid)
+
+	_floating_layer = Control.new()
+	_floating_layer.name = "FloatingTextLayer"
+	_floating_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_floating_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_floating_layer.z_index = 60
+	add_child(_floating_layer)
+
+	_element_chart_overlay = CombatFeedbackUI.create_element_chart_overlay(self)
+	element_chart_button.pressed.connect(_element_chart_overlay.show)
+
 	_sync_battle_control_buttons()
 
 	if not embedded_in_map:
@@ -187,10 +204,10 @@ func _build_grid_ui(team: Team, grid_container: GridContainer) -> void:
 			var slot_root := Control.new()
 			slot_root.custom_minimum_size = Vector2(228, 152)
 
-			var bg_rect := ColorRect.new()
+			var bg_rect := Panel.new()
 			bg_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 			bg_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			bg_rect.color = COLOR_EMPTY_SLOT
+			bg_rect.add_theme_stylebox_override("panel", AssetManager.make_panel_style(COLOR_EMPTY_SLOT, AssetManager.COL_BORDER, 8, 1, 0))
 			slot_root.add_child(bg_rect)
 
 			var hp_bg := ColorRect.new()
@@ -214,9 +231,14 @@ func _build_grid_ui(team: Team, grid_container: GridContainer) -> void:
 
 			var btn := Button.new()
 			btn.set_anchors_preset(Control.PRESET_FULL_RECT)
-			btn.offset_bottom = -16
+			btn.offset_left = 6
+			btn.offset_right = -6
+			btn.offset_top = 4
+			btn.offset_bottom = -18
 			btn.flat = true
-			btn.add_theme_font_size_override("font_size", 14)
+			btn.expand_icon = true
+			btn.add_theme_constant_override("icon_max_width", 42)
+			btn.add_theme_font_size_override("font_size", 13)
 			btn.text = "-"
 			btn.disabled = true
 			btn.pressed.connect(_on_slot_pressed.bind(team, rank, row))
@@ -226,6 +248,7 @@ func _build_grid_ui(team: Team, grid_container: GridContainer) -> void:
 
 			var key := _slot_key(rank, row)
 			_slot_views[team][key] = {
+				"slot_root": slot_root,
 				"button": btn,
 				"bg": bg_rect,
 				"hp_bg": hp_bg,
@@ -237,9 +260,11 @@ func _slot_key(rank: Rank, row: int) -> Vector2i:
 	return Vector2i(int(rank), row)
 
 
-func start_battle(is_boss: bool = false, atk_bonus: int = 0, hp_bonus: int = 0, is_elite: bool = false) -> void:
+func start_battle(is_boss: bool = false, atk_bonus: int = 0, hp_bonus: int = 0, is_elite: bool = false, encounter_type: String = "NORMAL") -> void:
 	_is_boss_battle = is_boss
 	_is_elite_battle = is_elite
+	var norm_enc: String = encounter_type.strip_edges().to_upper()
+	_encounter_type = norm_enc if norm_enc in ["AMBUSH_ALLY", "AMBUSH_ENEMY", "NORMAL"] else "NORMAL"
 	_atk_bonus = atk_bonus
 	_hp_bonus = hp_bonus
 	_last_victory = false
@@ -260,45 +285,129 @@ func start_battle(is_boss: bool = false, atk_bonus: int = 0, hp_bonus: int = 0, 
 	finish_phase_button.text = "던전 맵으로 복귀" if embedded_in_map else "정산으로 이동"
 
 	_spawn_sample_units()
+	_apply_encounter_opening_buffs()
 	_rebuild_turn_queue()
+	var enc_banner: String = _get_encounter_banner_text()
 	if _is_boss_battle:
-		_set_log("★ [보스전] 심연의 군주와 수호자들이 길을 막습니다! 속도(SPD) 순으로 진행됩니다.")
+		_set_log("%s ★ [보스전] 심연의 군주와 수호자들이 길을 막습니다! 속도(SPD) 순으로 진행됩니다." % enc_banner)
 	elif _is_elite_battle:
-		_set_log("◆ [정예 전투] 강력한 정예 수호대가 길을 막습니다! 속도(SPD) 순으로 진행됩니다.")
+		_set_log("%s ◆ [정예 전투] 강력한 정예 수호대가 길을 막습니다! 속도(SPD) 순으로 진행됩니다." % enc_banner)
 	else:
-		_set_log("전투 시작! 속도(SPD) 순으로 행동합니다. 기본 공격 또는 스킬 버튼을 사용하세요.")
+		_set_log("%s 전투 시작! 속도(SPD) 순으로 행동합니다. 기본 공격 또는 스킬 버튼을 사용하세요." % enc_banner)
 	_advance_turn()
 
 
+func _get_encounter_banner_text() -> String:
+	match _encounter_type:
+		"AMBUSH_ALLY":
+			return "[★ 아군 기습! 아군 전원 1턴 SPD +10]"
+		"AMBUSH_ENEMY":
+			return "[⚠ 적 매복 기습! 적군 전원 1턴 SPD +10]"
+		_:
+			return "[일반 조우]"
+
+
+func _apply_encounter_opening_buffs() -> void:
+	var ally_units: Array[Dictionary] = _get_living_units(Team.ALLY)
+	var enemy_units: Array[Dictionary] = _get_living_units(Team.ENEMY)
+
+	if _encounter_type == "AMBUSH_ALLY":
+		for unit in ally_units:
+			unit["ambush_active"] = true
+			StatusEffectManager.apply_effect(unit, "BUFF_SPEED_FLAT", 10.0, 1.0, unit)
+	elif _encounter_type == "AMBUSH_ENEMY":
+		for unit in enemy_units:
+			StatusEffectManager.apply_effect(unit, "BUFF_SPEED_FLAT", 10.0, 1.0, unit)
+
+	# 8대 병과 & 36 세부직군 전투 개시 특성 적용
+	for unit in ally_units:
+		var cg: String = str(unit.get("class_group", ""))
+		var st: String = str(unit.get("sub_trait", ""))
+		if cg == "선봉":
+			var init_spd: float = 6.0 if st == "FIRST_STRIKE" else 3.0
+			StatusEffectManager.apply_effect(unit, "VANGUARD_INIT_SPD", init_spd, 1.0, unit)
+		match st:
+			"SHIELD_WALL":
+				StatusEffectManager.apply_effect(unit, "BUFF_DEF", 0.20, 2.0, unit)
+			"THORN_CARAPACE":
+				StatusEffectManager.apply_effect(unit, "REFLECT", 0.15, 99.0, unit)
+			"ARCANE_BULWARK":
+				StatusEffectManager.apply_effect(unit, "BUFF_ATK", 0.10, 99.0, unit)
+			"BERSERK_FURY":
+				StatusEffectManager.apply_effect(unit, "BUFF_ATK", 0.12, 99.0, unit)
+			"RUNE_BLADE":
+				StatusEffectManager.apply_effect(unit, "BUFF_ARMOR_PEN", 0.15, 99.0, unit)
+			"ARCANE_PIERCE":
+				StatusEffectManager.apply_effect(unit, "BUFF_ARMOR_PEN", 0.20, 99.0, unit)
+			"DUELIST_CRIT":
+				StatusEffectManager.apply_effect(unit, "BUFF_CRIT_RATE", 0.12, 99.0, unit)
+				StatusEffectManager.apply_effect(unit, "BUFF_CRIT_DMG", 0.20, 99.0, unit)
+			"EXECUTION_CRIT":
+				StatusEffectManager.apply_effect(unit, "BUFF_CRIT_RATE", 0.15, 99.0, unit)
+			"RAPID_FIRE":
+				StatusEffectManager.apply_effect(unit, "BUFF_SPEED", 0.10, 99.0, unit)
+			"ARMOR_CRUSH":
+				StatusEffectManager.apply_effect(unit, "BUFF_ARMOR_PEN", 0.15, 99.0, unit)
+			"DARK_RESONANCE":
+				StatusEffectManager.apply_effect(unit, "BUFF_DMG_BONUS", 0.12, 99.0, unit)
+				StatusEffectManager.apply_effect(unit, "BUFF_CRIT_DMG", 0.15, 99.0, unit)
+			"GOLD_BONUS":
+				if cg == "선봉":
+					for mate in ally_units:
+						StatusEffectManager.apply_effect(mate, "BUFF_ATK", 0.10, 1.0, unit)
+			"VULNERABLE_HEX":
+				for foe in enemy_units:
+					StatusEffectManager.apply_effect(foe, "DEF_DOWN", 0.10, 3.0, unit)
+			"TACTICAL_COMMAND":
+				for mate in ally_units:
+					StatusEffectManager.apply_effect(mate, "BUFF_CRIT_RATE", 0.08, 3.0, unit)
+			"REGEN_SUPPORT":
+				for mate in ally_units:
+					StatusEffectManager.apply_effect(mate, "SHIELD", 0.6, 3.0, unit)
+
+
 func _spawn_hero_unit_to_slot(hero: Dictionary, target_rank: Rank, row: int) -> void:
-	var base_max_hp: int = int(hero.get("max_hp", 50))
+	var base_max_hp: int = maxi(1, roundi(GlobalData.get_hero_base_with_temperament(hero, "max_hp")))
 	var eq_bonuses: Dictionary = GlobalData.get_hero_equipment_bonuses(hero)
 	var eff_max_hp: int = maxi(1, base_max_hp + roundi(float(eq_bonuses.get("max_hp", 0.0))) + _hp_bonus)
 	var base_cur_hp: int = int(hero.get("hp", eff_max_hp))
+	var hier: Dictionary = DataManager.normalize_class_hierarchy(
+		str(hero.get("class_group", "")),
+		str(hero.get("sub_class", hero.get("job_class", "돌격검객"))),
+		str(hero.get("role_category", "전위"))
+	)
+	var sub_info: Dictionary = DataManager.get_sub_class_info(str(hier["sub_class"]))
 	_add_unit(
 		Team.ALLY,
 		target_rank,
 		row,
 		str(hero.get("name", "영웅")),
 		base_max_hp + _hp_bonus,
-		int(hero.get("atk", 15)) + _atk_bonus,
-		int(hero.get("speed", 10)),
-		DataManager.normalize_role_category(str(hero.get("role_category", "전위")), str(hero.get("job_class", ""))),
-		str(hero.get("job_class", "근접딜러")),
-		int(hero.get("heal_power", 0)),
+		maxi(1, roundi(GlobalData.get_hero_base_with_temperament(hero, "atk"))) + _atk_bonus,
+		maxi(1, roundi(GlobalData.get_hero_base_with_temperament(hero, "speed"))),
+		str(hier["role_category"]),
+		str(hier["sub_class"]),
+		maxi(0, roundi(GlobalData.get_hero_base_with_temperament(hero, "heal_power"))),
 		str(hero.get("element", "FIRE")),
-		int(hero.get("def", 10)),
+		maxi(0, roundi(GlobalData.get_hero_base_with_temperament(hero, "def"))),
 		{
 			"hero_uid": int(hero.get("uid", -1)),
+			"hero_id": str(hero.get("id", "")),
+			"class_group": str(hier["class_group"]),
+			"sub_class": str(hier["sub_class"]),
+			"sub_trait": str(sub_info.get("sub_trait", "")),
+			"is_named": bool(hero.get("is_named", false)),
+			"portrait_path": str(hero.get("portrait_path", "")),
+			"sprite_path": str(hero.get("sprite_path", "")),
 			"rarity": DataManager.normalize_rarity(hero.get("rarity", "N")),
 			"is_tired": GlobalData.is_hero_tired(hero),
 			"current_hp": clampi(base_cur_hp + _hp_bonus, 1, eff_max_hp),
 			"effective_max_hp": eff_max_hp,
 			"passive_bonuses": eq_bonuses,
-			"dmg_bonus": float(hero.get("dmg_bonus", 0.0)),
-			"crit_rate": float(hero.get("crit_rate", 0.05)),
-			"crit_dmg": float(hero.get("crit_dmg", 1.5)),
-			"armor_pen": float(hero.get("armor_pen", 0.0)),
+			"dmg_bonus": GlobalData.get_hero_base_with_temperament(hero, "dmg_bonus"),
+			"crit_rate": GlobalData.get_hero_base_with_temperament(hero, "crit_rate"),
+			"crit_dmg": GlobalData.get_hero_base_with_temperament(hero, "crit_dmg"),
+			"armor_pen": GlobalData.get_hero_base_with_temperament(hero, "armor_pen"),
 			"final_dmg_mult": float(hero.get("final_dmg_mult", 1.0)),
 			"skill_id": str(hero.get("skill_id", "")),
 			"skill2_id": str(hero.get("skill2_id", "")),
@@ -381,11 +490,12 @@ func _spawn_enemies_from_data() -> void:
 	var spd_mult: float = float(s_mults.get("speed", 1.0))
 	var season_bonus_eff: String = str(s_mults.get("bonus_effect", ""))
 
+	var prefer_rebel: bool = GlobalData.is_rebellion_humanoid_preferred()
 	var spawn_plan: Array[Dictionary] = []
 	if _is_boss_battle:
-		var bosses := DataManager.get_enemies_for_season(season_key, "BOSS")
-		var elites := DataManager.get_enemies_for_season(season_key, "ELITE")
-		var normals := DataManager.get_enemies_for_season(season_key, "NORMAL", GlobalData.upcoming_defense_elements)
+		var bosses := DataManager.get_enemies_for_context(season_key, "BOSS", [], prefer_rebel)
+		var elites := DataManager.get_enemies_for_context(season_key, "ELITE", [], prefer_rebel)
+		var normals := DataManager.get_enemies_for_context(season_key, "NORMAL", GlobalData.upcoming_defense_elements, prefer_rebel)
 		if not normals.is_empty():
 			spawn_plan.append({"tpl": normals[0 % normals.size()], "rank": Rank.FRONT, "row": 0})
 			spawn_plan.append({"tpl": normals[1 % normals.size()], "rank": Rank.FRONT, "row": 2})
@@ -394,17 +504,17 @@ func _spawn_enemies_from_data() -> void:
 		if not bosses.is_empty():
 			spawn_plan.append({"tpl": bosses[0], "rank": Rank.BACK, "row": 1})
 	elif _is_elite_battle:
-		var elites := DataManager.get_enemies_for_season(season_key, "ELITE")
-		var normals := DataManager.get_enemies_for_season(season_key, "NORMAL", GlobalData.upcoming_defense_elements)
+		var elites := DataManager.get_enemies_for_context(season_key, "ELITE", [], prefer_rebel)
+		var normals := DataManager.get_enemies_for_context(season_key, "NORMAL", GlobalData.upcoming_defense_elements, prefer_rebel)
 		if not normals.is_empty():
 			spawn_plan.append({"tpl": normals[0 % normals.size()], "rank": Rank.FRONT, "row": 0})
 			spawn_plan.append({"tpl": normals[1 % normals.size()], "rank": Rank.FRONT, "row": 2})
 		if not elites.is_empty():
 			spawn_plan.append({"tpl": elites[randi() % elites.size()], "rank": Rank.BACK, "row": 1})
 	else:
-		var pool := DataManager.get_enemies_for_season(season_key, "NORMAL", GlobalData.upcoming_defense_elements)
+		var pool := DataManager.get_enemies_for_context(season_key, "NORMAL", GlobalData.upcoming_defense_elements, prefer_rebel)
 		if pool.is_empty():
-			pool = DataManager.get_enemies_for_season(season_key, "")
+			pool = DataManager.get_enemies_for_context(season_key, "", [], prefer_rebel)
 		var slots_order: Array = [[Rank.FRONT, 0], [Rank.FRONT, 2], [Rank.MIDDLE, 1], [Rank.BACK, 2]]
 		for i in range(slots_order.size()):
 			if not pool.is_empty():
@@ -441,6 +551,13 @@ func _spawn_enemies_from_data() -> void:
 			str(tpl.get("element", "FIRE")),
 			s_def,
 			{
+				"enemy_id": str(tpl.get("id", "")),
+				"enemy_type": e_type,
+				"category": str(tpl.get("category", "MONSTER")),
+				"archetype": str(tpl.get("archetype", "SWARMER")),
+				"tint_color": str(tpl.get("tint_color", "")),
+				"palette_swapped": bool(tpl.get("palette_swapped", false)),
+				"sprite_path": str(tpl.get("sprite_path", "")),
 				"rarity": "SSR" if e_type == "BOSS" else ("SR" if e_type == "ELITE" else "R"),
 				"skill_id": str(active_ids[0]) if active_ids.size() >= 1 else "",
 				"skill2_id": str(active_ids[1]) if active_ids.size() >= 2 else "",
@@ -449,7 +566,7 @@ func _spawn_enemies_from_data() -> void:
 			}
 		)
 
-	# 적 패시브 스킬(skills.json) 전투 시작 시 일괄 발동
+	# 적 패시브 스킬(skills.json) 및 14대 아키타입 고유 특성 전투 시작 시 일괄 발동
 	var enemy_units: Array[Dictionary] = _get_living_units(Team.ENEMY)
 	for eu in enemy_units:
 		for p_id in eu.get("passive_skill_ids", []):
@@ -466,6 +583,26 @@ func _spawn_enemies_from_data() -> void:
 						StatusEffectManager.apply_effect(mate, etype, mult, dur, eu)
 				else:
 					StatusEffectManager.apply_effect(eu, etype, mult, dur, eu)
+
+		var arch: String = str(eu.get("archetype", ""))
+		match arch:
+			"VOLATILE":
+				if not StatusEffectManager.has_effect(eu, "EXPLODE_ON_DEATH"):
+					StatusEffectManager.apply_effect(eu, "EXPLODE_ON_DEATH", 1.6, 99.0, eu)
+			"THORNBACK":
+				if not StatusEffectManager.has_effect(eu, "REFLECT"):
+					StatusEffectManager.apply_effect(eu, "REFLECT", 0.25, 99.0, eu)
+			"PHALANX":
+				if StatusEffectManager.get_total_shield(eu) <= 0:
+					StatusEffectManager.apply_effect(eu, "SHIELD", 0.8, 99.0, eu)
+			"CUTTHROAT":
+				eu["crit_rate"] = float(eu.get("crit_rate", 0.05)) + 0.15
+				eu["armor_pen"] = float(eu.get("armor_pen", 0.0)) + 0.15
+			"ARBALEST":
+				eu["armor_pen"] = float(eu.get("armor_pen", 0.0)) + 0.20
+			"COMMANDER":
+				for mate in enemy_units:
+					StatusEffectManager.apply_effect(mate, "BUFF_ATK", 0.12, 99.0, eu)
 
 
 func _add_unit(
@@ -490,11 +627,32 @@ func _add_unit(
 		"row": row,
 		"name": unit_name,
 		"role_category": role_category,
+		"class_group": str(extra.get("class_group", DataManager.get_class_group_for_sub_class(job_class))),
+		"sub_class": str(extra.get("sub_class", job_class)),
+		"sub_trait": str(extra.get("sub_trait", "")),
 		"job_class": job_class,
 		"element": element,
 		"max_hp": max_hp,
 		"hp": clampi(int(extra.get("current_hp", max_hp)), 0, int(extra.get("effective_max_hp", max_hp))),
 		"hero_uid": int(extra.get("hero_uid", -1)),
+		"hero_id": str(extra.get("hero_id", "")),
+		"enemy_id": str(extra.get("enemy_id", "")),
+		"enemy_type": str(extra.get("enemy_type", "NORMAL")),
+		"category": str(extra.get("category", "")),
+		"archetype": str(extra.get("archetype", "")),
+		"tint_color": str(extra.get("tint_color", "")),
+		"palette_swapped": bool(extra.get("palette_swapped", false)),
+		"ambush_active": false,
+		"_duration_ext": 1.0,
+		"_brood_spawned": false,
+		"_is_summoned": bool(extra.get("_is_summoned", false)),
+		"_miracle_revived": false,
+		"_miracle_pending_trauma": false,
+		"_battle_kills": 0,
+		"_battle_healed": 0,
+		"portrait_path": str(extra.get("portrait_path", "")),
+		"sprite_path": str(extra.get("sprite_path", "")),
+		"is_named": bool(extra.get("is_named", false)),
 		"is_tired": bool(extra.get("is_tired", false)),
 		"atk": atk,
 		"def": defense,
@@ -643,20 +801,25 @@ func _advance_turn() -> void:
 	for ev in tick_events:
 		if ev.get("type", "") == "dot":
 			var eff_label: String = StatusEffectManager.get_effect_label(str(ev["effect_id"]))
+			var dot_dmg: int = int(ev["damage"])
+			_spawn_unit_damage_float(_active_unit, dot_dmg, false, 1.0, 0, true)
 			dot_logs.append("[%s] %s 지속피해 -%d (남은 HP %d/%d)" % [
 				_active_unit["name"],
 				eff_label,
-				int(ev["damage"]),
+				dot_dmg,
 				int(_active_unit["hp"]),
 				int(_active_unit["max_hp"]),
 			])
 
 	if int(_active_unit["hp"]) <= 0:
+		if not _try_unit_miracle_survival(_active_unit, dot_logs):
+			if not dot_logs.is_empty():
+				_set_log("\n".join(dot_logs) + " [지속 피해로 전투불능!]")
+			_refresh_ui()
+			_advance_turn()
+			return
 		if not dot_logs.is_empty():
-			_set_log("\n".join(dot_logs) + " [지속 피해로 전투불능!]")
-		_refresh_ui()
-		_advance_turn()
-		return
+			_set_log("\n".join(dot_logs))
 
 	if was_stunned:
 		var stun_msg: String = "💫 %s은(는) 기절 상태라 행동할 수 없습니다!" % _active_unit["name"]
@@ -690,7 +853,7 @@ func _skip_stunned_turn() -> void:
 func _can_unit_heal(unit: Dictionary) -> bool:
 	if unit.is_empty():
 		return false
-	return str(unit.get("job_class", "")) == "힐러" or int(unit.get("heal_power", 0)) > 0
+	return str(unit.get("class_group", "")) == "의료" or str(unit.get("job_class", "")) == "힐러" or int(unit.get("heal_power", 0)) > 0
 
 
 func _get_heal_amount(unit: Dictionary) -> int:
@@ -700,6 +863,26 @@ func _get_heal_amount(unit: Dictionary) -> int:
 	return maxi(1, roundi(base * heal_mult))
 
 
+func _spawn_unit_floating_text(unit: Dictionary, text: String, kind: String = "NORMAL", y_offset: float = 0.0) -> void:
+	if _floating_layer == null or unit.is_empty():
+		return
+	var team: Team = unit["team"]
+	var key := _slot_key(int(unit["rank"]) as Rank, int(unit["row"]))
+	var view: Dictionary = _slot_views.get(team, {}).get(key, {})
+	var slot_root: Control = view.get("slot_root", null)
+	if slot_root == null or not is_instance_valid(slot_root):
+		return
+	var pos: Vector2 = slot_root.global_position + slot_root.size * Vector2(0.5, 0.35) - _floating_layer.global_position + Vector2(0.0, y_offset)
+	CombatFeedbackUI.spawn_floating_text(_floating_layer, pos, text, kind, GlobalData.battle_speed_mult)
+
+
+func _spawn_unit_damage_float(target: Dictionary, dmg: int, is_crit: bool, elem_mult: float, shield_absorbed: int = 0, is_dot: bool = false) -> void:
+	var info: Dictionary = CombatFeedbackUI.classify_damage_display(dmg, is_crit, elem_mult, is_dot)
+	_spawn_unit_floating_text(target, str(info["text"]), str(info["kind"]))
+	if shield_absorbed > 0:
+		_spawn_unit_floating_text(target, "보호막 -%d" % shield_absorbed, "SHIELD", -22.0)
+
+
 func heal_unit(target: Dictionary, amount: int) -> int:
 	if target.is_empty() or int(target.get("hp", 0)) <= 0 or amount <= 0:
 		return 0
@@ -707,7 +890,10 @@ func heal_unit(target: Dictionary, amount: int) -> int:
 	var max_hp: int = roundi(StatusEffectManager.get_effective_stat(target, "max_hp"))
 	var new_hp: int = mini(max_hp, prev_hp + amount)
 	target["hp"] = new_hp
-	return new_hp - prev_hp
+	var healed: int = new_hp - prev_hp
+	if healed > 0:
+		_spawn_unit_floating_text(target, "+%d" % healed, "HEAL")
+	return healed
 
 
 func _get_skill_key_for_slot(slot_name: String) -> Dictionary:
@@ -837,7 +1023,8 @@ func _on_slot_pressed(team: Team, rank: Rank, row: int) -> void:
 		return
 
 	var active_rank: int = get_active_front_rank(Team.ENEMY)
-	if int(target["rank"]) != active_rank:
+	var can_back_snipe: bool = (str(_active_unit.get("sub_trait", "")) == "BACKLINE_SNIPE" and int(target["rank"]) == get_active_back_rank(Team.ENEMY))
+	if int(target["rank"]) != active_rank and not can_back_snipe:
 		return
 
 	_execute_attack(_active_unit, target)
@@ -966,30 +1153,58 @@ func _execute_skill(caster: Dictionary, skill: Dictionary, clicked_target: Dicti
 				var crit_tag: String = " [치명타!]" if bool(calc["is_crit"]) else ""
 				var shield_tag: String = " (보호막 -%d)" % int(hit_res["shield_absorbed"]) if int(hit_res["shield_absorbed"]) > 0 else ""
 				var elem_mult: float = float(calc["element_multiplier"])
+				_spawn_unit_damage_float(target, dmg, bool(calc["is_crit"]), elem_mult, int(hit_res["shield_absorbed"]))
 				var elem_tag: String = " [상성%.2gx]" % elem_mult if elem_mult > 1.05 else (" [반감%.2gx]" % elem_mult if elem_mult < 0.95 else "")
 				var t_max: int = roundi(StatusEffectManager.get_effective_stat(target, "max_hp"))
 				logs.append("→ %s에게 %d 피해%s%s%s (HP %d/%d)" % [
 					target["name"], dmg, crit_tag, elem_tag, shield_tag, target["hp"], t_max
 				])
 				_apply_unit_reactive_passives(caster, target, dmg, logs)
+				_try_unit_miracle_survival(target, logs)
 				if int(target["hp"]) == 0:
+					if caster["team"] == Team.ALLY:
+						caster["_battle_kills"] = int(caster.get("_battle_kills", 0)) + 1
+					if caster["team"] == Team.ALLY and str(caster.get("class_group", "")) == "근위":
+						StatusEffectManager.apply_effect(caster, "KILL_SPD_BOOST", 2.0, 2.0, caster)
+						displaced_any = true
+						logs.append("  ↳ ⚡ [근위: 파쇄 돌격] 처치 보너스로 %s 다음 턴 SPD +2!" % caster["name"])
 					var new_front: int = get_active_front_rank(target["team"])
 					if new_front != -1 and new_front != prev_front:
 						logs.append("★ [열 붕괴!] %s 전멸 → %s 타겟팅!" % [RANK_NAMES[prev_front], RANK_NAMES[new_front]])
 			elif eff_type == "HEAL":
 				var base_heal: float = float(_get_heal_amount(caster))
 				var heal_val: int = maxi(1, roundi(base_heal * mult))
+				var t_max_chk: float = maxf(1.0, StatusEffectManager.get_effective_stat(target, "max_hp"))
+				if str(caster.get("sub_trait", "")) == "EMERGENCY_HEAL" and float(target["hp"]) / t_max_chk <= 0.40:
+					heal_val = roundi(float(heal_val) * 1.40)
 				var healed: int = heal_unit(target, heal_val)
+				if caster["team"] == Team.ALLY and healed > 0:
+					caster["_battle_healed"] = int(caster.get("_battle_healed", 0)) + healed
+				if str(caster.get("class_group", "")) == "의료":
+					StatusEffectManager.apply_effect(target, "DMG_REDUCE", 0.10, 1.0, caster)
+				if str(caster.get("sub_trait", "")) == "WARD_PURIFY":
+					StatusEffectManager.clear_debuffs(target)
 				var t_max: int = roundi(StatusEffectManager.get_effective_stat(target, "max_hp"))
-				logs.append("→ %s 체력 +%d 회복 (HP %d/%d)" % [target["name"], healed, target["hp"], t_max])
+				logs.append("→ %s 체력 +%d 회복%s (HP %d/%d)" % [
+					target["name"],
+					healed,
+					" [구호 결계 -10%]" if str(caster.get("class_group", "")) == "의료" else "",
+					target["hp"],
+					t_max,
+				])
 			elif StatusEffectManager.is_displacement_effect(eff_type):
-				if _apply_displacement_effect(eff_type, target, mult, logs):
+				if _apply_displacement_effect(eff_type, target, mult, logs, caster):
 					displaced_any = true
+					if str(caster.get("sub_trait", "")) == "FORCE_DISPLACE" and int(target["hp"]) > 0:
+						StatusEffectManager.apply_effect(target, "DEF_DOWN", 0.15, 1.0, caster)
 			else:
 				var applied: Dictionary = StatusEffectManager.apply_effect(target, eff_type, mult, dur, caster)
 				var eff_name: String = StatusEffectManager.get_effect_label(eff_type)
 				if eff_type == "SHIELD":
-					logs.append("→ %s에게 보호막 +%d (%d턴)" % [target["name"], int(applied.get("value", 0)), int(dur)])
+					var sh_gain: int = int(applied.get("value", 0))
+					if sh_gain > 0:
+						_spawn_unit_floating_text(target, "보호막 +%d" % sh_gain, "SHIELD")
+					logs.append("→ %s에게 보호막 +%d (%d턴)" % [target["name"], sh_gain, int(dur)])
 				else:
 					logs.append("→ %s에게 [%s] 부여 (%d턴)" % [target["name"], eff_name, int(dur)])
 
@@ -1001,21 +1216,25 @@ func _execute_skill(caster: Dictionary, skill: Dictionary, clicked_target: Dicti
 	_set_log("\n".join(logs))
 
 
-func _apply_displacement_effect(eff_type: String, target: Dictionary, mult: float, logs: PackedStringArray) -> bool:
+func _apply_displacement_effect(eff_type: String, target: Dictionary, mult: float, logs: PackedStringArray, caster: Dictionary = {}) -> bool:
 	var cur_rank: int = int(target.get("rank", 0))
 	var steps: int = maxi(1, roundi(mult))
 	var dest_rank: int = cur_rank
 	var action_label: String = "배치 이동"
+	var guaranteed: bool = (not caster.is_empty() and str(caster.get("class_group", "")) == "특수")
+	if not guaranteed and bool(target.get("displacement_immune", false)):
+		logs.append("→ %s은(는) 강제 이동에 저항했습니다." % target["name"])
+		return false
 	match eff_type:
 		"PUSH_BACK":
 			dest_rank = mini(2, cur_rank + steps)
-			action_label = "강제 후퇴"
+			action_label = "강제 후퇴" + ("(특수100%)" if guaranteed else "")
 		"PULL_FRONT":
 			dest_rank = maxi(0, cur_rank - steps)
-			action_label = "강제 견인"
+			action_label = "강제 견인" + ("(특수100%)" if guaranteed else "")
 		"SWAP_POS":
 			dest_rank = 2 if cur_rank == 0 else 0
-			action_label = "진형 교체"
+			action_label = "진형 교체" + ("(특수100%)" if guaranteed else "")
 	if dest_rank == cur_rank:
 		logs.append("→ %s은(는) 이미 %s 끝열이라 이동하지 않았습니다." % [target["name"], RANK_NAMES[cur_rank]])
 		return false
@@ -1084,22 +1303,72 @@ func _apply_unit_reactive_passives(attacker: Dictionary, victim: Dictionary, dea
 	var reflect_ratio: float = StatusEffectManager.get_effect_value(victim, "REFLECT")
 	if reflect_ratio > 0.0 and int(attacker.get("hp", 0)) > 0 and dealt_dmg > 0:
 		var ref_dmg: int = maxi(1, roundi(float(dealt_dmg) * reflect_ratio))
-		StatusEffectManager.apply_damage_with_shield(attacker, ref_dmg)
+		var ref_res: Dictionary = StatusEffectManager.apply_damage_with_shield(attacker, ref_dmg)
+		_spawn_unit_damage_float(attacker, ref_dmg, false, 1.0, int(ref_res["shield_absorbed"]), true)
 		logs.append("  ↳ [가시 반사] %s → %s에게 %d 반사 피해! (HP %d/%d)" % [
 			victim["name"], attacker["name"], ref_dmg, attacker["hp"], attacker["max_hp"]
 		])
+		_try_unit_miracle_survival(attacker, logs)
 
-	# 2) 사망 자폭 (EXPLODE_ON_DEATH)
+	# 2) 사망 자폭 (EXPLODE_ON_DEATH) & 3) 기생/분열체(BROODMOTHER) 유충 소환
 	if int(victim.get("hp", 0)) <= 0:
 		var explode_mult: float = StatusEffectManager.get_effect_value(victim, "EXPLODE_ON_DEATH")
 		if explode_mult > 0.0:
 			var exp_dmg: int = maxi(4, roundi(StatusEffectManager.get_effective_stat(victim, "atk") * explode_mult))
 			var foe_team: Team = Team.ALLY if victim["team"] == Team.ENEMY else Team.ENEMY
 			for foe in get_targetable_units(foe_team):
-				StatusEffectManager.apply_damage_with_shield(foe, exp_dmg)
+				var exp_res: Dictionary = StatusEffectManager.apply_damage_with_shield(foe, exp_dmg)
+				_spawn_unit_damage_float(foe, exp_dmg, false, 1.0, int(exp_res["shield_absorbed"]))
 				logs.append("  ↳ 💥 [사망 자폭] %s 폭발 → %s에게 %d 피해! (HP %d/%d)" % [
 					victim["name"], foe["name"], exp_dmg, foe["hp"], foe["max_hp"]
 				])
+				_try_unit_miracle_survival(foe, logs)
+		if str(victim.get("archetype", "")) == "BROODMOTHER" and not bool(victim.get("_brood_spawned", false)):
+			victim["_brood_spawned"] = true
+			var spawned_cnt: int = _spawn_brood_minions(victim)
+			if spawned_cnt > 0:
+				logs.append("  ↳ 🪲 [군체 분열!] %s의 사체에서 분열 유충 %d기가 튀어나왔습니다!" % [victim["name"], spawned_cnt])
+
+
+func _try_unit_miracle_survival(unit: Dictionary, out_logs: PackedStringArray) -> bool:
+	if unit.is_empty() or int(unit.get("team", -1)) != Team.ALLY:
+		return false
+	if int(unit.get("hp", 0)) > 0 or bool(unit.get("_miracle_revived", false)):
+		return false
+	var uid: int = int(unit.get("hero_uid", -1))
+	if not GlobalData.roll_miracle_survival(uid):
+		return false
+	unit["_miracle_revived"] = true
+	unit["_miracle_pending_trauma"] = true
+	var rev_hp: int = maxi(1, roundi(StatusEffectManager.get_effective_stat(unit, "max_hp") * 0.15))
+	unit["hp"] = rev_hp
+	_spawn_unit_floating_text(unit, "★ 기적적 생환! (+%d HP)" % rev_hp, "CRIT")
+	out_logs.append("★ [기적적 생환!] %s이(가) 죽음의 문턱에서 HP %d로 다시 일어섰습니다!" % [str(unit.get("name", "영웅")), rev_hp])
+	return true
+
+
+func _spawn_brood_minions(parent_unit: Dictionary) -> int:
+	var p_team: Team = parent_unit["team"]
+	var spawned: int = 0
+	var base_hp: int = maxi(14, roundi(float(parent_unit.get("max_hp", 60)) * 0.35))
+	var base_atk: int = maxi(6, roundi(float(parent_unit.get("atk", 15)) * 0.55))
+	var base_spd: int = maxi(12, int(parent_unit.get("speed", 12)) + 3)
+	var elem: String = str(parent_unit.get("element", "DARK"))
+	for r in [Rank.FRONT, Rank.MIDDLE, Rank.BACK]:
+		for w in [0, 1, 2]:
+			if spawned >= 2:
+				return spawned
+			var occ: Dictionary = _get_unit_at(p_team, r, w)
+			if occ.is_empty():
+				_add_unit(
+					p_team, r, w, "분열 유충", base_hp, base_atk, base_spd,
+					"전위", "NORMAL", 0, elem, 3,
+					{"enemy_id": "enemy_feral_swarmer", "enemy_type": "NORMAL", "category": "MONSTER", "archetype": "SWARMER", "_is_summoned": true}
+				)
+				var new_minion: Dictionary = _units[-1]
+				_turn_queue.append(new_minion)
+				spawned += 1
+	return spawned
 
 
 func _run_enemy_turn() -> void:
@@ -1123,6 +1392,49 @@ func _run_enemy_turn() -> void:
 			_execute_skill(_active_unit, sk, picked_target, slot_name)
 			used_skill = true
 			break
+
+	if not used_skill:
+		var arch: String = str(_active_unit.get("archetype", ""))
+		if arch == "PREACHER":
+			var enemy_allies: Array[Dictionary] = _get_living_units(Team.ENEMY)
+			var injured: Dictionary = {}
+			var lowest_ratio: float = 0.85
+			for ea in enemy_allies:
+				var mhp: float = maxf(1.0, StatusEffectManager.get_effective_stat(ea, "max_hp"))
+				var r: float = float(ea["hp"]) / mhp
+				if r < lowest_ratio:
+					lowest_ratio = r
+					injured = ea
+			if not injured.is_empty():
+				var heal_amt: int = maxi(10, roundi(StatusEffectManager.get_effective_stat(_active_unit, "atk") * 1.1))
+				var healed: int = heal_unit(injured, heal_amt)
+				StatusEffectManager.apply_effect(injured, "BUFF_ATK", 0.15, 2.0, _active_unit)
+				_set_log("[교단 사제 AI] %s → %s 체력 +%d 치유 & 공격력 +15%%!" % [_active_unit["name"], injured["name"], healed])
+				used_skill = true
+			elif not enemy_allies.is_empty():
+				for ea in enemy_allies:
+					StatusEffectManager.apply_effect(ea, "BUFF_ATK", 0.12, 2.0, _active_unit)
+				_set_log("[교단 사제 AI] %s → 적군 전원에게 광신 공격력 축복!" % _active_unit["name"])
+				used_skill = true
+
+	if not used_skill:
+		var arch2: String = str(_active_unit.get("archetype", ""))
+		if arch2 == "CUTTHROAT":
+			var back_r: int = get_active_back_rank(Team.ALLY)
+			var back_targets: Array[Dictionary] = []
+			for u in _get_living_units(Team.ALLY):
+				if int(u["rank"]) == back_r:
+					back_targets.append(u)
+			if not back_targets.is_empty():
+				back_targets.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+					var ah: int = 1 if _can_unit_heal(a) else 0
+					var bh: int = 1 if _can_unit_heal(b) else 0
+					if ah != bh:
+						return ah > bh
+					return int(a["hp"]) < int(b["hp"])
+				)
+				_execute_attack(_active_unit, back_targets[0], " [후열 암살 저격!]")
+				used_skill = true
 
 	if not used_skill:
 		var targets: Array[Dictionary] = get_targetable_units(Team.ALLY)
@@ -1381,23 +1693,35 @@ func _execute_ally_ai_action(caster: Dictionary) -> void:
 		_execute_heal(caster, lowest_ally)
 		return
 
-	# 5) 기본 공격: 스마트 타겟팅 점수가 가장 높은 전열 적 공격
+	# 5) 기본 공격: 스마트 타겟팅 점수가 가장 높은 전열(또는 BACKLINE_SNIPE 후열) 적 공격
 	var front_enemies := get_targetable_units(Team.ENEMY)
+	if str(caster.get("sub_trait", "")) == "BACKLINE_SNIPE":
+		var back_r: int = get_active_back_rank(Team.ENEMY)
+		var back_pool: Array[Dictionary] = []
+		for u in _get_living_units(Team.ENEMY):
+			if int(u["rank"]) == back_r:
+				back_pool.append(u)
+		if not back_pool.is_empty():
+			front_enemies = back_pool
 	if not front_enemies.is_empty():
 		var smart_basic_target := _pick_smart_enemy_target(caster, front_enemies, {"multiplier": 1.0})
 		_execute_attack(caster, smart_basic_target)
 
 
-func _execute_attack(attacker: Dictionary, defender: Dictionary) -> void:
+func _execute_attack(attacker: Dictionary, defender: Dictionary, extra_tag: String = "") -> void:
 	var def_team: Team = defender["team"]
 	var prev_front_rank: int = get_active_front_rank(def_team)
 
 	var atk_elem: String = str(attacker.get("element", ""))
 	var def_elem: String = str(defender.get("element", ""))
-	var calc: Dictionary = CombatCalculator.calculate_skill_damage(attacker, defender, {"multiplier": 1.0})
+	var skill_eff: Dictionary = {"multiplier": 1.0}
+	if str(attacker.get("sub_trait", "")) == "BACKLINE_SNIPE" and int(defender.get("rank", 0)) == get_active_back_rank(def_team):
+		skill_eff["multiplier"] = 1.20
+	var calc: Dictionary = CombatCalculator.calculate_skill_damage(attacker, defender, skill_eff)
 	var dmg: int = int(calc["damage"])
 	var elem_mult: float = float(calc["element_multiplier"])
 	var hit_res: Dictionary = StatusEffectManager.apply_damage_with_shield(defender, dmg)
+	_spawn_unit_damage_float(defender, dmg, bool(calc.get("is_crit", false)), elem_mult, int(hit_res["shield_absorbed"]))
 
 	var elem_note: String = ""
 	if elem_mult > 1.05:
@@ -1407,9 +1731,13 @@ func _execute_attack(attacker: Dictionary, defender: Dictionary) -> void:
 	var crit_note: String = " [치명타!]" if bool(calc.get("is_crit", false)) else ""
 	var shield_note: String = " (보호막 -%d)" % int(hit_res["shield_absorbed"]) if int(hit_res["shield_absorbed"]) > 0 else ""
 
+	var miracle_logs: PackedStringArray = []
+	_try_unit_miracle_survival(defender, miracle_logs)
+
 	var team_tag: String = "아군" if attacker["team"] == Team.ALLY else "적"
-	var msg: String = "[%s] %s(%s) → %s(%s)에게 %d 피해!%s%s%s (남은 HP: %d/%d)" % [
+	var msg: String = "[%s]%s %s(%s) → %s(%s)에게 %d 피해!%s%s%s (남은 HP: %d/%d)" % [
 		team_tag,
+		extra_tag,
 		attacker["name"],
 		DataManager.get_element_name(atk_elem),
 		defender["name"],
@@ -1421,9 +1749,20 @@ func _execute_attack(attacker: Dictionary, defender: Dictionary) -> void:
 		defender["hp"],
 		defender["max_hp"],
 	]
+	if not miracle_logs.is_empty():
+		msg += "\n" + "\n".join(miracle_logs)
 
 	if int(defender["hp"]) == 0:
 		msg += " [처치!]"
+		if attacker["team"] == Team.ALLY:
+			attacker["_battle_kills"] = int(attacker.get("_battle_kills", 0)) + 1
+		if attacker["team"] == Team.ALLY and str(attacker.get("class_group", "")) == "근위":
+			StatusEffectManager.apply_effect(attacker, "KILL_SPD_BOOST", 2.0, 2.0, attacker)
+			if not _turn_queue.is_empty():
+				_turn_queue.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+					return StatusEffectManager.get_effective_stat(a, "speed") > StatusEffectManager.get_effective_stat(b, "speed")
+				)
+			msg += "\n  ↳ ⚡ [근위: 파쇄 돌격] %s 다음 턴 SPD +2!" % attacker["name"]
 		var new_front_rank: int = get_active_front_rank(def_team)
 		if new_front_rank != -1 and new_front_rank != prev_front_rank:
 			var target_team_name: String = "적군" if def_team == Team.ENEMY else "아군"
@@ -1449,14 +1788,58 @@ func _execute_attack(attacker: Dictionary, defender: Dictionary) -> void:
 
 func _execute_heal(healer: Dictionary, target: Dictionary) -> void:
 	var amount: int = _get_heal_amount(healer)
+	var t_max_chk: float = maxf(1.0, StatusEffectManager.get_effective_stat(target, "max_hp"))
+	if str(healer.get("sub_trait", "")) == "EMERGENCY_HEAL" and float(target["hp"]) / t_max_chk <= 0.40:
+		amount = roundi(float(amount) * 1.40)
 	var healed: int = heal_unit(target, amount)
-	_set_log("[회복] %s → %s 체력 +%d 회복! (HP: %d/%d)" % [
+	if int(healer.get("team", -1)) == Team.ALLY and healed > 0:
+		healer["_battle_healed"] = int(healer.get("_battle_healed", 0)) + healed
+	var ward_tag: String = ""
+	if str(healer.get("class_group", "")) == "의료":
+		StatusEffectManager.apply_effect(target, "DMG_REDUCE", 0.10, 1.0, healer)
+		ward_tag = " [구호 결계: 1턴 피해 -10%]"
+	if str(healer.get("sub_trait", "")) == "WARD_PURIFY":
+		StatusEffectManager.clear_debuffs(target)
+	_set_log("[회복] %s → %s 체력 +%d 회복!%s (HP: %d/%d)" % [
 		healer["name"],
 		target["name"],
 		healed,
+		ward_tag,
 		target["hp"],
 		target["max_hp"],
 	])
+
+
+func _finalize_hero_service_and_traumas(victory: bool) -> PackedStringArray:
+	var report_logs: PackedStringArray = []
+	for unit in _units:
+		if int(unit.get("team", -1)) != Team.ALLY:
+			continue
+		var uid: int = int(unit.get("hero_uid", -1))
+		if uid <= 0:
+			continue
+		var was_miracle: bool = bool(unit.get("_miracle_pending_trauma", false))
+		if was_miracle:
+			unit["_miracle_pending_trauma"] = false
+			var neg_id: String = GlobalData.grant_random_negative_temperament(uid)
+			if not neg_id.is_empty():
+				var neg_name: String = str(GlobalData.get_temperament_info(neg_id).get("name", neg_id))
+				report_logs.append("★ [기적적 생환] %s이(가) 죽음에서 돌아왔으나, 후유증 [%s] 기질을 얻었습니다!" % [str(unit.get("name", "영웅")), neg_name])
+		var unlocked_vets: Array[String] = GlobalData.record_hero_service(uid, {
+			"battles_fought": 1,
+			"boss_kills": 1 if (victory and _is_boss_battle) else 0,
+			"total_kills": int(unit.get("_battle_kills", 0)),
+			"total_healed": int(unit.get("_battle_healed", 0)),
+			"near_deaths": 1 if was_miracle else 0,
+		})
+		for vid in unlocked_vets:
+			var vinfo: Dictionary = GlobalData.get_temperament_info(vid)
+			report_logs.append("• [실전 습관 해금] %s → [%s] (%s)" % [
+				str(unit.get("name", "영웅")),
+				str(vinfo.get("name", vid)),
+				str(vinfo.get("summary", "")),
+			])
+	return report_logs
 
 
 func _check_battle_end() -> bool:
@@ -1469,9 +1852,16 @@ func _check_battle_end() -> bool:
 		_active_unit = {}
 		_sync_ally_hp_to_global()
 		GlobalData.apply_party_battle_fatigue()
-		var reward: Dictionary = {"gold": 70, "materials": 25} if _is_boss_battle else ({"gold": 50, "materials": 18} if _is_elite_battle else {"gold": 30, "materials": 10})
+		var svc_logs: PackedStringArray = _finalize_hero_service_and_traumas(true)
+		var gold_mult: float = float(GlobalData.get_party_exploration_bonuses().get("gold_bonus_mult", 1.0))
+		var base_gold: int = 70 if _is_boss_battle else (50 if _is_elite_battle else 30)
+		var base_mat: int = 25 if _is_boss_battle else (18 if _is_elite_battle else 10)
+		var reward: Dictionary = {"gold": roundi(float(base_gold) * gold_mult), "materials": base_mat}
 		GlobalData.apply_deltas(reward)
-		_set_log("승리! 모든 적을 섬멸했습니다! (전리품: 골드 +%d, 자재 +%d / 직군별 전투 피로도 누적)" % [reward["gold"], reward["materials"]])
+		var win_msg: String = "승리! 모든 적을 섬멸했습니다! (전리품: 골드 +%d, 자재 +%d / 직군별 전투 피로도 누적)" % [reward["gold"], reward["materials"]]
+		if not svc_logs.is_empty():
+			win_msg += "\n" + "\n".join(svc_logs)
+		_set_log(win_msg)
 		finish_phase_button.disabled = false
 		skill_action_button.disabled = true
 		skill2_action_button.disabled = true
@@ -1491,7 +1881,11 @@ func _check_battle_end() -> bool:
 		_active_unit = {}
 		_sync_ally_hp_to_global()
 		GlobalData.apply_party_battle_fatigue()
-		_set_log("패배... 아군이 전멸했습니다.")
+		var lose_svc_logs: PackedStringArray = _finalize_hero_service_and_traumas(false)
+		var lose_msg: String = "패배... 아군이 전멸했습니다."
+		if not lose_svc_logs.is_empty():
+			lose_msg += "\n" + "\n".join(lose_svc_logs)
+		_set_log(lose_msg)
 		finish_phase_button.disabled = false
 		skill_action_button.disabled = true
 		skill2_action_button.disabled = true
@@ -1541,7 +1935,7 @@ func _refresh_ui() -> void:
 	var ally_front: int = get_active_front_rank(Team.ALLY)
 	var enemy_front_str: String = RANK_NAMES.get(enemy_front, "전멸")
 	var ally_front_str: String = RANK_NAMES.get(ally_front, "전멸")
-	frontline_status_label.text = "현재 교전 전선 — 아군: [%s]  |  적군: [%s]" % [ally_front_str, enemy_front_str]
+	frontline_status_label.text = "%s  |  현재 교전 전선 — 아군: [%s]  |  적군: [%s]" % [_get_encounter_banner_text(), ally_front_str, enemy_front_str]
 
 	var queue_parts: PackedStringArray = []
 	if not _active_unit.is_empty() and int(_active_unit["hp"]) > 0:
@@ -1656,15 +2050,16 @@ func _refresh_team_grid(team: Team, active_front_rank: int) -> void:
 		for row in range(GRID_ROWS):
 			var view: Dictionary = _slot_views[team][_slot_key(rank, row)]
 			var btn: Button = view["button"]
-			var bg: ColorRect = view["bg"]
+			var bg: Panel = view["bg"]
 			var hp_bg: ColorRect = view["hp_bg"]
 			var hp_fill: ColorRect = view["hp_fill"]
 
 			var unit: Dictionary = _get_unit_at(team, rank, row)
 			if unit.is_empty():
 				btn.text = "(빈 칸)"
+				btn.icon = null
 				btn.disabled = true
-				bg.color = COLOR_EMPTY_SLOT
+				bg.add_theme_stylebox_override("panel", AssetManager.make_panel_style(COLOR_EMPTY_SLOT, Color(0.22, 0.25, 0.32, 0.7), 8, 1, 0))
 				hp_bg.visible = false
 				continue
 
@@ -1678,8 +2073,9 @@ func _refresh_team_grid(team: Team, active_front_rank: int) -> void:
 
 			if not is_alive:
 				btn.text = "%s\n[전투불능]" % unit["name"]
+				btn.icon = null
 				btn.disabled = true
-				bg.color = COLOR_DEAD_UNIT
+				bg.add_theme_stylebox_override("panel", AssetManager.make_panel_style(COLOR_DEAD_UNIT, Color(0.25, 0.25, 0.28, 0.6), 8, 1, 0))
 				continue
 
 			var is_item_ally: bool = is_ally_turn and _item_targeting_mode and item_scope == "SINGLE_ALLY" and team == Team.ALLY
@@ -1690,10 +2086,11 @@ func _refresh_team_grid(team: Team, active_front_rank: int) -> void:
 				team == Team.ALLY
 				and (is_skill_target or (can_heal_ally and int(unit["hp"]) < eff_max_hp))
 			)
+			var can_back_snipe: bool = (is_ally_turn and str(_active_unit.get("sub_trait", "")) == "BACKLINE_SNIPE" and int(rank) == get_active_back_rank(Team.ENEMY))
 			var is_targetable_enemy: bool = (
 				team == Team.ENEMY
 				and is_ally_turn
-				and ((not _skill_targeting_mode and not _item_targeting_mode and int(rank) == active_front_rank) or is_skill_target)
+				and ((not _skill_targeting_mode and not _item_targeting_mode and (int(rank) == active_front_rank or can_back_snipe)) or is_skill_target)
 			)
 
 			var state_tag: String = ""
@@ -1713,7 +2110,7 @@ func _refresh_team_grid(team: Team, active_front_rank: int) -> void:
 			var shield_str: String = " (+%d)" % shield_val if shield_val > 0 else ""
 			var badges: String = StatusEffectManager.get_active_effect_badges(unit)
 
-			var stat_line: String = "HEAL %d | SPD %d" % [_get_heal_amount(unit), eff_spd] if str(unit.get("job_class", "")) == "힐러" else "ATK %d | SPD %d" % [eff_atk, eff_spd]
+			var stat_line: String = "HEAL %d | SPD %d" % [_get_heal_amount(unit), eff_spd] if (str(unit.get("class_group", "")) == "의료" or str(unit.get("job_class", "")) == "힐러") else "ATK %d | SPD %d" % [eff_atk, eff_spd]
 			var status_line: String = "\n" + badges if not badges.is_empty() else ""
 
 			btn.text = "%s[%s]%s\nHP %d/%d%s\n%s%s" % [
@@ -1728,25 +2125,33 @@ func _refresh_team_grid(team: Team, active_front_rank: int) -> void:
 			]
 
 			if team == Team.ALLY:
+				btn.icon = AssetManager.get_hero_sprite(unit)
+				btn.self_modulate = Color.WHITE
 				btn.disabled = not is_healable_ally
 				if is_active:
-					bg.color = COLOR_ACTIVE_TURN
+					bg.add_theme_stylebox_override("panel", AssetManager.make_panel_style(COLOR_ACTIVE_TURN.darkened(0.35), Color(1.0, 0.86, 0.30, 1.0), 8, 2, 0))
 				elif is_healable_ally:
-					bg.color = COLOR_ALLY_HEALABLE
+					bg.add_theme_stylebox_override("panel", AssetManager.make_panel_style(COLOR_ALLY_HEALABLE.darkened(0.25), Color(0.35, 0.95, 0.65, 1.0), 8, 2, 0))
 				else:
-					bg.color = COLOR_ALLY_NORMAL
+					var r_col: Color = DataManager.get_rarity_color(DataManager.normalize_rarity(unit.get("rarity", "N")))
+					bg.add_theme_stylebox_override("panel", AssetManager.make_panel_style(COLOR_ALLY_NORMAL.darkened(0.2), r_col, 8, 1, 0))
 			else:
+				btn.icon = AssetManager.get_enemy_sprite(str(unit.get("enemy_id", "")), str(unit.get("enemy_type", "NORMAL")), str(unit.get("sprite_path", "")))
+				if bool(unit.get("palette_swapped", false)) and not str(unit.get("tint_color", "")).is_empty():
+					btn.self_modulate = Color.from_string(str(unit["tint_color"]), Color.WHITE).lightened(0.25)
+				else:
+					btn.self_modulate = Color.WHITE
 				btn.disabled = not is_targetable_enemy
 				if is_active:
-					bg.color = COLOR_ACTIVE_TURN
+					bg.add_theme_stylebox_override("panel", AssetManager.make_panel_style(COLOR_ACTIVE_TURN.darkened(0.35), Color(1.0, 0.86, 0.30, 1.0), 8, 2, 0))
 				elif is_skill_target:
-					bg.color = COLOR_ENEMY_SKILL_TARGET
+					bg.add_theme_stylebox_override("panel", AssetManager.make_panel_style(COLOR_ENEMY_SKILL_TARGET.darkened(0.25), Color(1.0, 0.62, 0.22, 1.0), 8, 2, 0))
 				elif is_targetable_enemy:
-					bg.color = COLOR_ENEMY_TARGETABLE
+					bg.add_theme_stylebox_override("panel", AssetManager.make_panel_style(COLOR_ENEMY_TARGETABLE.darkened(0.25), Color(1.0, 0.35, 0.35, 1.0), 8, 2, 0))
 				elif int(rank) == active_front_rank:
-					bg.color = COLOR_ENEMY_NORMAL
+					bg.add_theme_stylebox_override("panel", AssetManager.make_panel_style(COLOR_ENEMY_NORMAL.darkened(0.2), Color(0.65, 0.32, 0.35, 0.9), 8, 1, 0))
 				else:
-					bg.color = COLOR_ENEMY_BLOCKED
+					bg.add_theme_stylebox_override("panel", AssetManager.make_panel_style(COLOR_ENEMY_BLOCKED, Color(0.35, 0.24, 0.28, 0.7), 8, 1, 0))
 
 
 func _set_log(message: String) -> void:
@@ -1856,7 +2261,9 @@ func _execute_combat_item(caster: Dictionary, item: Dictionary, target: Dictiona
 		"SHIELD_ALL":
 			for a in _get_living_units(Team.ALLY):
 				StatusEffectManager.clear_debuffs(a)
-				StatusEffectManager.add_flat_shield(a, int(round(pwr)), dur, iname)
+				var sh_amt: int = int(round(pwr))
+				StatusEffectManager.add_flat_shield(a, sh_amt, dur, iname)
+				_spawn_unit_floating_text(a, "보호막 +%d" % sh_amt, "SHIELD")
 			_set_log("[아이템: %s] 아군 전원 상태이상 정화 및 보호막 +%d!" % [iname, int(round(pwr))])
 		"CLEANSE":
 			var total_cl: int = 0
@@ -1868,7 +2275,8 @@ func _execute_combat_item(caster: Dictionary, item: Dictionary, target: Dictiona
 			var targets: Array[Dictionary] = [target] if (str(item.get("target_scope", "")) == "SINGLE_ENEMY" and not target.is_empty()) else _get_living_units(Team.ENEMY)
 			var dmg_amt: int = maxi(1, int(round(pwr)))
 			for e in targets:
-				StatusEffectManager.apply_damage_with_shield(e, dmg_amt)
+				var it_res: Dictionary = StatusEffectManager.apply_damage_with_shield(e, dmg_amt)
+				_spawn_unit_damage_float(e, dmg_amt, false, 1.0, int(it_res["shield_absorbed"]))
 			_set_log("[아이템: %s] 적 %d기에게 %d 고정 피해!" % [iname, targets.size(), dmg_amt])
 
 

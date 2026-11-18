@@ -1,0 +1,27 @@
+{
+	"id": "event_story_leon_vanguard",
+	"event_category": "NORMAL",
+	"min_stage": 3,
+	"max_stage": 5,
+	"title": "홍련의 검성 레온의 시험",
+	"description": "불타는 외곽 성채를 홀로 지켜낸 전설적인 성기사단장 레온이 성문 앞에 모습을 드러냈습니다. 그는 영지의 결의를 보고 전선 합류를 고민하고 있습니다.",
+	"option_a": {
+		"text": "정예 군량과 전비를 아끼지 않고 선봉장 자리를 내어준다",
+		"deltas": {
+			"gold": -30,
+			"food": -15,
+			"morale": 10,
+			"unrest": -1
+		},
+		"recruit_hero_id": "hero_named_leon"
+	},
+	"option_b": {
+		"text": "검술 교본과 군수 물자만 교환하여 성벽 수비 태세를 다진다",
+		"deltas": {
+			"materials": 25,
+			"gold": 30,
+			"wall_hp": 10
+		},
+		"grant_item_id": "item_war_elixir"
+	}
+}

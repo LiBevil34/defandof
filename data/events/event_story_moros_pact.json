@@ -1,0 +1,27 @@
+{
+	"id": "event_story_moros_pact",
+	"event_category": "NORMAL",
+	"min_stage": 5,
+	"max_stage": 6,
+	"title": "심연의 재판관 모로스의 서약",
+	"description": "금단의 별빛 마도서를 해독한 대마도사 모로스가 영지의 결전에 흥미를 보이며 찾아왔습니다. 그의 위험한 마력을 영입해 전선에 투입하시겠습니까?",
+	"option_a": {
+		"text": "금단의 지식을 수용하고 모로스를 전속 마도사로 영입한다",
+		"deltas": {
+			"gold": -35,
+			"morale": -6,
+			"unrest": 1
+		},
+		"recruit_hero_id": "hero_named_moros",
+		"grant_item_id": "item_holy_scroll"
+	},
+	"option_b": {
+		"text": "암흑 마법을 경계하며 마도 연구 자재와 공물만 거두어 들인다",
+		"deltas": {
+			"materials": 30,
+			"gold": 35,
+			"morale": 6,
+			"unrest": -1
+		}
+	}
+}

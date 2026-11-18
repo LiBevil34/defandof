@@ -4,6 +4,9 @@ extends Node
 
 const DAYS_PER_MONTH: int = 30
 const DEFENSE_INTERVAL_DAYS: int = 5
+const FINAL_YEAR: int = 3
+const FINAL_MONTH: int = 12
+const FINAL_TOTAL_DAY: int = 360
 
 const EVENT_STAGE_NAMES: Dictionary = {
 	1: "1단계 · 개척기 (1년차 봄·여름)",
@@ -55,6 +58,19 @@ func _ready() -> void:
 ## 5일 주기(5, 10, 15, 20, 25, 30일)이면 디펜스 데이로 판별합니다.
 func is_defense_day(day: int = current_day_of_month) -> bool:
 	return day > 0 and (day % DEFENSE_INTERVAL_DAYS) == 0
+
+
+## 3년차 마지막 디펜스 데이(3년차 4계절/겨울 30일차 또는 총 360일차 디펜스 데이) 여부를 반환합니다.
+func is_final_battle_day() -> bool:
+	if GlobalData.is_endless_mode or GlobalData.victory_achieved:
+		return false
+	var is_y3_last_day: bool = (
+		current_year == FINAL_YEAR
+		and current_season == Season.WINTER
+		and current_day_of_month == DAYS_PER_MONTH
+	)
+	var is_past_final_def: bool = (GlobalData.current_day >= FINAL_TOTAL_DAY and is_defense_day())
+	return is_y3_last_day or is_past_final_def
 
 
 ## 현재 진행 월(1년차 1월~3년차 12월+)을 총 6단계 시기(1~6)로 반환합니다.

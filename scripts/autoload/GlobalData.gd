@@ -26,6 +26,7 @@ signal battle_settings_changed()
 signal towers_changed()
 signal research_changed()
 signal dungeon_state_changed()
+signal run_stats_changed()
 
 enum AutoBattleMode {
 	MANUAL = 0,        ## 수동
@@ -38,6 +39,182 @@ var current_phase: GamePhase = GamePhase.MANAGEMENT
 var current_day: int = 1
 var last_management_day: int = -1
 var last_settled_day: int = -1
+
+const MAX_GENERAL_TEMPERAMENTS: int = 3
+const TRAUMA_CURE_COST: Dictionary = {"gold": 60, "food": 25}
+const EXHAUSTION_TRAUMA_CHANCE: float = 0.25
+
+## 테스트 결정성용 오버라이드 (< 0 이면 기본 45% + 사기 보정 확률 적용)
+var miracle_survival_rate_override: float = -1.0
+
+## 영웅 4대 기질 데이터베이스
+## category: "MIXED"(양면 · 일반), "POSITIVE"(순수 긍정 · 희귀), "NEGATIVE"(순수 부정 · 후유증), "VETERAN"(경험 · 소소한 습관)
+const TEMPERAMENT_DATA: Dictionary = {
+	# --- 1) MIXED (양면 기질 · 최소 10종+) ---
+	"temp_mixed_berserk": {
+		"id": "temp_mixed_berserk", "name": "광포한", "category": "MIXED",
+		"summary": "ATK +14%, DEF -10%",
+		"stats": {"atk_pct": 0.14, "def_pct": -0.10},
+	},
+	"temp_mixed_heavy": {
+		"id": "temp_mixed_heavy", "name": "육중한", "category": "MIXED",
+		"summary": "최대HP +16%, SPD -2",
+		"stats": {"max_hp_pct": 0.16, "speed_flat": -2.0},
+	},
+	"temp_mixed_hasty": {
+		"id": "temp_mixed_hasty", "name": "성급한", "category": "MIXED",
+		"summary": "SPD +3, DEF -10%",
+		"stats": {"speed_flat": 3.0, "def_pct": -0.10},
+	},
+	"temp_mixed_perfectionist": {
+		"id": "temp_mixed_perfectionist", "name": "완벽주의", "category": "MIXED",
+		"summary": "치명타율 +10%, 피로 누적 +20%",
+		"stats": {"crit_rate": 0.10, "fatigue_mult": 0.20},
+	},
+	"temp_mixed_dull": {
+		"id": "temp_mixed_dull", "name": "둔감한", "category": "MIXED",
+		"summary": "피로 경감 -25%, SPD -2",
+		"stats": {"fatigue_mult": -0.25, "speed_flat": -2.0},
+	},
+	"temp_mixed_devoted": {
+		"id": "temp_mixed_devoted", "name": "헌신적인", "category": "MIXED",
+		"summary": "HEAL +16%, 최대HP -10%",
+		"stats": {"heal_pct": 0.16, "max_hp_pct": -0.10},
+	},
+	"temp_mixed_reckless": {
+		"id": "temp_mixed_reckless", "name": "무모한", "category": "MIXED",
+		"summary": "치명피해 +25%, 최대HP -12%",
+		"stats": {"crit_dmg": 0.25, "max_hp_pct": -0.12},
+	},
+	"temp_mixed_cautious": {
+		"id": "temp_mixed_cautious", "name": "신중한", "category": "MIXED",
+		"summary": "DEF +14%, ATK -8%",
+		"stats": {"def_pct": 0.14, "atk_pct": -0.08},
+	},
+	"temp_mixed_greedy": {
+		"id": "temp_mixed_greedy", "name": "과욕의", "category": "MIXED",
+		"summary": "피해증가 +12%, 피로 누적 +20%",
+		"stats": {"dmg_bonus": 0.12, "fatigue_mult": 0.20},
+	},
+	"temp_mixed_stubborn": {
+		"id": "temp_mixed_stubborn", "name": "완고한", "category": "MIXED",
+		"summary": "방어관통 +12%, 치명타율 -5%",
+		"stats": {"armor_pen": 0.12, "crit_rate": -0.05},
+	},
+	"temp_mixed_agile": {
+		"id": "temp_mixed_agile", "name": "예민한 감각", "category": "MIXED",
+		"summary": "SPD +2, 치명타율 +6%, 피로 누적 +15%",
+		"stats": {"speed_flat": 2.0, "crit_rate": 0.06, "fatigue_mult": 0.15},
+	},
+
+	# --- 2) POSITIVE (순수 긍정 기질 · 최소 6종+) ---
+	"temp_pos_genius": {
+		"id": "temp_pos_genius", "name": "천재적인", "category": "POSITIVE",
+		"summary": "전 스탯 +6%",
+		"stats": {"max_hp_pct": 0.06, "atk_pct": 0.06, "def_pct": 0.06, "heal_pct": 0.06, "speed_pct": 0.06},
+	},
+	"temp_pos_undying": {
+		"id": "temp_pos_undying", "name": "불사신의 활력", "category": "POSITIVE",
+		"summary": "최대HP +15%, 피로 경감 -15%",
+		"stats": {"max_hp_pct": 0.15, "fatigue_mult": -0.15},
+	},
+	"temp_pos_warlord": {
+		"id": "temp_pos_warlord", "name": "전장의 지배자", "category": "POSITIVE",
+		"summary": "ATK +12%, 치명피해 +20%",
+		"stats": {"atk_pct": 0.12, "crit_dmg": 0.20},
+	},
+	"temp_pos_ironclad": {
+		"id": "temp_pos_ironclad", "name": "철벽의 화신", "category": "POSITIVE",
+		"summary": "DEF +15%, 최대HP +10%",
+		"stats": {"def_pct": 0.15, "max_hp_pct": 0.10},
+	},
+	"temp_pos_blessed": {
+		"id": "temp_pos_blessed", "name": "축복받은 손길", "category": "POSITIVE",
+		"summary": "HEAL +18%, SPD +2",
+		"stats": {"heal_pct": 0.18, "speed_flat": 2.0},
+	},
+	"temp_pos_windrunner": {
+		"id": "temp_pos_windrunner", "name": "질풍의 축복", "category": "POSITIVE",
+		"summary": "SPD +3, 치명타율 +8%",
+		"stats": {"speed_flat": 3.0, "crit_rate": 0.08},
+	},
+
+	# --- 3) NEGATIVE (순수 부정 기질 · 후유증/트라우마 · 최소 6종+) ---
+	"temp_neg_trauma": {
+		"id": "temp_neg_trauma", "name": "전장의 트라우마", "category": "NEGATIVE",
+		"summary": "ATK -12%, 피로 누적 +25%",
+		"stats": {"atk_pct": -0.12, "fatigue_mult": 0.25},
+	},
+	"temp_neg_injury": {
+		"id": "temp_neg_injury", "name": "고질적인 부상", "category": "NEGATIVE",
+		"summary": "최대HP -15%, DEF -8%",
+		"stats": {"max_hp_pct": -0.15, "def_pct": -0.08},
+	},
+	"temp_neg_weak_heart": {
+		"id": "temp_neg_weak_heart", "name": "쇠약한 심장", "category": "NEGATIVE",
+		"summary": "SPD -3, 피로 누적 +20%",
+		"stats": {"speed_flat": -3.0, "fatigue_mult": 0.20},
+	},
+	"temp_neg_fragile_mind": {
+		"id": "temp_neg_fragile_mind", "name": "유리 멘탈", "category": "NEGATIVE",
+		"summary": "DEF -12%, 치명타율 -5%",
+		"stats": {"def_pct": -0.12, "crit_rate": -0.05},
+	},
+	"temp_neg_chronic_fatigue": {
+		"id": "temp_neg_chronic_fatigue", "name": "만성 피로", "category": "NEGATIVE",
+		"summary": "피로 누적 +35%",
+		"stats": {"fatigue_mult": 0.35},
+	},
+	"temp_neg_trembling_hand": {
+		"id": "temp_neg_trembling_hand", "name": "떨리는 손", "category": "NEGATIVE",
+		"summary": "ATK -10%, HEAL -12%",
+		"stats": {"atk_pct": -0.10, "heal_pct": -0.12},
+	},
+
+	# --- 4) VETERAN (경험 기질 · 실전 습관/요령 · 최소 7종) ---
+	"temp_vet_wall_familiar": {
+		"id": "temp_vet_wall_familiar", "name": "성벽 위가 익숙한", "category": "VETERAN",
+		"summary": "DEF +3%, 최대HP +2%",
+		"unlock_hint": "디펜스 2회 이상 생존",
+		"stats": {"def_pct": 0.03, "max_hp_pct": 0.02},
+	},
+	"temp_vet_night_march": {
+		"id": "temp_vet_night_march", "name": "야간 행군 요령", "category": "VETERAN",
+		"summary": "피로 경감 -5%",
+		"unlock_hint": "던전 탐사 15걸음 이상",
+		"stats": {"fatigue_mult": -0.05},
+	},
+	"temp_vet_vital_spot": {
+		"id": "temp_vet_vital_spot", "name": "급소 노리기", "category": "VETERAN",
+		"summary": "치명타율 +2%, 치명피해 +4%",
+		"unlock_hint": "누적 적 12기 이상 처치",
+		"stats": {"crit_rate": 0.02, "crit_dmg": 0.04},
+	},
+	"temp_vet_first_aid": {
+		"id": "temp_vet_first_aid", "name": "상처 소독 습관", "category": "VETERAN",
+		"summary": "최대HP +3%, HEAL +3%",
+		"unlock_hint": "누적 치유량 80 이상 또는 5회 이상 교전",
+		"stats": {"max_hp_pct": 0.03, "heal_pct": 0.03},
+	},
+	"temp_vet_giant_slayer": {
+		"id": "temp_vet_giant_slayer", "name": "큰 덩치 상대법", "category": "VETERAN",
+		"summary": "ATK +3%",
+		"unlock_hint": "보스전 1회 이상 승리",
+		"stats": {"atk_pct": 0.03},
+	},
+	"temp_vet_tenacious_life": {
+		"id": "temp_vet_tenacious_life", "name": "질긴 생명력", "category": "VETERAN",
+		"summary": "최대HP +4%, DEF +2%",
+		"unlock_hint": "죽음의 문턱(기적적 생환) 1회 이상 극복",
+		"stats": {"max_hp_pct": 0.04, "def_pct": 0.02},
+	},
+	"temp_vet_worn_weapon": {
+		"id": "temp_vet_worn_weapon", "name": "손에 익은 무기", "category": "VETERAN",
+		"summary": "ATK +2%, SPD +1",
+		"unlock_hint": "실전 전투 4회 이상 참전",
+		"stats": {"atk_pct": 0.02, "speed_flat": 1.0},
+	},
+}
 
 # --- 내정 경영 자원 ---
 const MAX_MORALE: int = 100
@@ -76,10 +253,22 @@ var territory_debuff_rate: float = 0.0
 var territory_debuff_days: int = 0
 var rebellion_risk: int = 0
 var bad_choice_streak: int = 0
+var rebellion_suppression_active: bool = false
 
 # --- 대형 던전(FIELD_GRID) 디펜스 주기 유지 상태 & 예상 적 속성 ---
 var field_dungeon_state: Dictionary = {}
 var upcoming_defense_elements: Array[String] = []
+
+# --- 누적 플레이 통계 & 엔딩/무한 모드 상태 ---
+var run_stats: Dictionary = {
+	"defenses_won": 0,
+	"bosses_defeated": 0,
+	"dungeons_cleared": 0,
+	"heroes_recruited": 0,
+	"events_resolved": 0,
+}
+var victory_achieved: bool = false
+var is_endless_mode: bool = false
 
 # --- 영웅 피로도 상수 (0 = 최상, >= 80 지침, 100 탈진) ---
 const MAX_FATIGUE: int = 100
@@ -316,27 +505,85 @@ func create_hero_instance(template: Dictionary) -> Dictionary:
 	var uid: int = next_hero_uid
 	next_hero_uid += 1
 	var max_hp: int = maxi(1, int(template.get("max_hp", 50)))
-	var job_class: String = str(template.get("job_class", "근접딜러"))
-	var traits: Dictionary = _default_skill_traits_for_job(job_class)
+	var raw_sub: String = str(template.get("sub_class", template.get("job_class", "돌격검객")))
+	var raw_group: String = str(template.get("class_group", ""))
+	var hier: Dictionary = DataManager.normalize_class_hierarchy(raw_group, raw_sub, str(template.get("role_category", "")))
+	var role_category: String = str(hier["role_category"])
+	var class_group: String = str(hier["class_group"])
+	var sub_class: String = str(hier["sub_class"])
+	var class_info: Dictionary = DataManager.get_sub_class_info(sub_class)
+	var traits: Dictionary = _default_skill_traits_for_job(class_group)
 	var rarity: String = DataManager.normalize_rarity(template.get("rarity", "N"))
 	var slots: Dictionary = DataManager.get_skill_slot_rules(rarity)
+	var is_named_hero: bool = bool(template.get("is_named", false))
 
-	return {
+	# 고정 기질 및 잠금 여부 결정 (템플릿 우선, 없으면 직군 설정 참조)
+	var fixed_list: Array[String] = []
+	for ft in template.get("fixed_temperaments", []):
+		var fts: String = str(ft).strip_edges()
+		if TEMPERAMENT_DATA.has(fts) and not fixed_list.has(fts):
+			fixed_list.append(fts)
+	if fixed_list.is_empty():
+		for cft in class_info.get("fixed_temperaments", []):
+			var cfts: String = str(cft).strip_edges()
+			if TEMPERAMENT_DATA.has(cfts) and not fixed_list.has(cfts):
+				fixed_list.append(cfts)
+
+	var lock_general: bool = (
+		is_named_hero
+		or bool(template.get("lock_general_temperaments", false))
+		or bool(class_info.get("lock_general_temperaments", false))
+		or not fixed_list.is_empty()
+	)
+
+	var final_temps: Array[String] = []
+	var has_saved_temps: bool = template.has("temperaments") and typeof(template.get("temperaments")) == TYPE_ARRAY
+	if has_saved_temps:
+		for tid in template.get("temperaments", []):
+			var tids: String = str(tid).strip_edges()
+			if TEMPERAMENT_DATA.has(tids) and not final_temps.has(tids):
+				final_temps.append(tids)
+	elif lock_general:
+		if not fixed_list.is_empty():
+			for ft in fixed_list:
+				final_temps.append(ft)
+		else:
+			# 고정 기질이 지정되지 않은 네임드/잠금 영웅은 직군 성향에 맞는 긍정/고유 기질 1개 자동 부여
+			final_temps.append(_fallback_fixed_temperament_for_class(class_group, sub_class))
+	else:
+		# 일반 영웅 생성 시 1~2개 일반 기질 무작위 추첨 (MIXED ~92%, POSITIVE ~8%)
+		var roll_count: int = randi_range(1, 2)
+		for _i in range(roll_count):
+			var cat_pick: String = "POSITIVE" if randf() < 0.08 else "MIXED"
+			var picked: String = roll_random_temperament_id(cat_pick, final_temps)
+			if not picked.is_empty():
+				final_temps.append(picked)
+
+	var svc: Dictionary = _normalize_service_record(template.get("service_record", {}))
+
+	var inst: Dictionary = {
 		"uid": uid,
 		"id": str(template.get("id", "hero_%d" % uid)),
 		"name": str(template.get("name", "이름 없는 영웅")),
-		"is_named": bool(template.get("is_named", false)),
+		"is_named": is_named_hero,
+		"named_source": str(template.get("named_source", "NONE")),
 		"named_title": str(template.get("named_title", "")).strip_edges(),
 		"lore": str(template.get("lore", "")).strip_edges(),
 		"signature_equip_id": str(template.get("signature_equip_id", "")).strip_edges(),
+		"fixed_temperaments": fixed_list,
+		"lock_general_temperaments": lock_general,
+		"temperaments": final_temps,
+		"service_record": svc,
 		"rarity": rarity,
 		"level": maxi(1, int(template.get("level", 1))),
 		"fatigue": clampi(int(template.get("fatigue", 0)), 0, MAX_FATIGUE),
-		"role_category": DataManager.normalize_role_category(str(template.get("role_category", "전위")), job_class),
-		"job_class": job_class,
+		"role_category": role_category,
+		"class_group": class_group,
+		"sub_class": sub_class,
+		"job_class": sub_class,
 		"element": str(template.get("element", "FIRE")),
 		"max_hp": max_hp,
-		"hp": clampi(int(template.get("hp", max_hp)), 0, max_hp),
+		"hp": max_hp,
 		"atk": int(template.get("atk", 15)),
 		"def": int(template.get("def", 10)),
 		"heal_power": int(template.get("heal_power", 0)),
@@ -351,13 +598,23 @@ func create_hero_instance(template: Dictionary) -> Dictionary:
 		"skill_id": str(template.get("skill_id", "")) if slots["active1"] else "",
 		"skill2_id": str(template.get("skill2_id", "")) if slots["active2"] else "",
 		"ultimate_id": str(template.get("ultimate_id", "")) if slots["ultimate"] else "",
+		"passive_skill_id": str(template.get("passive_skill_id", "")).strip_edges(),
 		"skill_description": str(template.get("skill_description", "")),
 		"passive_name": str(template.get("passive_name", traits["passive_name"])),
 		"passive_desc": str(template.get("passive_desc", traits["passive_desc"])),
 		"ultimate_name": str(template.get("ultimate_name", traits["ultimate_name"])),
 		"ultimate_desc": str(template.get("ultimate_desc", traits["ultimate_desc"])),
+		"portrait_path": str(template.get("portrait_path", "")).strip_edges(),
+		"sprite_path": str(template.get("sprite_path", "")).strip_edges(),
 		"equipped_items": _normalize_equipped_items(template.get("equipped_items", {})),
 	}
+
+	var eff_max: int = maxi(1, roundi(get_effective_stat(inst, "max_hp")))
+	if template.has("hp"):
+		inst["hp"] = clampi(int(template.get("hp", eff_max)), 0, eff_max)
+	else:
+		inst["hp"] = eff_max
+	return inst
 
 
 func _normalize_equipped_items(raw_eq: Variant) -> Dictionary:
@@ -372,49 +629,94 @@ func _normalize_equipped_items(raw_eq: Variant) -> Dictionary:
 
 
 func _default_skill_traits_for_job(job_class: String) -> Dictionary:
-	match job_class:
-		"탱커":
+	var cg: String = job_class if DataManager.CLASS_GROUPS.has(job_class) else DataManager.get_class_group_for_sub_class(job_class)
+	match cg:
+		"중장":
 			return {
-				"passive_name": "철벽 수호",
-				"passive_desc": "성벽 밖 배치 시 최대 3명의 적을 저지하며 전열에서 아군을 보호합니다.",
+				"passive_name": "철벽 방진",
+				"passive_desc": "디펜스 성벽 밖 기본 저지 수 +1(총 4저지), 전열 배치 시 받는 피해 -10%.",
 				"ultimate_name": "불굴의 요새",
 				"ultimate_desc": "아군 전체에 강력한 보호막과 방어력 증가를 부여하는 궁극기입니다.",
 			}
-		"근접딜러":
+		"근위":
 			return {
-				"passive_name": "돌격 태세",
-				"passive_desc": "근접 교전에서 안정적인 물리 피해와 전선 돌파 능력을 발휘합니다.",
+				"passive_name": "파쇄 돌격",
+				"passive_desc": "근접 공격 시 방어력 10% 무시, 적 처치 시 다음 턴 속도 +2.",
 				"ultimate_name": "파멸의 일격",
 				"ultimate_desc": "적 전열에 치명적인 속성 연격을 퍼붓는 궁극기입니다.",
 			}
-		"원거리딜러":
+		"선봉":
 			return {
-				"passive_name": "정밀 조준",
-				"passive_desc": "성벽 위 배치 시 사거리가 크게 증가하며 근접 공격에 면역입니다.",
+				"passive_name": "선봉 기동",
+				"passive_desc": "던전 이동 피로도 -1 경감, 전투 첫 턴 속도(SPD) +3.",
+				"ultimate_name": "기습 신호탄",
+				"ultimate_desc": "적의 헛점을 찔러 아군 전체의 기동력을 끌어올리는 정찰 궁극기입니다.",
+			}
+		"특수":
+			return {
+				"passive_name": "변칙 기동",
+				"passive_desc": "진형 이동(밀치기/당기기/교환) 성공률 100%, 기습 공격 시 치명피해 +20%.",
+				"ultimate_name": "비술 개방",
+				"ultimate_desc": "전장에 강력한 디버프와 버프를 동시에 전개하는 궁극기입니다.",
+			}
+		"보조":
+			return {
+				"passive_name": "전술 공명",
+				"passive_desc": "부여하는 버프·디버프 지속시간 +1턴(디펜스 +2초) 연장.",
+				"ultimate_name": "승리의 교향곡",
+				"ultimate_desc": "아군 전선의 화력과 방어를 동시에 극대화하는 지원 궁극기입니다.",
+			}
+		"저격":
+			return {
+				"passive_name": "고지 사격",
+				"passive_desc": "디펜스 성벽 위 배치 시 사거리 추가 +15% 및 근접 공격 면역.",
 				"ultimate_name": "폭풍 일제사격",
 				"ultimate_desc": "전장의 모든 적에게 속성 광역 피해를 가하는 궁극기입니다.",
 			}
-		"마법사":
+		"술사":
 			return {
-				"passive_name": "마력 공명",
-				"passive_desc": "마법 공격 피해가 강화되지만 전투당 피로도 소모가 큰 편입니다.",
+				"passive_name": "원소 증폭",
+				"passive_desc": "속성 상성 우위(1.5x) 공격 시 최종 피해 +15%.",
 				"ultimate_name": "비전 폭풍",
 				"ultimate_desc": "전장의 모든 적에게 거대한 마법 속성 폭격을 가하는 궁극기입니다.",
 			}
-		"힐러":
+		"의료":
 			return {
-				"passive_name": "치유의 기도",
-				"passive_desc": "전투 중 체력이 가장 낮은 아군을 우선 탐색하여 회복시킵니다.",
+				"passive_name": "구호 결계",
+				"passive_desc": "치유 실행 시 대상에게 1턴(디펜스 2초)간 받는 피해 -10% 보호 가호 부여.",
 				"ultimate_name": "대천사의 은총",
 				"ultimate_desc": "아군 전체의 체력을 대폭 회복하고 상태이상을 정화하는 궁극기입니다.",
 			}
 		_:
 			return {
 				"passive_name": "전술 응용",
-				"passive_desc": "상황에 따라 지속 피해와 아군 강화 효과를 동시에 운용합니다.",
+				"passive_desc": "병과와 세부직군 특성을 결합해 전장을 지원합니다.",
 				"ultimate_name": "비술 개방",
 				"ultimate_desc": "전장에 강력한 디버프와 버프를 동시에 전개하는 궁극기입니다.",
 			}
+
+
+## 영웅의 2계층 직군 정보(병과 특성 + 세부직군 고유 특성)를 함께 반환
+func get_hero_trait_summary(hero: Dictionary) -> Dictionary:
+	var hier: Dictionary = DataManager.normalize_class_hierarchy(
+		str(hero.get("class_group", "")),
+		str(hero.get("sub_class", hero.get("job_class", ""))),
+		str(hero.get("role_category", ""))
+	)
+	var cg: String = str(hier["class_group"])
+	var sub: String = str(hier["sub_class"])
+	var cg_info: Dictionary = DataManager.get_class_group_info(cg)
+	var sub_info: Dictionary = DataManager.get_sub_class_info(sub)
+	return {
+		"role_category": str(hier["role_category"]),
+		"class_group": cg,
+		"sub_class": sub,
+		"class_trait_name": str(cg_info.get("trait_name", cg)),
+		"class_trait_desc": str(cg_info.get("trait_desc", "")),
+		"sub_trait": str(sub_info.get("sub_trait", "")),
+		"sub_trait_label": str(sub_info.get("sub_trait_label", sub)),
+		"sub_trait_desc": str(sub_info.get("sub_trait_desc", str(sub_info.get("description", "")))),
+	}
 
 
 func has_hero_id_in_roster(hero_id: String) -> bool:
@@ -447,6 +749,7 @@ func recruit_hero(template: Dictionary) -> Dictionary:
 		return {}
 	var hero_inst: Dictionary = create_hero_instance(template)
 	hero_roster.append(hero_inst)
+	record_hero_recruited()
 	roster_changed.emit()
 	return hero_inst
 
@@ -456,6 +759,112 @@ func recruit_hero_by_id(hero_id: String) -> Dictionary:
 	if tpl.is_empty():
 		return {}
 	return recruit_hero(tpl)
+
+
+func find_hero_by_id_in_roster(hero_id: String) -> Dictionary:
+	if hero_id.is_empty():
+		return {}
+	for h in hero_roster:
+		if str(h.get("id", "")) == hero_id:
+			return h
+	return {}
+
+
+func get_owned_named_heroes() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for h in hero_roster:
+		if bool(h.get("is_named", false)):
+			out.append(h)
+	return out
+
+
+func get_unowned_story_heroes() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for h in DataManager.heroes:
+		if bool(h.get("is_named", false)) and str(h.get("named_source", "")) == "STORY":
+			if not has_hero_id_in_roster(str(h.get("id", ""))):
+				out.append(h)
+	return out
+
+
+## 이벤트 선택지(option_a/option_b)의 영웅 영입 / 장비 지급 / 아이템 지급 보상을 안전하게 적용합니다.
+## 이미 보유 중인 네임드 영웅 또는 네임드 장비일 경우 자원 및 한계훈련 보상으로 자동 대체합니다.
+func grant_event_rewards(opt_data: Dictionary) -> Dictionary:
+	var messages: PackedStringArray = []
+	var recruited_hero: Dictionary = {}
+	var granted_equip: Dictionary = {}
+	var granted_item: Dictionary = {}
+
+	var hero_id: String = str(opt_data.get("recruit_hero_id", "")).strip_edges()
+	if not hero_id.is_empty():
+		var tpl: Dictionary = DataManager.get_hero_template(hero_id)
+		if not tpl.is_empty():
+			if can_recruit_hero(tpl):
+				recruited_hero = recruit_hero(tpl)
+				if not recruited_hero.is_empty():
+					messages.append("★ 스토리 네임드 영웅 합류: [%s] %s" % [
+						DataManager.normalize_rarity(tpl.get("rarity", "R")),
+						str(tpl.get("name", hero_id)),
+					])
+			else:
+				var existing: Dictionary = find_hero_by_id_in_roster(hero_id)
+				var bonus_gold: int = 60
+				var bonus_mat: int = 25
+				apply_deltas({"gold": bonus_gold, "materials": bonus_mat})
+				if not existing.is_empty():
+					var lv_res: Dictionary = level_up_hero(int(existing.get("uid", -1)))
+					messages.append("★ [%s] 이미 보유 중 → 대체 보상: Lv.%d 한계훈련 강화 + 골드 +%d, 자재 +%d" % [
+						str(tpl.get("name", hero_id)),
+						int(lv_res.get("level", existing.get("level", 1))),
+						bonus_gold,
+						bonus_mat,
+					])
+				else:
+					messages.append("★ [%s] 이미 보유 중 → 대체 보상: 골드 +%d, 자재 +%d" % [
+						str(tpl.get("name", hero_id)),
+						bonus_gold,
+						bonus_mat,
+					])
+
+	var equip_id: String = str(opt_data.get("grant_equip_id", "")).strip_edges()
+	if not equip_id.is_empty():
+		var eq_tpl: Dictionary = DataManager.get_equipment(equip_id)
+		if not eq_tpl.is_empty():
+			if can_obtain_equipment(equip_id):
+				granted_equip = add_equipment_to_inventory(equip_id)
+				if not granted_equip.is_empty():
+					messages.append("★ 장비 획득: [%s] %s" % [
+						DataManager.normalize_rarity(eq_tpl.get("rarity", "N")),
+						str(eq_tpl.get("name", equip_id)),
+					])
+			else:
+				var eq_rw: Dictionary = get_equipment_disassemble_reward(eq_tpl)
+				var g_amt: int = int(eq_rw.get("gold", 30)) + 25
+				var m_amt: int = int(eq_rw.get("materials", 20)) + 15
+				apply_deltas({"gold": g_amt, "materials": m_amt})
+				messages.append("★ 장비 [%s] 이미 보유 중 → 대체 보상: 골드 +%d, 자재 +%d" % [
+					str(eq_tpl.get("name", equip_id)),
+					g_amt,
+					m_amt,
+				])
+
+	var item_id: String = str(opt_data.get("grant_item_id", "")).strip_edges()
+	if not item_id.is_empty():
+		var it_tpl: Dictionary = DataManager.get_item(item_id)
+		if not it_tpl.is_empty():
+			add_item(item_id, 1)
+			granted_item = it_tpl
+			messages.append("★ 아이템 획득: [%s] %s x1" % [
+				DataManager.normalize_rarity(it_tpl.get("rarity", "N")),
+				str(it_tpl.get("name", item_id)),
+			])
+
+	return {
+		"messages": messages,
+		"hero": recruited_hero,
+		"equip": granted_equip,
+		"item": granted_item,
+	}
 
 
 func get_hero_by_uid(uid: int) -> Dictionary:
@@ -642,6 +1051,128 @@ func unequip_slot(hero_uid: int, slot_type: String) -> bool:
 	return true
 
 
+const HERO_DISMISS_REFUND_BY_RARITY: Dictionary = {
+	"N": 12,
+	"R": 25,
+	"SR": 55,
+	"SSR": 110,
+}
+
+const EQUIP_DISASSEMBLE_REWARDS: Dictionary = {
+	"N": {"materials": 8, "gold": 5},
+	"R": {"materials": 16, "gold": 12},
+	"SR": {"materials": 35, "gold": 25},
+	"SSR": {"materials": 70, "gold": 50},
+}
+
+
+func get_hero_dismiss_refund(hero: Dictionary) -> int:
+	if hero.is_empty():
+		return 0
+	var rarity: String = DataManager.normalize_rarity(hero.get("rarity", "N"))
+	var base_gold: int = int(HERO_DISMISS_REFUND_BY_RARITY.get(rarity, 12))
+	var lv: int = maxi(1, int(hero.get("level", 1)))
+	return base_gold + (lv - 1) * 6
+
+
+func dismiss_hero(hero_uid: int) -> Dictionary:
+	if hero_roster.size() <= 1:
+		return {"ok": false, "reason": "로스터에 최소 1명의 영웅은 남겨야 합니다."}
+	var target_idx: int = -1
+	for i in range(hero_roster.size()):
+		if int(hero_roster[i].get("uid", -1)) == hero_uid:
+			target_idx = i
+			break
+	if target_idx == -1:
+		return {"ok": false, "reason": "전역시킬 영웅을 찾을 수 없습니다."}
+
+	var hero: Dictionary = hero_roster[target_idx]
+	var h_name: String = str(hero.get("name", "영웅"))
+	var rarity: String = DataManager.normalize_rarity(hero.get("rarity", "N"))
+	var gold_refund: int = get_hero_dismiss_refund(hero)
+
+	# 장착 중이던 장비 자동 해제 (equipment_inventory에 인스턴스 그대로 보존)
+	var unequipped_cnt: int = 0
+	var equipped: Dictionary = hero.get("equipped_items", {})
+	for slot in DataManager.SLOT_TYPES:
+		if equipped.get(slot, null) != null:
+			equipped[slot] = null
+			unequipped_cnt += 1
+
+	# 모든 파티 프리셋 슬롯에서 해당 영웅 제거
+	for preset in party_presets:
+		var slots: Dictionary = preset.get("slots", {})
+		for k in slots.keys().duplicate():
+			if int(slots[k]) == hero_uid:
+				slots.erase(k)
+
+	hero_roster.remove_at(target_idx)
+	_sync_dungeon_party_grid_from_preset()
+	apply_deltas({"gold": gold_refund})
+	roster_changed.emit()
+	party_presets_changed.emit()
+	if unequipped_cnt > 0:
+		inventory_changed.emit()
+
+	return {
+		"ok": true,
+		"name": h_name,
+		"rarity": rarity,
+		"gold": gold_refund,
+		"unequipped_count": unequipped_cnt,
+	}
+
+
+func get_equipment_disassemble_reward(tpl: Dictionary) -> Dictionary:
+	var rarity: String = DataManager.normalize_rarity(tpl.get("rarity", "N"))
+	var reward: Dictionary = EQUIP_DISASSEMBLE_REWARDS.get(rarity, EQUIP_DISASSEMBLE_REWARDS["N"])
+	return {
+		"materials": int(reward.get("materials", 8)),
+		"gold": int(reward.get("gold", 5)),
+	}
+
+
+func can_disassemble_equipment(inst_id: int) -> Dictionary:
+	var inst: Dictionary = get_equipment_instance(inst_id)
+	if inst.is_empty():
+		return {"ok": false, "reason": "장비를 찾을 수 없습니다."}
+	var tpl: Dictionary = DataManager.get_equipment(str(inst.get("equip_id", "")))
+	if tpl.is_empty():
+		return {"ok": false, "reason": "장비 데이터가 유효하지 않습니다."}
+	if get_equipment_owner_uid(inst_id) != -1:
+		return {"ok": false, "reason": "영웅이 장착 중인 장비는 분해할 수 없습니다."}
+	if bool(tpl.get("is_named", false)) or bool(tpl.get("is_unique", false)) or not str(tpl.get("exclusive_hero_id", "")).strip_edges().is_empty():
+		return {"ok": false, "reason": "네임드·유일 전용 장비는 실수 방지를 위해 분해할 수 없습니다."}
+	return {"ok": true}
+
+
+func disassemble_equipment(inst_id: int) -> Dictionary:
+	var check: Dictionary = can_disassemble_equipment(inst_id)
+	if not bool(check.get("ok", false)):
+		return check
+	var target_idx: int = -1
+	for i in range(equipment_inventory.size()):
+		if int(equipment_inventory[i].get("inst_id", -1)) == inst_id:
+			target_idx = i
+			break
+	if target_idx == -1:
+		return {"ok": false, "reason": "장비를 찾을 수 없습니다."}
+
+	var tpl: Dictionary = DataManager.get_equipment(str(equipment_inventory[target_idx].get("equip_id", "")))
+	var reward: Dictionary = get_equipment_disassemble_reward(tpl)
+	equipment_inventory.remove_at(target_idx)
+	apply_deltas(reward)
+	inventory_changed.emit()
+
+	return {
+		"ok": true,
+		"name": str(tpl.get("name", "장비")),
+		"rarity": DataManager.normalize_rarity(tpl.get("rarity", "N")),
+		"materials": int(reward["materials"]),
+		"gold": int(reward["gold"]),
+	}
+
+
 func get_hero_equipped_templates(hero: Dictionary) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	var equipped: Dictionary = hero.get("equipped_items", {})
@@ -705,11 +1236,337 @@ func get_hero_equipment_passives(hero: Dictionary) -> Array[Dictionary]:
 	return out
 
 
-## 영웅의 기본 스탯 + 장착 장비 stat_bonuses + 장비 패시브(SELF 버프)를 합산한 최종 유효 스탯을 반환합니다.
+# ==========================================
+# 영웅 3계층 다중 기질(Temperament) & 실전 이력 시스템
+# ==========================================
+func get_temperament_info(temp_id: String) -> Dictionary:
+	return TEMPERAMENT_DATA.get(temp_id, {})
+
+
+func _fallback_fixed_temperament_for_class(class_group: String, _sub_class: String) -> String:
+	match class_group:
+		"중장":
+			return "temp_pos_ironclad"
+		"근위", "선봉":
+			return "temp_pos_warlord"
+		"저격", "특수":
+			return "temp_pos_windrunner"
+		"의료":
+			return "temp_pos_blessed"
+		_:
+			return "temp_pos_genius"
+
+
+func _normalize_service_record(raw: Variant) -> Dictionary:
+	var d: Dictionary = raw if typeof(raw) == TYPE_DICTIONARY else {}
+	return {
+		"defenses_survived": maxi(0, int(d.get("defenses_survived", 0))),
+		"dungeon_steps": maxi(0, int(d.get("dungeon_steps", 0))),
+		"boss_kills": maxi(0, int(d.get("boss_kills", 0))),
+		"near_deaths": maxi(0, int(d.get("near_deaths", 0))),
+		"total_kills": maxi(0, int(d.get("total_kills", 0))),
+		"total_healed": maxi(0, int(d.get("total_healed", 0))),
+		"battles_fought": maxi(0, int(d.get("battles_fought", 0))),
+	}
+
+
+func get_temperaments_by_category(category: String) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for tid in TEMPERAMENT_DATA:
+		var t: Dictionary = TEMPERAMENT_DATA[tid]
+		if str(t.get("category", "")) == category:
+			out.append(t)
+	return out
+
+
+func roll_random_temperament_id(category: String, exclude_ids: Array = []) -> String:
+	var pool: Array[String] = []
+	for tid in TEMPERAMENT_DATA:
+		var t: Dictionary = TEMPERAMENT_DATA[tid]
+		if str(t.get("category", "")) == category and not exclude_ids.has(tid):
+			pool.append(tid)
+	if pool.is_empty():
+		return ""
+	return pool[randi() % pool.size()]
+
+
+func get_hero_temperaments_by_category(hero: Dictionary) -> Dictionary:
+	var general: Array[String] = []
+	var veteran: Array[String] = []
+	var negative: Array[String] = []
+	for tid in hero.get("temperaments", []):
+		var tids: String = str(tid)
+		var info: Dictionary = get_temperament_info(tids)
+		if info.is_empty():
+			continue
+		match str(info.get("category", "")):
+			"MIXED", "POSITIVE":
+				if not general.has(tids):
+					general.append(tids)
+			"VETERAN":
+				if not veteran.has(tids):
+					veteran.append(tids)
+			"NEGATIVE":
+				if not negative.has(tids):
+					negative.append(tids)
+	return {
+		"general": general,
+		"veteran": veteran,
+		"negative": negative,
+	}
+
+
+func get_hero_temperament_bonuses(hero: Dictionary) -> Dictionary:
+	var totals: Dictionary = {
+		"max_hp_pct": 0.0,
+		"atk_pct": 0.0,
+		"def_pct": 0.0,
+		"heal_pct": 0.0,
+		"speed_pct": 0.0,
+		"speed_flat": 0.0,
+		"dmg_bonus": 0.0,
+		"crit_rate": 0.0,
+		"crit_dmg": 0.0,
+		"armor_pen": 0.0,
+		"fatigue_mult": 0.0,
+	}
+	for tid in hero.get("temperaments", []):
+		var info: Dictionary = get_temperament_info(str(tid))
+		if info.is_empty():
+			continue
+		var stats: Dictionary = info.get("stats", {})
+		for k in stats:
+			if totals.has(k):
+				totals[k] = float(totals[k]) + float(stats[k])
+	return totals
+
+
+func get_hero_fatigue_multiplier(hero: Dictionary) -> float:
+	var tb: Dictionary = get_hero_temperament_bonuses(hero)
+	return maxf(0.35, 1.0 + float(tb.get("fatigue_mult", 0.0)))
+
+
+func add_hero_temperament(uid_or_hero: Variant, temp_id: String, emit_change: bool = true) -> Dictionary:
+	var hero: Dictionary = uid_or_hero if typeof(uid_or_hero) == TYPE_DICTIONARY else get_hero_by_uid(int(uid_or_hero))
+	if hero.is_empty():
+		return {"added": false, "reason": "NO_HERO"}
+	var info: Dictionary = get_temperament_info(temp_id)
+	if info.is_empty():
+		return {"added": false, "reason": "INVALID_ID"}
+
+	if not hero.has("temperaments") or typeof(hero.get("temperaments")) != TYPE_ARRAY:
+		hero["temperaments"] = []
+	var t_list: Array = hero["temperaments"]
+	if t_list.has(temp_id):
+		return {"added": false, "reason": "DUPLICATE"}
+
+	var cat: String = str(info.get("category", ""))
+	if cat == "MIXED" or cat == "POSITIVE":
+		if bool(hero.get("lock_general_temperaments", false)):
+			return {"added": false, "reason": "LOCKED"}
+		var grouped: Dictionary = get_hero_temperaments_by_category(hero)
+		if (grouped["general"] as Array).size() >= MAX_GENERAL_TEMPERAMENTS:
+			return {"added": false, "reason": "FULL"}
+
+	t_list.append(temp_id)
+	# 최대 체력 기질 변동 시 현재 HP 상한 보정
+	var eff_max: int = maxi(1, roundi(get_effective_stat(hero, "max_hp")))
+	hero["hp"] = clampi(int(hero.get("hp", eff_max)), 0, eff_max)
+	if emit_change:
+		roster_changed.emit()
+	return {"added": true, "reason": "OK", "temperament": info}
+
+
+func grant_random_general_temperament(uid: int, positive_chance: float = 0.08) -> String:
+	var hero: Dictionary = get_hero_by_uid(uid)
+	if hero.is_empty() or bool(hero.get("lock_general_temperaments", false)):
+		return ""
+	var grouped: Dictionary = get_hero_temperaments_by_category(hero)
+	if (grouped["general"] as Array).size() >= MAX_GENERAL_TEMPERAMENTS:
+		return ""
+	var cur_list: Array = hero.get("temperaments", [])
+	var cat: String = "POSITIVE" if randf() < positive_chance else "MIXED"
+	var picked: String = roll_random_temperament_id(cat, cur_list)
+	if picked.is_empty():
+		picked = roll_random_temperament_id("MIXED" if cat == "POSITIVE" else "POSITIVE", cur_list)
+	if picked.is_empty():
+		return ""
+	var res: Dictionary = add_hero_temperament(hero, picked, true)
+	return picked if bool(res.get("added", false)) else ""
+
+
+func grant_random_negative_temperament(uid: int) -> String:
+	var hero: Dictionary = get_hero_by_uid(uid)
+	if hero.is_empty():
+		return ""
+	var cur_list: Array = hero.get("temperaments", [])
+	var picked: String = roll_random_temperament_id("NEGATIVE", cur_list)
+	if picked.is_empty():
+		return ""
+	var res: Dictionary = add_hero_temperament(hero, picked, true)
+	return picked if bool(res.get("added", false)) else ""
+
+
+func cure_hero_negative_temperament(uid: int, cost: Dictionary = TRAUMA_CURE_COST) -> Dictionary:
+	var hero: Dictionary = get_hero_by_uid(uid)
+	if hero.is_empty():
+		return {"cured": false, "reason": "NO_HERO"}
+	var grouped: Dictionary = get_hero_temperaments_by_category(hero)
+	var negs: Array = grouped["negative"]
+	if negs.is_empty():
+		return {"cured": false, "reason": "NO_TRAUMA"}
+	if not cost.is_empty() and not spend_resources(cost):
+		return {"cured": false, "reason": "NO_RESOURCES"}
+
+	var target_tid: String = str(negs[0])
+	var t_list: Array = hero.get("temperaments", [])
+	t_list.erase(target_tid)
+	var eff_max: int = maxi(1, roundi(get_effective_stat(hero, "max_hp")))
+	hero["hp"] = clampi(int(hero.get("hp", eff_max)), 0, eff_max)
+	roster_changed.emit()
+	return {
+		"cured": true,
+		"reason": "OK",
+		"removed_id": target_tid,
+		"removed_name": str(get_temperament_info(target_tid).get("name", target_tid)),
+	}
+
+
+## 전투 중 치명타/죽음(HP 0) 도달 시 기적적 생환 확률 판정 (기본 45% + 사기 보정)
+func roll_miracle_survival(_hero_uid: int = -1) -> bool:
+	if miracle_survival_rate_override >= 0.0:
+		return randf() < clampf(miracle_survival_rate_override, 0.0, 1.0)
+	var morale_bonus: float = clampf(float(citizen_morale - 50) / 200.0, -0.15, 0.25)
+	var chance: float = clampf(0.45 + morale_bonus, 0.15, 0.80)
+	return randf() < chance
+
+
+func record_hero_service(uid: int, deltas: Dictionary, emit_change: bool = true) -> Array[String]:
+	var unlocked_ids: Array[String] = []
+	var hero: Dictionary = get_hero_by_uid(uid)
+	if hero.is_empty():
+		return unlocked_ids
+	if not hero.has("service_record") or typeof(hero.get("service_record")) != TYPE_DICTIONARY:
+		hero["service_record"] = _normalize_service_record({})
+	var svc: Dictionary = hero["service_record"]
+	for key in ["defenses_survived", "dungeon_steps", "boss_kills", "near_deaths", "total_kills", "total_healed", "battles_fought"]:
+		var d: int = int(deltas.get(key, 0))
+		if d > 0:
+			svc[key] = int(svc.get(key, 0)) + d
+
+	unlocked_ids = _evaluate_veteran_temperaments(hero, false)
+	if emit_change and (not unlocked_ids.is_empty()):
+		roster_changed.emit()
+	return unlocked_ids
+
+
+func record_party_service(deltas: Dictionary) -> Array[Dictionary]:
+	var unlocked_reports: Array[Dictionary] = []
+	for hero in get_deployable_party_heroes():
+		var uid: int = int(hero.get("uid", -1))
+		if uid <= 0:
+			continue
+		var new_vets: Array[String] = record_hero_service(uid, deltas, false)
+		for vid in new_vets:
+			unlocked_reports.append({
+				"uid": uid,
+				"hero_name": str(hero.get("name", "영웅")),
+				"temp_id": vid,
+				"temp_name": str(get_temperament_info(vid).get("name", vid)),
+				"summary": str(get_temperament_info(vid).get("summary", "")),
+			})
+	if not unlocked_reports.is_empty():
+		roster_changed.emit()
+	return unlocked_reports
+
+
+func _evaluate_veteran_temperaments(hero: Dictionary, emit_change: bool = false) -> Array[String]:
+	var unlocked: Array[String] = []
+	var svc: Dictionary = hero.get("service_record", {})
+	var checks: Array[Array] = [
+		["temp_vet_wall_familiar", int(svc.get("defenses_survived", 0)) >= 2],
+		["temp_vet_night_march", int(svc.get("dungeon_steps", 0)) >= 15],
+		["temp_vet_vital_spot", int(svc.get("total_kills", 0)) >= 12],
+		["temp_vet_first_aid", int(svc.get("total_healed", 0)) >= 80 or int(svc.get("battles_fought", 0)) >= 5],
+		["temp_vet_giant_slayer", int(svc.get("boss_kills", 0)) >= 1],
+		["temp_vet_tenacious_life", int(svc.get("near_deaths", 0)) >= 1],
+		["temp_vet_worn_weapon", int(svc.get("battles_fought", 0)) >= 4],
+	]
+	for pair in checks:
+		var vid: String = str(pair[0])
+		var cond: bool = bool(pair[1])
+		if cond and not (hero.get("temperaments", []) as Array).has(vid):
+			var res: Dictionary = add_hero_temperament(hero, vid, false)
+			if bool(res.get("added", false)):
+				unlocked.append(vid)
+	if emit_change and not unlocked.is_empty():
+		roster_changed.emit()
+	return unlocked
+
+
+func format_temperament_summary_text(hero: Dictionary) -> String:
+	var tb: Dictionary = get_hero_temperament_bonuses(hero)
+	var parts: PackedStringArray = []
+	if absf(float(tb["max_hp_pct"])) > 0.001:
+		parts.append("HP %+d%%" % roundi(float(tb["max_hp_pct"]) * 100.0))
+	if absf(float(tb["atk_pct"])) > 0.001:
+		parts.append("ATK %+d%%" % roundi(float(tb["atk_pct"]) * 100.0))
+	if absf(float(tb["def_pct"])) > 0.001:
+		parts.append("DEF %+d%%" % roundi(float(tb["def_pct"]) * 100.0))
+	if absf(float(tb["heal_pct"])) > 0.001:
+		parts.append("HEAL %+d%%" % roundi(float(tb["heal_pct"]) * 100.0))
+	if absf(float(tb["speed_pct"])) > 0.001:
+		parts.append("SPD %+d%%" % roundi(float(tb["speed_pct"]) * 100.0))
+	if absf(float(tb["speed_flat"])) > 0.05:
+		parts.append("SPD %+d" % roundi(float(tb["speed_flat"])))
+	if absf(float(tb["crit_rate"])) > 0.001:
+		parts.append("치명 %+d%%" % roundi(float(tb["crit_rate"]) * 100.0))
+	if absf(float(tb["crit_dmg"])) > 0.001:
+		parts.append("치명피해 %+d%%" % roundi(float(tb["crit_dmg"]) * 100.0))
+	if absf(float(tb["dmg_bonus"])) > 0.001:
+		parts.append("피해증가 %+d%%" % roundi(float(tb["dmg_bonus"]) * 100.0))
+	if absf(float(tb["armor_pen"])) > 0.001:
+		parts.append("방관 %+d%%" % roundi(float(tb["armor_pen"]) * 100.0))
+	if absf(float(tb["fatigue_mult"])) > 0.001:
+		parts.append("피로누적 %+d%%" % roundi(float(tb["fatigue_mult"]) * 100.0))
+	return ", ".join(parts) if not parts.is_empty() else "변동 없음"
+
+
+## 전투 씬에 넘기기 위해 장비/피로도를 제외하고 영웅 기본 스탯 + 기질 보정만 반영한 값을 반환합니다.
+func get_hero_base_with_temperament(hero: Dictionary, stat_name: String) -> float:
+	if hero.is_empty():
+		return 0.0
+	var tb: Dictionary = get_hero_temperament_bonuses(hero)
+	var base_val: float = float(hero.get(stat_name, 0.0))
+	match stat_name:
+		"max_hp":
+			return maxf(1.0, base_val * maxf(0.20, 1.0 + float(tb["max_hp_pct"])))
+		"atk":
+			return maxf(1.0, base_val * maxf(0.10, 1.0 + float(tb["atk_pct"])))
+		"def":
+			return maxf(0.0, base_val * maxf(0.0, 1.0 + float(tb["def_pct"])))
+		"heal_power":
+			return maxf(0.0, base_val * maxf(0.10, 1.0 + float(tb["heal_pct"])))
+		"speed":
+			return maxf(1.0, (base_val + float(tb["speed_flat"])) * maxf(0.15, 1.0 + float(tb["speed_pct"])))
+		"dmg_bonus":
+			return base_val + float(tb["dmg_bonus"])
+		"crit_rate":
+			return clampf(base_val + float(tb["crit_rate"]), 0.0, 1.0)
+		"crit_dmg":
+			return maxf(1.0, base_val + float(tb["crit_dmg"]))
+		"armor_pen":
+			return clampf(base_val + float(tb["armor_pen"]), 0.0, 1.0)
+		_:
+			return base_val
+
+
+## 영웅의 기본 스탯 + 기질 보정 + 장착 장비 stat_bonuses + 장비 패시브(SELF 버프)를 합산한 최종 유효 스탯을 반환합니다.
 func get_effective_stat(hero: Dictionary, stat_name: String) -> float:
 	if hero.is_empty():
 		return 0.0
 	var eq_bonuses: Dictionary = get_hero_equipment_bonuses(hero)
+	var tb: Dictionary = get_hero_temperament_bonuses(hero)
 	var base_val: float = float(hero.get(stat_name, 0.0)) + float(eq_bonuses.get(stat_name, 0.0))
 
 	# 장비의 passive_skill_id 중 SELF 즉시 스탯 버프 반영
@@ -754,17 +1611,23 @@ func get_effective_stat(hero: Dictionary, stat_name: String) -> float:
 
 	match stat_name:
 		"max_hp":
-			return maxf(1.0, base_val)
+			return maxf(1.0, base_val * maxf(0.20, 1.0 + float(tb["max_hp_pct"])))
 		"atk":
-			return maxf(1.0, base_val * maxf(0.1, 1.0 + pct_add) * fatigue_mult)
+			return maxf(1.0, base_val * maxf(0.1, 1.0 + pct_add + float(tb["atk_pct"])) * fatigue_mult)
 		"def":
-			return maxf(0.0, base_val * maxf(0.0, 1.0 + pct_add))
+			return maxf(0.0, base_val * maxf(0.0, 1.0 + pct_add + float(tb["def_pct"])))
+		"heal_power":
+			return maxf(0.0, base_val * maxf(0.1, 1.0 + pct_add + float(tb["heal_pct"])))
 		"speed":
-			return maxf(1.0, base_val * maxf(0.15, 1.0 + pct_add) * fatigue_mult)
-		"crit_rate", "armor_pen":
-			return clampf(base_val + flat_add, 0.0, 1.0)
+			return maxf(1.0, (base_val + float(tb["speed_flat"])) * maxf(0.15, 1.0 + pct_add + float(tb["speed_pct"])) * fatigue_mult)
+		"dmg_bonus":
+			return base_val + flat_add + float(tb["dmg_bonus"])
+		"crit_rate":
+			return clampf(base_val + flat_add + float(tb["crit_rate"]), 0.0, 1.0)
 		"crit_dmg":
-			return maxf(1.0, base_val + flat_add)
+			return maxf(1.0, base_val + flat_add + float(tb["crit_dmg"]))
+		"armor_pen":
+			return clampf(base_val + flat_add + float(tb["armor_pen"]), 0.0, 1.0)
 		"final_dmg_mult":
 			return maxf(0.1, base_val * mult_factor)
 		_:
@@ -792,15 +1655,25 @@ func get_hero_fatigue_state_label(hero: Dictionary) -> String:
 	return "양호"
 
 
+func _check_exhaustion_trauma(hero: Dictionary, prev_f: int, next_f: int) -> String:
+	if prev_f < MAX_FATIGUE and next_f >= MAX_FATIGUE and randf() < EXHAUSTION_TRAUMA_CHANCE:
+		return grant_random_negative_temperament(int(hero.get("uid", -1)))
+	return ""
+
+
 func add_hero_fatigue(uid: int, amount: int) -> Dictionary:
 	var hero: Dictionary = get_hero_by_uid(uid)
 	if hero.is_empty():
 		return {}
 	var prev_f: int = int(hero.get("fatigue", 0))
-	var next_f: int = clampi(prev_f + amount, 0, MAX_FATIGUE)
+	var scaled_amount: int = amount
+	if amount > 0:
+		scaled_amount = maxi(1, roundi(float(amount) * get_hero_fatigue_multiplier(hero)))
+	var next_f: int = clampi(prev_f + scaled_amount, 0, MAX_FATIGUE)
 	hero["fatigue"] = next_f
+	var trauma_id: String = _check_exhaustion_trauma(hero, prev_f, next_f)
 	roster_changed.emit()
-	return {"prev": prev_f, "next": next_f, "hero": hero}
+	return {"prev": prev_f, "next": next_f, "hero": hero, "trauma_id": trauma_id}
 
 
 func recover_hero_fatigue(uid: int, amount: int) -> int:
@@ -835,12 +1708,25 @@ func apply_party_move_fatigue() -> Array[Dictionary]:
 	for hero in get_active_party_heroes():
 		if not can_hero_deploy(hero):
 			continue
-		var costs: Dictionary = DataManager.get_class_fatigue_costs(str(hero.get("job_class", "")))
+		var sub_or_job: String = str(hero.get("sub_class", hero.get("job_class", "")))
+		var costs: Dictionary = DataManager.get_class_fatigue_costs(sub_or_job)
 		var cost: int = int(costs.get("move", 4))
+		# 선봉 병과 공통 특성: 던전 이동 피로도 -1 경감
+		if str(hero.get("class_group", "")) == "선봉":
+			cost = maxi(0, cost - 1)
+		if cost > 0:
+			cost = maxi(1, roundi(float(cost) * get_hero_fatigue_multiplier(hero)))
 		var prev_f: int = int(hero.get("fatigue", 0))
 		var next_f: int = clampi(prev_f + cost, 0, MAX_FATIGUE)
 		hero["fatigue"] = next_f
-		changes.append({"uid": int(hero.get("uid", 0)), "name": str(hero.get("name", "")), "cost": cost, "fatigue": next_f})
+		var trauma_id: String = _check_exhaustion_trauma(hero, prev_f, next_f)
+		changes.append({
+			"uid": int(hero.get("uid", 0)),
+			"name": str(hero.get("name", "")),
+			"cost": cost,
+			"fatigue": next_f,
+			"trauma_id": trauma_id,
+		})
 	if not changes.is_empty():
 		roster_changed.emit()
 	return changes
@@ -852,12 +1738,22 @@ func apply_party_battle_fatigue() -> Array[Dictionary]:
 	for hero in get_active_party_heroes():
 		if not can_hero_deploy(hero):
 			continue
-		var costs: Dictionary = DataManager.get_class_fatigue_costs(str(hero.get("job_class", "")))
+		var sub_or_job: String = str(hero.get("sub_class", hero.get("job_class", "")))
+		var costs: Dictionary = DataManager.get_class_fatigue_costs(sub_or_job)
 		var cost: int = int(costs.get("battle", 10))
+		if cost > 0:
+			cost = maxi(1, roundi(float(cost) * get_hero_fatigue_multiplier(hero)))
 		var prev_f: int = int(hero.get("fatigue", 0))
 		var next_f: int = clampi(prev_f + cost, 0, MAX_FATIGUE)
 		hero["fatigue"] = next_f
-		changes.append({"uid": int(hero.get("uid", 0)), "name": str(hero.get("name", "")), "cost": cost, "fatigue": next_f})
+		var trauma_id: String = _check_exhaustion_trauma(hero, prev_f, next_f)
+		changes.append({
+			"uid": int(hero.get("uid", 0)),
+			"name": str(hero.get("name", "")),
+			"cost": cost,
+			"fatigue": next_f,
+			"trauma_id": trauma_id,
+		})
 	if not changes.is_empty():
 		roster_changed.emit()
 	return changes
@@ -1010,6 +1906,106 @@ func get_deployable_party_heroes(preset_idx: int = -1) -> Array[Dictionary]:
 		if can_hero_deploy(hero):
 			out.append(hero)
 	return out
+
+
+## 현재 활성 파티의 던전 탐색 보너스(시야 반경 증가 + 매복 사전 감지 + 세부직군 탐험/보상/타워 특성) 계산
+func get_party_exploration_bonuses() -> Dictionary:
+	var party: Array[Dictionary] = get_active_party_heroes()
+	var total_vision_bonus: int = 0
+	var has_danger_sense: bool = false
+	var camp_bonus_mult: float = 1.0
+	var gold_bonus_mult: float = 1.0
+	var supply_bonus_mult: float = 1.0
+	var tower_haste_bonus: float = 0.0
+	var sources: PackedStringArray = PackedStringArray()
+
+	for hero in party:
+		if int(hero.get("hp", 0)) <= 0:
+			continue
+		var h_name: String = str(hero.get("name", "영웅"))
+		var sub_or_job: String = str(hero.get("sub_class", hero.get("job_class", "")))
+		var cg: String = str(hero.get("class_group", DataManager.get_class_group_for_sub_class(sub_or_job)))
+		var cls_info: Dictionary = DataManager.get_sub_class_info(sub_or_job)
+		var sub_trait: String = str(cls_info.get("sub_trait", ""))
+		var cls_vision: int = maxi(0, int(cls_info.get("vision_bonus", 1 if (sub_or_job == "척후병" or sub_trait == "VISION_UP") else 0)))
+		var cls_sense: bool = bool(cls_info.get("danger_sense", sub_or_job == "척후병" or sub_trait == "DANGER_SENSE"))
+
+		if sub_trait == "CAMP_BONUS":
+			camp_bonus_mult = maxf(camp_bonus_mult, 1.50)
+		elif sub_trait == "GOLD_BONUS":
+			gold_bonus_mult = maxf(gold_bonus_mult, 1.30)
+		elif sub_trait == "TRAP_DISARM":
+			supply_bonus_mult = maxf(supply_bonus_mult, 1.25)
+		elif sub_trait == "TOWER_HASTE":
+			tower_haste_bonus = maxf(tower_haste_bonus, 0.20)
+
+		var skill_vision: int = 0
+		var skill_sense: bool = false
+		var hero_skill_ids: Array[String] = [
+			str(hero.get("passive_skill_id", "")),
+			str(hero.get("skill_id", "")),
+			str(hero.get("skill2_id", "")),
+			str(hero.get("ultimate_id", "")),
+		]
+		var seen_skills: Dictionary = {}
+		for sid in hero_skill_ids:
+			if sid.is_empty() or seen_skills.has(sid):
+				continue
+			seen_skills[sid] = true
+			var sk: Dictionary = DataManager.get_skill(sid)
+			for eff in sk.get("effects", []):
+				if typeof(eff) != TYPE_DICTIONARY:
+					continue
+				var etype: String = str((eff as Dictionary).get("effect_type", ""))
+				if etype == "VISION_UP":
+					skill_vision += maxi(1, int(round(float((eff as Dictionary).get("multiplier", 1.0)))))
+				elif etype == "DANGER_SENSE":
+					skill_sense = true
+
+		var equip_vision: int = 0
+		var equip_sense: bool = false
+		var hero_id: String = str(hero.get("id", ""))
+		for eq_tmpl in get_hero_equipped_templates(hero):
+			var eq_skill_ids: Array[String] = [str(eq_tmpl.get("passive_skill_id", ""))]
+			var excl_id: String = str(eq_tmpl.get("exclusive_hero_id", "")).strip_edges()
+			if excl_id.is_empty() or excl_id == hero_id:
+				eq_skill_ids.append(str(eq_tmpl.get("resonance_skill_id", "")))
+			for eq_sid in eq_skill_ids:
+				if eq_sid.is_empty():
+					continue
+				var eq_sk: Dictionary = DataManager.get_skill(eq_sid)
+				for eff in eq_sk.get("effects", []):
+					if typeof(eff) != TYPE_DICTIONARY:
+						continue
+					var etype: String = str((eff as Dictionary).get("effect_type", ""))
+					if etype == "VISION_UP":
+						equip_vision += maxi(1, int(round(float((eff as Dictionary).get("multiplier", 1.0)))))
+					elif etype == "DANGER_SENSE":
+						equip_sense = true
+
+		var hero_vis: int = maxi(cls_vision, skill_vision) + equip_vision
+		var hero_sense: bool = cls_sense or skill_sense or equip_sense
+		if hero_vis > 0:
+			total_vision_bonus += hero_vis
+		if hero_sense:
+			has_danger_sense = true
+		if hero_vis > 0 or hero_sense:
+			var tag: String = "%s(%s-%s)" % [h_name, cg, sub_or_job]
+			if not sources.has(tag):
+				sources.append(tag)
+
+	var clamped_bonus: int = clampi(total_vision_bonus, 0, 3)
+	return {
+		"base_vision": 1,
+		"vision_bonus": clamped_bonus,
+		"vision_radius": 1 + clamped_bonus,
+		"danger_sense": has_danger_sense,
+		"camp_bonus_mult": camp_bonus_mult,
+		"gold_bonus_mult": gold_bonus_mult,
+		"supply_bonus_mult": supply_bonus_mult,
+		"tower_haste_bonus": tower_haste_bonus,
+		"sources": sources,
+	}
 
 
 ## 빠른 편성: 출전 가능한 영웅 중 전투력 상위 영웅을 전열(탱커/전사)과 후열(원거리/힐러) 역할에 맞게 빈칸 자동 배치
@@ -1211,11 +2207,15 @@ func reset_game() -> void:
 	territory_debuff_days = 0
 	rebellion_risk = 0
 	bad_choice_streak = 0
+	rebellion_suppression_active = false
 	field_dungeon_state.clear()
 	upcoming_defense_elements.clear()
 	dungeon_floor = 1
 	auto_battle_mode = AutoBattleMode.MANUAL
 	battle_speed_mult = 1.0
+	reset_run_stats()
+	victory_achieved = false
+	is_endless_mode = false
 	_init_dungeon_grid()
 	_init_party_presets()
 	init_starter_roster()
@@ -1240,6 +2240,69 @@ func notify_all_changed() -> void:
 	towers_changed.emit()
 	research_changed.emit()
 	dungeon_state_changed.emit()
+	run_stats_changed.emit()
+
+
+# ==========================================
+# 누적 플레이 통계 & 최종 랭크 평가
+# ==========================================
+func reset_run_stats() -> void:
+	run_stats = {
+		"defenses_won": 0,
+		"bosses_defeated": 0,
+		"dungeons_cleared": 0,
+		"heroes_recruited": 0,
+		"events_resolved": 0,
+	}
+	run_stats_changed.emit()
+
+
+func record_defense_won() -> void:
+	run_stats["defenses_won"] = int(run_stats.get("defenses_won", 0)) + 1
+	run_stats_changed.emit()
+
+
+func record_boss_defeated() -> void:
+	run_stats["bosses_defeated"] = int(run_stats.get("bosses_defeated", 0)) + 1
+	run_stats_changed.emit()
+
+
+func record_dungeon_cleared() -> void:
+	run_stats["dungeons_cleared"] = int(run_stats.get("dungeons_cleared", 0)) + 1
+	run_stats_changed.emit()
+
+
+func record_hero_recruited() -> void:
+	run_stats["heroes_recruited"] = int(run_stats.get("heroes_recruited", 0)) + 1
+	run_stats_changed.emit()
+
+
+func record_event_resolved() -> void:
+	run_stats["events_resolved"] = int(run_stats.get("events_resolved", 0)) + 1
+	run_stats_changed.emit()
+
+
+func evaluate_victory_rank() -> Dictionary:
+	var named_count: int = get_owned_named_heroes().size()
+	var score: int = (
+		int(run_stats.get("defenses_won", 0)) * 12
+		+ int(run_stats.get("bosses_defeated", 0)) * 35
+		+ int(run_stats.get("dungeons_cleared", 0)) * 25
+		+ int(run_stats.get("heroes_recruited", 0)) * 25
+		+ int(run_stats.get("events_resolved", 0)) * 2
+		+ citizen_morale * 2
+		+ wall_level * 40
+		+ named_count * 70
+		+ completed_research_ids.size() * 30
+	)
+
+	if score >= 1600:
+		return {"rank": "S", "title": "불멸의 성채 수호자", "score": score, "color": Color(1.0, 0.84, 0.25)}
+	if score >= 1000:
+		return {"rank": "A", "title": "위대한 영지 사령관", "score": score, "color": Color(0.68, 0.58, 1.0)}
+	if score >= 550:
+		return {"rank": "B", "title": "숙련된 변방의 수호자", "score": score, "color": Color(0.45, 0.88, 1.0)}
+	return {"rank": "C", "title": "끈질긴 개척의 생존자", "score": score, "color": Color(0.70, 0.90, 0.72)}
 
 
 # ==========================================
@@ -1501,3 +2564,8 @@ func add_rebellion_risk(delta: int) -> void:
 
 func should_trigger_rebellion_event() -> bool:
 	return rebellion_risk >= 4 or (bad_choice_streak >= 2 and citizen_morale < 45) or citizen_morale <= 20
+
+
+## 반란 위험도가 높거나 내정 토벌 이벤트가 활성화되었는지 여부 (인간형 반란군/교단 주력 스폰 판단)
+func is_rebellion_humanoid_preferred() -> bool:
+	return rebellion_suppression_active or rebellion_risk >= 4 or should_trigger_rebellion_event()

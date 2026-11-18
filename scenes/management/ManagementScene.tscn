@@ -11,6 +11,17 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_mgmt")
 
+[node name="BgRect" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.08, 0.09, 0.12, 1)
+
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -101,6 +112,19 @@ horizontal_alignment = 1
 [node name="HSeparator" type="HSeparator" parent="MarginContainer/MainVBox/CenterContainer/PolicyEventPanel/EventMargin/EventVBox"]
 layout_mode = 2
 
+[node name="EventIllustrationFrame" type="PanelContainer" parent="MarginContainer/MainVBox/CenterContainer/PolicyEventPanel/EventMargin/EventVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 110)
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="EventIllustrationTex" type="TextureRect" parent="MarginContainer/MainVBox/CenterContainer/PolicyEventPanel/EventMargin/EventVBox/EventIllustrationFrame"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 94)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
 [node name="EventDescLabel" type="Label" parent="MarginContainer/MainVBox/CenterContainer/PolicyEventPanel/EventMargin/EventVBox"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(800, 0)
@@ -138,6 +162,7 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 15
 text = "정책을 선택해야 마을 관리로 이동할 수 있습니다."
 horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="FooterCenter" type="CenterContainer" parent="MarginContainer/MainVBox"]
 layout_mode = 2

@@ -1,47 +1,106 @@
 {
-	"version": 1,
-	"classes": [
+	"version": 2,
+	"class_groups": [
 		{
-			"id": "원거리딜러",
-			"name": "정찰/궁수/원거리딜러",
-			"move_fatigue_cost": 3,
-			"battle_fatigue_cost": 8,
-			"description": "가벼운 무장과 높은 기동력으로 장기 던전 탐사에 유리합니다."
+			"id": "중장",
+			"role_category": "전위",
+			"trait_id": "DEFENDER_BASTION",
+			"trait_name": "철벽 방진",
+			"trait_desc": "디펜스 성벽 밖 기본 저지 수 +1(총 4저지), 전열 배치 시 받는 피해 -10%"
 		},
 		{
-			"id": "탱커",
-			"name": "전사/방패병/중장갑",
-			"move_fatigue_cost": 6,
-			"battle_fatigue_cost": 12,
-			"description": "무거운 갑옷으로 이동 피로도가 높지만 단기 돌파와 저지에 강합니다."
+			"id": "근위",
+			"role_category": "전위",
+			"trait_id": "GUARD_EXECUTION",
+			"trait_name": "파쇄 돌격",
+			"trait_desc": "근접 공격 시 방어력 10% 무시, 적 처치 시 다음 턴 속도 +2"
 		},
 		{
-			"id": "근접딜러",
-			"name": "전사/기사/근접딜러",
-			"move_fatigue_cost": 6,
-			"battle_fatigue_cost": 12,
-			"description": "전열에서 직접 교전하며 높은 기동 부하를 감수합니다."
-		},
-		{
-			"id": "마법사",
-			"name": "마법사 계열",
-			"move_fatigue_cost": 5,
-			"battle_fatigue_cost": 15,
-			"description": "전투 중 마력 소모가 커서 전투당 피로도 증가량이 높습니다."
-		},
-		{
-			"id": "힐러",
-			"name": "사제/힐러 계열",
-			"move_fatigue_cost": 5,
-			"battle_fatigue_cost": 15,
-			"description": "치유와 축복 마법 운용으로 전투당 피로도가 크게 쌓입니다."
+			"id": "선봉",
+			"role_category": "전위",
+			"trait_id": "VANGUARD_PIONEER",
+			"trait_name": "선봉 기동",
+			"trait_desc": "던전 이동 피로도 -1 경감, 전투 첫 턴 속도(SPD) +3"
 		},
 		{
 			"id": "특수",
-			"name": "특수/연금술사 계열",
-			"move_fatigue_cost": 4,
-			"battle_fatigue_cost": 11,
-			"description": "전술 지원과 상태이상 운용에 균형 잡힌 피로도 소모를 보입니다."
+			"role_category": "중위",
+			"trait_id": "SPECIALIST_TRICK",
+			"trait_name": "변칙 기동",
+			"trait_desc": "진형 이동(밀치기/당기기/교환) 성공률 100%, 기습 공격 시 치명피해 +20%"
+		},
+		{
+			"id": "보조",
+			"role_category": "중위",
+			"trait_id": "SUPPORTER_TACTIC",
+			"trait_name": "전술 공명",
+			"trait_desc": "부여하는 버프·디버프 지속시간 +1턴(디펜스 +2초) 연장"
+		},
+		{
+			"id": "저격",
+			"role_category": "후위",
+			"trait_id": "SNIPER_EAGLE_WALL",
+			"trait_name": "고지 사격",
+			"trait_desc": "디펜스 성벽 위 배치 시 사거리 추가 +15%"
+		},
+		{
+			"id": "술사",
+			"role_category": "후위",
+			"trait_id": "CASTER_OVERLOAD",
+			"trait_name": "원소 증폭",
+			"trait_desc": "속성 상성 우위(1.5x) 공격 시 최종 피해 +15%"
+		},
+		{
+			"id": "의료",
+			"role_category": "후위",
+			"trait_id": "MEDIC_AEGIS_WARD",
+			"trait_name": "구호 결계",
+			"trait_desc": "치유 실행 시 대상에게 1턴(디펜스 2초)간 받는 피해 -10% 보호 가호 부여"
 		}
+	],
+	"classes": [
+		{ "id": "방패수호자", "name": "방패수호자", "class_group": "중장", "role_category": "전위", "move_fatigue_cost": 5, "battle_fatigue_cost": 11, "sub_trait": "SHIELD_WALL", "sub_trait_label": "전열 철갑", "sub_trait_desc": "전투 시작 2턴간 방어력 +20% 및 견고한 4저지 방어", "vision_bonus": 0, "danger_sense": false, "description": "대형 방패로 적의 맹공을 정면에서 받아내는 표준 중장입니다." },
+		{ "id": "성기사", "name": "성기사", "class_group": "중장", "role_category": "전위", "move_fatigue_cost": 5, "battle_fatigue_cost": 11, "sub_trait": "EMERGENCY_HEAL", "sub_trait_label": "성전사의 가호", "sub_trait_desc": "체력 40% 이하 빈사 아군 치유 시 치유량 +40%(EMERGENCY_HEAL)", "vision_bonus": 0, "danger_sense": false, "description": "전선 수호와 동시에 위기의 아군을 치유하는 신성 중장입니다." },
+		{ "id": "심연의 파수꾼", "name": "심연의 파수꾼", "class_group": "중장", "role_category": "전위", "move_fatigue_cost": 6, "battle_fatigue_cost": 12, "sub_trait": "WALL_GUARD", "sub_trait_label": "불굴 요새 · 포탑 수호", "sub_trait_desc": "전열/성벽 밖 받는 피해 추가 -8% 및 아군 포탑 공속 +20%(TOWER_HASTE)", "vision_bonus": 0, "danger_sense": false, "description": "성벽과 심연 경계선을 한 치도 내주지 않는 중장 파수꾼입니다." },
+		{ "id": "중갑돌격병", "name": "중갑돌격병", "class_group": "중장", "role_category": "전위", "move_fatigue_cost": 6, "battle_fatigue_cost": 12, "sub_trait": "THORN_CARAPACE", "sub_trait_label": "가시 철갑 반사", "sub_trait_desc": "전투 중 피격 시 공격자에게 피해의 15%를 반사(REFLECT)", "vision_bonus": 0, "danger_sense": false, "description": "날카로운 가시 판금 갑주로 돌진하며 피해를 되돌려주는 중장입니다." },
+
+		{ "id": "검투사", "name": "검투사", "class_group": "근위", "role_category": "전위", "move_fatigue_cost": 4, "battle_fatigue_cost": 10, "sub_trait": "DUELIST_CRIT", "sub_trait_label": "결투가의 일섬", "sub_trait_desc": "치명타 확률 +12% 및 치명타 피해 +20%", "vision_bonus": 0, "danger_sense": false, "description": "정교한 검술과 일대일 결투 화력이 뛰어난 근위 세부직군입니다." },
+		{ "id": "광전사", "name": "광전사", "class_group": "근위", "role_category": "전위", "move_fatigue_cost": 5, "battle_fatigue_cost": 13, "sub_trait": "BERSERK_FURY", "sub_trait_label": "광전사의 투지", "sub_trait_desc": "전투 시작 시 공격력 +12% 상승 및 전선 돌파 화력", "vision_bonus": 0, "danger_sense": false, "description": "압도적인 힘으로 적 전열을 분쇄하는 돌격형 근위 세부직군입니다." },
+		{ "id": "마검사", "name": "마검사", "class_group": "근위", "role_category": "전위", "move_fatigue_cost": 5, "battle_fatigue_cost": 11, "sub_trait": "RUNE_BLADE", "sub_trait_label": "마력 부여 검기", "sub_trait_desc": "공격 시 방어 관통 +15% 추가 부여", "vision_bonus": 0, "danger_sense": false, "description": "검신에 속성 비전을 휘감아 중장갑을 뚫는 마도 근위입니다." },
+		{ "id": "피의 기사", "name": "피의 기사", "class_group": "근위", "role_category": "전위", "move_fatigue_cost": 4, "battle_fatigue_cost": 10, "sub_trait": "CAMP_BONUS", "sub_trait_label": "전장의 생명력", "sub_trait_desc": "야영·휴식 시 회복량 +50%(CAMP_BONUS) 및 끈질긴 지구력", "vision_bonus": 0, "danger_sense": false, "description": "험난한 전장과 던전 야영에서도 지치지 않고 싸우는 혈기 근위입니다." },
+
+		{ "id": "용기사", "name": "용기사", "class_group": "선봉", "role_category": "전위", "move_fatigue_cost": 3, "battle_fatigue_cost": 8, "sub_trait": "FIRST_STRIKE", "sub_trait_label": "용린 돌격", "sub_trait_desc": "전투 첫 턴 속도 +3 추가(선봉 합산 +6)로 선제 교전 장악", "vision_bonus": 0, "danger_sense": false, "description": "고속 돌격으로 전투 개시와 동시에 주도권을 쥐는 기동 선봉입니다." },
+		{ "id": "무투가", "name": "무투가", "class_group": "선봉", "role_category": "전위", "move_fatigue_cost": 3, "battle_fatigue_cost": 8, "sub_trait": "RAPID_FIRE", "sub_trait_label": "연환 권격", "sub_trait_desc": "기본 속도 +10% 향상 및 빠른 연타 회전력", "vision_bonus": 0, "danger_sense": false, "description": "맨몸 체술과 경쾌한 발놀림으로 적을 몰아붙이는 선봉 세부직군입니다." },
+		{ "id": "공병대장", "name": "공병대장", "class_group": "선봉", "role_category": "전위", "move_fatigue_cost": 3, "battle_fatigue_cost": 9, "sub_trait": "TRAP_DISARM", "sub_trait_label": "공병 해체 · 보급 확충", "sub_trait_desc": "던전 보급·보물 자원 획득량 +25%(TRAP_DISARM)", "vision_bonus": 0, "danger_sense": false, "description": "야전 공사와 함정 해체로 부대의 보급 효율을 높이는 공병 선봉입니다." },
+		{ "id": "야수조련사", "name": "야수조련사", "class_group": "선봉", "role_category": "전위", "move_fatigue_cost": 3, "battle_fatigue_cost": 8, "sub_trait": "CAMP_BONUS", "sub_trait_label": "사냥개 정찰 · 야영 숙영", "sub_trait_desc": "던전 야영·휴식 회복량 +50%(CAMP_BONUS) 및 위험 경계", "vision_bonus": 0, "danger_sense": true, "description": "동행 사냥개와 함께 야영 안전과 위험 경계를 담당하는 선봉입니다." },
+
+		{ "id": "척후병", "name": "척후병", "class_group": "특수", "role_category": "중위", "move_fatigue_cost": 2, "battle_fatigue_cost": 7, "sub_trait": "VISION_UP", "sub_trait_label": "매의 눈 · 매복 감지", "sub_trait_desc": "던전 탐색 시야 반경 +1칸(VISION_UP) 및 매복 사전 감지(DANGER_SENSE)", "vision_bonus": 1, "danger_sense": true, "description": "낮은 피로도로 미궁을 선행 정찰하며 시야와 매복 감지를 제공하는 특수직군입니다." },
+		{ "id": "그림자 암살자", "name": "그림자 암살자", "class_group": "특수", "role_category": "중위", "move_fatigue_cost": 3, "battle_fatigue_cost": 9, "sub_trait": "BACKLINE_SNIPE", "sub_trait_label": "후열 암살 · 위험 직감", "sub_trait_desc": "적 후열 우선 저격(BACKLINE_SNIPE) +20% 피해 및 매복 감지(DANGER_SENSE)", "vision_bonus": 0, "danger_sense": true, "description": "그림자 속에서 적 후열 핵심 표적을 끊어내는 특수 암살자입니다." },
+		{ "id": "창술사", "name": "창술사", "class_group": "특수", "role_category": "중위", "move_fatigue_cost": 4, "battle_fatigue_cost": 10, "sub_trait": "FORCE_DISPLACE", "sub_trait_label": "파진 창술", "sub_trait_desc": "적 진형 강제 이동 시 1턴 방어력 -15% 추가 약화", "vision_bonus": 0, "danger_sense": false, "description": "긴 창으로 전열과 중위를 오가며 적 진형을 뒤흔드는 특수직군입니다." },
+		{ "id": "의적", "name": "의적", "class_group": "특수", "role_category": "중위", "move_fatigue_cost": 3, "battle_fatigue_cost": 8, "sub_trait": "GOLD_BONUS", "sub_trait_label": "전리품 노획", "sub_trait_desc": "던전 전투 및 보물상자 골드 획득량 +30%(GOLD_BONUS)", "vision_bonus": 0, "danger_sense": false, "description": "기민한 손놀림으로 전장의 전리품과 군자금을 확보하는 의적 특수직군입니다." },
+		{ "id": "쌍검무희", "name": "쌍검무희", "class_group": "특수", "role_category": "중위", "move_fatigue_cost": 3, "battle_fatigue_cost": 9, "sub_trait": "EXECUTION_CRIT", "sub_trait_label": "화려한 난무", "sub_trait_desc": "치명타 확률 +15% 상승 및 연계 기습 특화", "vision_bonus": 0, "danger_sense": false, "description": "눈부신 검무로 높은 치명타를 꽂아 넣는 특수 세부직군입니다." },
+
+		{ "id": "음유시인", "name": "음유시인", "class_group": "보조", "role_category": "중위", "move_fatigue_cost": 3, "battle_fatigue_cost": 9, "sub_trait": "CAMP_BONUS", "sub_trait_label": "휴식의 영가", "sub_trait_desc": "던전 야영·휴식 시 HP·피로 회복량 +50%(CAMP_BONUS)", "vision_bonus": 0, "danger_sense": false, "description": "노래와 축복으로 파티의 회복력과 사기를 높이는 보조 세부직군입니다." },
+		{ "id": "연금술사", "name": "연금술사", "class_group": "보조", "role_category": "중위", "move_fatigue_cost": 3, "battle_fatigue_cost": 10, "sub_trait": "TRAP_DISARM", "sub_trait_label": "연금 해체 · 물자 정제", "sub_trait_desc": "던전 보급·보물 자원 +25%(TRAP_DISARM) 및 장기 지속 디버프 연장", "vision_bonus": 0, "danger_sense": false, "description": "비약과 산성 시약으로 적을 약화시키고 던전 자원을 정제합니다." },
+		{ "id": "사냥꾼", "name": "사냥꾼", "class_group": "보조", "role_category": "중위", "move_fatigue_cost": 3, "battle_fatigue_cost": 8, "sub_trait": "VISION_UP", "sub_trait_label": "사냥감 추적", "sub_trait_desc": "던전 시야 반경 +1칸(VISION_UP) 및 매복 위험 사전 감지(DANGER_SENSE)", "vision_bonus": 1, "danger_sense": true, "description": "흔적 추적에 능숙해 던전 시야와 매복 탐지를 대신 수행할 수 있는 보조입니다." },
+		{ "id": "주술사", "name": "주술사", "class_group": "보조", "role_category": "중위", "move_fatigue_cost": 4, "battle_fatigue_cost": 11, "sub_trait": "VULNERABLE_HEX", "sub_trait_label": "쇠약의 주술진", "sub_trait_desc": "전투 시작 시 적 전원 방어력 -10% 저주 부여", "vision_bonus": 0, "danger_sense": false, "description": "저주와 약화 부적으로 적군 전체의 방어선을 무력화하는 보조입니다." },
+		{ "id": "풍수사", "name": "풍수사", "class_group": "보조", "role_category": "중위", "move_fatigue_cost": 3, "battle_fatigue_cost": 10, "sub_trait": "GOLD_BONUS", "sub_trait_label": "지맥 탐색 · 영맥 부흥", "sub_trait_desc": "지맥 탐지로 시야 반경 +1(VISION_UP) 및 골드 획득 +30%(GOLD_BONUS)", "vision_bonus": 1, "danger_sense": false, "description": "지맥과 바람을 읽어 아군 지원·탐사 시야·자원 채굴을 겸하는 보조입니다." },
+		{ "id": "기계공학자", "name": "기계공학자", "class_group": "보조", "role_category": "중위", "move_fatigue_cost": 4, "battle_fatigue_cost": 10, "sub_trait": "TOWER_HASTE", "sub_trait_label": "타워 과부하 가속", "sub_trait_desc": "디펜스 기본 포탑 및 커스텀 타워 공격 속도 +20%(TOWER_HASTE)", "vision_bonus": 0, "danger_sense": false, "description": "성벽 방어 포탑과 병기들을 극한 효율로 가속시키는 공학 보조입니다." },
+
+		{ "id": "장궁병", "name": "장궁병", "class_group": "저격", "role_category": "후위", "move_fatigue_cost": 3, "battle_fatigue_cost": 8, "sub_trait": "BACKLINE_SNIPE", "sub_trait_label": "장거리 후열 저격", "sub_trait_desc": "적 후열 우선 저격 가능(BACKLINE_SNIPE) 및 후열 대상 피해 +20%", "vision_bonus": 0, "danger_sense": false, "description": "압도적인 사거리로 성벽 위와 후열에서 적 후방을 꿰뚫는 저격입니다." },
+		{ "id": "석궁병", "name": "석궁병", "class_group": "저격", "role_category": "후위", "move_fatigue_cost": 3, "battle_fatigue_cost": 8, "sub_trait": "RAPID_FIRE", "sub_trait_label": "속사 연발 장전", "sub_trait_desc": "기본 속도 +10% 상승 및 치명적인 정밀 볼트 사격", "vision_bonus": 0, "danger_sense": false, "description": "빠른 속사 회전력으로 전선을 압박하는 정통 석궁 저격 세부직군입니다." },
+		{ "id": "포격수", "name": "포격수", "class_group": "저격", "role_category": "후위", "move_fatigue_cost": 4, "battle_fatigue_cost": 10, "sub_trait": "ARMOR_CRUSH", "sub_trait_label": "중장갑 파쇄 포탄", "sub_trait_desc": "공격 시 방어력 15% 추가 관통 및 광역 포격 특화", "vision_bonus": 0, "danger_sense": false, "description": "대구경 마도 포탄으로 적 중장갑과 밀집 진형을 부수는 저격입니다." },
+
+		{ "id": "원소술사", "name": "원소술사", "class_group": "술사", "role_category": "후위", "move_fatigue_cost": 4, "battle_fatigue_cost": 13, "sub_trait": "ELEMENT_MASTERY", "sub_trait_label": "순수 원소 극대화", "sub_trait_desc": "속성 상성 우위 시 최종 피해 추가 +15%(병과 특성과 중첩)", "vision_bonus": 0, "danger_sense": false, "description": "원소의 상성을 완벽히 지배하는 정통 공격형 술사 세부직군입니다." },
+		{ "id": "빙결술사", "name": "빙결술사", "class_group": "술사", "role_category": "후위", "move_fatigue_cost": 4, "battle_fatigue_cost": 13, "sub_trait": "ARCANE_PIERCE", "sub_trait_label": "만년설 동결 관통", "sub_trait_desc": "공격 시 방어력 20% 추가 관통 및 서리 감속 제어", "vision_bonus": 0, "danger_sense": false, "description": "혹한의 얼음 마법으로 적의 진군을 늦추고 꿰뚫는 술사입니다." },
+		{ "id": "시간술사", "name": "시간술사", "class_group": "술사", "role_category": "후위", "move_fatigue_cost": 4, "battle_fatigue_cost": 13, "sub_trait": "TACTICAL_COMMAND", "sub_trait_label": "시간 가속 공명", "sub_trait_desc": "전투 시작 시 아군 전원 치명타 확률 +8% 가속 지원", "vision_bonus": 0, "danger_sense": false, "fixed_temperaments": ["temp_mixed_perfectionist"], "lock_general_temperaments": true, "description": "전장의 시간 흐름을 조율해 아군의 공세를 앞당기는 희귀 직군 술사입니다." },
+		{ "id": "소환사", "name": "소환사", "class_group": "술사", "role_category": "후위", "move_fatigue_cost": 4, "battle_fatigue_cost": 13, "sub_trait": "REGEN_SUPPORT", "sub_trait_label": "정령 결계 소환", "sub_trait_desc": "전투 시작 시 아군 전체에게 공격력 0.6배 정령 보호막 지원", "vision_bonus": 0, "danger_sense": false, "description": "수호 정령을 불러내 화력 지원과 보호막을 함께 제공하는 술사입니다." },
+		{ "id": "강령술사", "name": "강령술사", "class_group": "술사", "role_category": "후위", "move_fatigue_cost": 5, "battle_fatigue_cost": 14, "sub_trait": "DARK_RESONANCE", "sub_trait_label": "심연 사령 공명", "sub_trait_desc": "기본 피해 증가 +12% 및 치명타 피해 +15%", "vision_bonus": 0, "danger_sense": false, "description": "금단의 어둠과 영혼의 힘으로 치명적인 일격을 날리는 술사입니다." },
+		{ "id": "천문학자", "name": "천문학자", "class_group": "술사", "role_category": "후위", "move_fatigue_cost": 4, "battle_fatigue_cost": 12, "sub_trait": "VISION_UP", "sub_trait_label": "성좌 천문 관측", "sub_trait_desc": "별자리 관측으로 던전 시야 반경 +1칸(VISION_UP) 및 야영 회복", "vision_bonus": 1, "danger_sense": false, "description": "밤하늘과 마력 흐름을 읽어 탐사 시야를 넓혀주는 학자형 술사입니다." },
+
+		{ "id": "대사제", "name": "대사제", "class_group": "의료", "role_category": "후위", "move_fatigue_cost": 4, "battle_fatigue_cost": 12, "sub_trait": "EMERGENCY_HEAL", "sub_trait_label": "기적의 응급 치유", "sub_trait_desc": "체력 40% 이하 빈사 아군 치유 시 치유량 +40%(EMERGENCY_HEAL)", "vision_bonus": 0, "danger_sense": false, "description": "위급한 전우를 죽음의 문턱에서 끌어올리는 성역의 대사제입니다." },
+		{ "id": "전투사제", "name": "전투사제", "class_group": "의료", "role_category": "후위", "move_fatigue_cost": 4, "battle_fatigue_cost": 11, "sub_trait": "ARCANE_BULWARK", "sub_trait_label": "성전사의 축성", "sub_trait_desc": "전투 시작 시 공격력 +10% 향상 및 전선 치유 병행", "vision_bonus": 0, "danger_sense": false, "description": "치유와 공격을 함께 구사하며 전선을 보조하는 전투 의료입니다." },
+		{ "id": "약초학자", "name": "약초학자", "class_group": "의료", "role_category": "후위", "move_fatigue_cost": 3, "battle_fatigue_cost": 10, "sub_trait": "CAMP_BONUS", "sub_trait_label": "약초 조제 · 야영 치료", "sub_trait_desc": "던전 야영·휴식 시 HP·피로 회복량 +50%(CAMP_BONUS)", "vision_bonus": 0, "danger_sense": false, "description": "낮은 피로도와 약초 비술로 원정대의 회복력을 극대화합니다." },
+		{ "id": "점성술사", "name": "점성술사", "class_group": "의료", "role_category": "후위", "move_fatigue_cost": 4, "battle_fatigue_cost": 12, "sub_trait": "WARD_PURIFY", "sub_trait_label": "성좌 정화 · 별의 가호", "sub_trait_desc": "치유 실행 시 대상의 해로운 디버프를 정화하고 보호 가호 강화", "vision_bonus": 0, "danger_sense": false, "description": "별빛의 축복으로 상태이상을 정화하고 아군을 지키는 의료입니다." }
 	]
 }

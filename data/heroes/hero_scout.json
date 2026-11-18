@@ -5,9 +5,11 @@
     "named_title":  "",
     "lore":  "",
     "signature_equip_id":  "",
-    "rarity":  "N",
+    "rarity":  "R",
     "role_category":  "중위",
-    "job_class":  "원거리딜러",
+    "class_group":  "특수",
+    "sub_class":  "척후병",
+    "job_class":  "척후병",
     "element":  "WIND",
     "max_hp":  42,
     "atk":  15,
@@ -24,5 +26,6 @@
     "skill_id":  "skill_gale_scatter",
     "skill2_id":  "",
     "ultimate_id":  "",
-    "skill_description":  "폭풍 화살로 적 진형을 무작위로 흩뜨리는 중위 정찰수입니다."
+    "passive_skill_id":  "skill_eagle_eye",
+    "skill_description":  "폭풍 화살로 적 진형을 흩뜨리며 매의 눈 패시브로 던전 시야 +1 및 매복 사전 감지를 제공하는 척후병입니다."
 }

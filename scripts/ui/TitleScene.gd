@@ -5,6 +5,8 @@ extends Control
 
 const MAIN_GAME_SCENE_PATH: String = "res://scenes/MainGame.tscn"
 
+@onready var bg_rect: ColorRect = %BgRect
+@onready var title_crest: TextureRect = %TitleCrest
 @onready var main_menu_panel: Control = %MainMenuPanel
 @onready var start_game_button: Button = %StartGameButton
 @onready var settings_button: Button = %SettingsButton
@@ -27,6 +29,13 @@ const MAIN_GAME_SCENE_PATH: String = "res://scenes/MainGame.tscn"
 
 
 func _ready() -> void:
+	AssetManager.apply_backdrop(bg_rect, "title_bg", Color(0.08, 0.11, 0.19), Color(0.04, 0.05, 0.08), 0.03)
+	title_crest.texture = AssetManager.get_tower_sprite("base_tower")
+	title_crest.modulate = Color(0.98, 0.84, 0.45, 0.95)
+	(main_menu_panel as PanelContainer).add_theme_stylebox_override(
+		"panel",
+		AssetManager.make_panel_style(Color(0.09, 0.11, 0.17, 0.94), AssetManager.COL_BORDER_GOLD, 12, 2, 0)
+	)
 	start_game_button.pressed.connect(_on_start_game_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
 	save_back_button.pressed.connect(_show_main_menu)

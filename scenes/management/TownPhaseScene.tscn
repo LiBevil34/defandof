@@ -12,6 +12,7 @@ grow_vertical = 2
 script = ExtResource("1_town")
 
 [node name="BgRect" type="ColorRect" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -397,6 +398,14 @@ custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "전체 숙소 휴식 (피로 -35)"
+
+[node name="HeroDismissButton" type="Button" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox/HeroActionHBox"]
+unique_name_in_owner = true
+modulate = Color(1, 0.72, 0.68, 1)
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "영웅 전역(방출)"
 
 [node name="HeroActionStatusLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/여관/HeroDetailPanel/HeroDetailMargin/HeroDetailVBox"]
 unique_name_in_owner = true
@@ -837,6 +846,30 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 6
 
+[node name="BlacksmithDisassembleCard" type="PanelContainer" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithScroll/BlacksmithRootVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithScroll/BlacksmithRootVBox/BlacksmithDisassembleCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithScroll/BlacksmithRootVBox/BlacksmithDisassembleCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithScroll/BlacksmithRootVBox/BlacksmithDisassembleCard/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "보유 미장착 장비 분해 (자재·골드 환급)"
+
+[node name="BlacksmithDisassembleVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/TownTabContainer/대장간/BlacksmithScroll/BlacksmithRootVBox/BlacksmithDisassembleCard/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6
+
 [node name="BlacksmithStatusLabel" type="Label" parent="MarginContainer/MainVBox/TownTabContainer/대장간"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -1064,3 +1097,74 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "선택한 파티로 던전 출정!"
+
+[node name="DismissConfirmOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.03, 0.05, 0.78)
+
+[node name="CenterContainer" type="CenterContainer" parent="DismissConfirmOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DismissPanel" type="PanelContainer" parent="DismissConfirmOverlay/CenterContainer"]
+custom_minimum_size = Vector2(540, 260)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="DismissConfirmOverlay/CenterContainer/DismissPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="DismissConfirmOverlay/CenterContainer/DismissPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="DismissConfirmTitleLabel" type="Label" parent="DismissConfirmOverlay/CenterContainer/DismissPanel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.78, 0.55, 1)
+theme_override_font_sizes/font_size = 20
+text = "영웅 전역(방출) 확인"
+horizontal_alignment = 1
+
+[node name="DismissConfirmBodyLabel" type="Label" parent="DismissConfirmOverlay/CenterContainer/DismissPanel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 15
+text = "정말 이 영웅을 전역시키시겠습니까?"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="BtnHBox" type="HBoxContainer" parent="DismissConfirmOverlay/CenterContainer/DismissPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DismissConfirmCancelButton" type="Button" parent="DismissConfirmOverlay/CenterContainer/DismissPanel/Margin/VBox/BtnHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "취소"
+
+[node name="DismissConfirmOkButton" type="Button" parent="DismissConfirmOverlay/CenterContainer/DismissPanel/Margin/VBox/BtnHBox"]
+unique_name_in_owner = true
+modulate = Color(1, 0.65, 0.6, 1)
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "전역 확정 (위로금 수령)"

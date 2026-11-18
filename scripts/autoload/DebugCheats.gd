@@ -136,6 +136,8 @@ func _build_cheat_ui() -> void:
 		["전체 네임드 영입", "all_heroes"],
 		["다음 디펜스 데이로", "next_def"],
 		["날짜 +1일 진행", "day 1"],
+		["현재 던전 형태 및 시야/매복 디버그 확인", "dungeon_info"],
+		["던전 전체 안개 해제 토글", "reveal_map"],
 		["도움말 (help)", "help"],
 	]
 	for entry in quick_defs:
@@ -204,7 +206,9 @@ func execute_cheat_command(raw_text: String) -> String:
 				+ "  all_heroes : 미보유 네임드 영웅 전체 영입\n"
 				+ "  day [N=1] / next_def : 날짜 N일 진행 / 다음 5일 주기 디펜스 데이 점프\n"
 				+ "  season <spring|summer|autumn|winter> : 계절 즉시 변경\n"
-				+ "  phase <mgmt|town|dungeon|defense|settle> : 페이즈 즉시 전환"
+				+ "  phase <mgmt|town|dungeon|defense|settle> : 페이즈 즉시 전환\n"
+				+ "  dungeon_info : 현재 던전 형태·진입방향·시야/매복 상태 확인\n"
+				+ "  reveal_map : 현재 던전 전체 안개 일시 해제 토글"
 			)
 		"gold":
 			var amt: int = int(arg1) if not arg1.is_empty() else 500
@@ -343,11 +347,74 @@ func execute_cheat_command(raw_text: String) -> String:
 					GlobalData.set_phase(GlobalData.GamePhase.SETTLEMENT)
 			TimeManager.time_updated.emit()
 			result = "페이즈 전환: %s" % TimeManager.get_phase_name()
+		"dungeon_info":
+			var exp_b: Dictionary = GlobalData.get_party_exploration_bonuses()
+			var src_list: PackedStringArray = exp_b.get("sources", PackedStringArray())
+			var src_txt: String = ", ".join(src_list) if not src_list.is_empty() else "없음"
+			var dmap: Node = _find_dungeon_map_scene()
+			if dmap == null:
+				result = "[탐색 보너스] 시야 반경 %d칸 (+%d) | 매복감지=%s (%s)\n※ 활성화된 DungeonMapScene이 없습니다. 던전 탭 진입 후 다시 확인하세요." % [
+					int(exp_b.get("vision_radius", 1)),
+					int(exp_b.get("vision_bonus", 0)),
+					"ON" if bool(exp_b.get("danger_sense", false)) else "OFF",
+					src_txt,
+				]
+			else:
+				var info: Dictionary = dmap.call("get_debug_map_info")
+				result = (
+					"[던전 디버그 정보] 레이아웃: %s | 크기: %s | 진입 방향: %s\n"
+					+ "  시야 반경: %d칸 (보너스 +%d) | 매복감지: %s (기여: %s)\n"
+					+ "  안개 전체해제: %s | 공개 타일: %d | 미식별(?): %d | 잠복 매복: %d"
+				) % [
+					str(info.get("layout_label", "")),
+					str(info.get("grid_size", "")),
+					str(info.get("entry_label", "")),
+					int(info.get("vision_radius", 1)),
+					int(info.get("vision_bonus", 0)),
+					"ON" if bool(info.get("danger_sense", false)) else "OFF",
+					src_txt,
+					"ON" if bool(info.get("debug_reveal_all", false)) else "OFF",
+					int(info.get("revealed_count", 0)),
+					int(info.get("blind_unknown_count", 0)),
+					int(info.get("armed_ambush_count", 0)),
+				]
+		"reveal_map":
+			var dmap2: Node = _find_dungeon_map_scene()
+			if dmap2 == null:
+				result = "오류: 활성화된 DungeonMapScene을 찾을 수 없습니다."
+			else:
+				var now_on: bool = bool(dmap2.call("toggle_debug_reveal_all"))
+				var info2: Dictionary = dmap2.call("get_debug_map_info")
+				result = "던전 전체 안개 해제 %s [형태: %s / 진입: %s / 크기: %s]" % [
+					"ON (전체 구조 표시)" if now_on else "OFF (정상 시야 복원)",
+					str(info2.get("layout_label", "")),
+					str(info2.get("entry_label", "")),
+					str(info2.get("grid_size", "")),
+				]
 		_:
 			result = "알 수 없는 치트코드 '%s' (`help` 입력으로 확인)" % cmd
 
 	_append_log(result)
 	return result
+
+
+func _find_dungeon_map_scene() -> Node:
+	var tree := get_tree()
+	if tree == null or tree.root == null:
+		return null
+	return _search_node_for_method(tree.root, "get_debug_map_info")
+
+
+func _search_node_for_method(node: Node, method_name: StringName) -> Node:
+	if node == null:
+		return null
+	if node.has_method(method_name):
+		return node
+	for child in node.get_children():
+		var found: Node = _search_node_for_method(child, method_name)
+		if found != null:
+			return found
+	return null
 
 
 func _advance_one_day_direct() -> void:

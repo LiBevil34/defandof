@@ -26,6 +26,7 @@ grow_vertical = 2
 theme_override_constants/separation = 0
 
 [node name="TopBar" type="PanelContainer" parent="RootVBox"]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="TopMargin" type="MarginContainer" parent="RootVBox/TopBar"]
@@ -181,6 +182,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="GameOverPanel" type="PanelContainer" parent="GameOverOverlay/CenterContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(680, 0)
 layout_mode = 2
 
@@ -231,3 +233,128 @@ custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "메인 타이틀로 돌아가기"
+
+[node name="GameVictoryOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.04, 0.08, 0.90)
+
+[node name="CenterContainer" type="CenterContainer" parent="GameVictoryOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VictoryPanel" type="PanelContainer" parent="GameVictoryOverlay/CenterContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(980, 0)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="GameVictoryOverlay/CenterContainer/VictoryPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GameVictoryOverlay/CenterContainer/VictoryPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="VictoryTitleLabel" type="Label" parent="GameVictoryOverlay/CenterContainer/VictoryPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.32, 1)
+theme_override_font_sizes/font_size = 30
+text = "★ 3년차 최종 결전 승리 · 영지 수호 완료! ★"
+horizontal_alignment = 1
+
+[node name="VictorySubLabel" type="Label" parent="GameVictoryOverlay/CenterContainer/VictoryPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "3년차의 기나긴 공세를 이겨내고 영지를 지켜냈습니다!"
+horizontal_alignment = 1
+
+[node name="VictoryRankLabel" type="Label" parent="GameVictoryOverlay/CenterContainer/VictoryPanel/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "최종 평가: S 랭크 — 불멸의 성채 수호자 (1,800점)"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="GameVictoryOverlay/CenterContainer/VictoryPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ColumnsHBox" type="HBoxContainer" parent="GameVictoryOverlay/CenterContainer/VictoryPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TerritoryPanel" type="PanelContainer" parent="GameVictoryOverlay/CenterContainer/VictoryPanel/MarginContainer/VBoxContainer/ColumnsHBox"]
+custom_minimum_size = Vector2(440, 320)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Margin" type="MarginContainer" parent="GameVictoryOverlay/CenterContainer/VictoryPanel/MarginContainer/VBoxContainer/ColumnsHBox/TerritoryPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="Scroll" type="ScrollContainer" parent="GameVictoryOverlay/CenterContainer/VictoryPanel/MarginContainer/VBoxContainer/ColumnsHBox/TerritoryPanel/Margin"]
+layout_mode = 2
+
+[node name="VictoryTerritoryLabel" type="Label" parent="GameVictoryOverlay/CenterContainer/VictoryPanel/MarginContainer/VBoxContainer/ColumnsHBox/TerritoryPanel/Margin/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 15
+text = "영지 최종 상태"
+autowrap_mode = 3
+
+[node name="StatsPanel" type="PanelContainer" parent="GameVictoryOverlay/CenterContainer/VictoryPanel/MarginContainer/VBoxContainer/ColumnsHBox"]
+custom_minimum_size = Vector2(420, 320)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Margin" type="MarginContainer" parent="GameVictoryOverlay/CenterContainer/VictoryPanel/MarginContainer/VBoxContainer/ColumnsHBox/StatsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="VictoryStatsLabel" type="Label" parent="GameVictoryOverlay/CenterContainer/VictoryPanel/MarginContainer/VBoxContainer/ColumnsHBox/StatsPanel/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_font_sizes/font_size = 16
+text = "누적 클리어 통계"
+autowrap_mode = 3
+
+[node name="ButtonsHBox" type="HBoxContainer" parent="GameVictoryOverlay/CenterContainer/VictoryPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="VictoryEndlessButton" type="Button" parent="GameVictoryOverlay/CenterContainer/VictoryPanel/MarginContainer/VBoxContainer/ButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "무한 모드(엔드리스) 계속하기"
+
+[node name="VictoryTitleButton" type="Button" parent="GameVictoryOverlay/CenterContainer/VictoryPanel/MarginContainer/VBoxContainer/ButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "타이틀로 돌아가기"

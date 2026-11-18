@@ -72,12 +72,18 @@ const SCOPE_LABELS: Dictionary = {
 @onready var opt_a_morale_spin: SpinBox = %OptAMoraleSpin
 @onready var opt_a_gold_spin: SpinBox = %OptAGoldSpin
 @onready var opt_a_unrest_spin: SpinBox = %OptAUnrestSpin
+@onready var opt_a_hero_option: OptionButton = %OptAHeroOption
+@onready var opt_a_equip_option: OptionButton = %OptAEquipOption
+@onready var opt_a_item_option: OptionButton = %OptAItemOption
 @onready var opt_b_text_edit: LineEdit = %OptBTextEdit
 @onready var opt_b_food_spin: SpinBox = %OptBFoodSpin
 @onready var opt_b_mat_spin: SpinBox = %OptBMatSpin
 @onready var opt_b_morale_spin: SpinBox = %OptBMoraleSpin
 @onready var opt_b_gold_spin: SpinBox = %OptBGoldSpin
 @onready var opt_b_unrest_spin: SpinBox = %OptBUnrestSpin
+@onready var opt_b_hero_option: OptionButton = %OptBHeroOption
+@onready var opt_b_equip_option: OptionButton = %OptBEquipOption
+@onready var opt_b_item_option: OptionButton = %OptBItemOption
 @onready var event_status_label: Label = %EventStatusLabel
 @onready var event_new_button: Button = %EventNewButton
 @onready var event_save_button: Button = %EventSaveButton
@@ -256,8 +262,16 @@ var _dungeon_drop_checkboxes: Dictionary = {} # eq_id -> CheckBox
 var _enemy_passive_checkboxes: Dictionary = {} # skill_id -> CheckBox
 var _enemy_active_checkboxes: Dictionary = {} # skill_id -> CheckBox
 
+var hero_class_group_option: OptionButton = null
+var hero_lock_temp_check: CheckBox = null
+var _hero_fixed_temp_checks: Dictionary = {} # temp_id -> CheckBox
+var enemy_category_option: OptionButton = null
+var enemy_archetype_option: OptionButton = null
+var enemy_palette_swap_button: Button = null
+
 
 func _ready() -> void:
+	_build_dynamic_hierarchy_and_enemy_controls()
 	_setup_option_buttons()
 
 	reload_all_button.pressed.connect(_on_reload_all_pressed)
@@ -399,6 +413,14 @@ func _setup_option_buttons() -> void:
 	for et in DataManager.ENEMY_TYPES:
 		enemy_type_option.add_item(et)
 
+	if enemy_category_option != null:
+		enemy_category_option.clear()
+		for i in range(DataManager.ENEMY_CATEGORIES.size()):
+			var cat_id: String = DataManager.ENEMY_CATEGORIES[i]
+			enemy_category_option.add_item(str(DataManager.ENEMY_CATEGORY_LABELS.get(cat_id, cat_id)))
+			enemy_category_option.set_item_metadata(i, cat_id)
+		_populate_enemy_archetype_options(DataManager.ENEMY_CATEGORIES[0])
+
 	tower_scope_option.clear()
 	for i in range(DataManager.TOWER_SCOPES.size()):
 		var ts: String = DataManager.TOWER_SCOPES[i]
@@ -440,6 +462,73 @@ func _setup_option_buttons() -> void:
 	_populate_element_dropdown(tower_element_option, "")
 	_populate_skill_dropdown(tower_on_hit_option, "")
 	_populate_equip_reference_options()
+	_populate_event_reward_options()
+
+
+func _populate_event_reward_options(
+	sel_a_hero: String = "",
+	sel_a_equip: String = "",
+	sel_a_item: String = "",
+	sel_b_hero: String = "",
+	sel_b_equip: String = "",
+	sel_b_item: String = ""
+) -> void:
+	_populate_hero_dropdown(opt_a_hero_option, sel_a_hero)
+	_populate_hero_dropdown(opt_b_hero_option, sel_b_hero)
+	_populate_equip_dropdown(opt_a_equip_option, sel_a_equip)
+	_populate_equip_dropdown(opt_b_equip_option, sel_b_equip)
+	_populate_item_dropdown(opt_a_item_option, sel_a_item)
+	_populate_item_dropdown(opt_b_item_option, sel_b_item)
+
+
+func _populate_hero_dropdown(opt_btn: OptionButton, select_hero_id: String = "") -> void:
+	opt_btn.clear()
+	opt_btn.add_item("(없음)")
+	opt_btn.set_item_metadata(0, "")
+	var sel: int = 0
+	for i in range(DataManager.heroes.size()):
+		var h: Dictionary = DataManager.heroes[i]
+		var hid: String = str(h.get("id", ""))
+		var idx: int = i + 1
+		var tag: String = "★" if bool(h.get("is_named", false)) else ""
+		opt_btn.add_item("%s[%s] %s (%s)" % [tag, DataManager.normalize_rarity(h.get("rarity", "N")), str(h.get("name", hid)), hid])
+		opt_btn.set_item_metadata(idx, hid)
+		if not select_hero_id.is_empty() and hid == select_hero_id:
+			sel = idx
+	opt_btn.select(sel)
+
+
+func _populate_equip_dropdown(opt_btn: OptionButton, select_equip_id: String = "") -> void:
+	opt_btn.clear()
+	opt_btn.add_item("(없음)")
+	opt_btn.set_item_metadata(0, "")
+	var sel: int = 0
+	for i in range(DataManager.equipments.size()):
+		var eq: Dictionary = DataManager.equipments[i]
+		var eid: String = str(eq.get("id", ""))
+		var idx: int = i + 1
+		var tag: String = "★" if bool(eq.get("is_named", false)) else ""
+		opt_btn.add_item("%s[%s] %s (%s)" % [tag, DataManager.normalize_rarity(eq.get("rarity", "N")), str(eq.get("name", eid)), eid])
+		opt_btn.set_item_metadata(idx, eid)
+		if not select_equip_id.is_empty() and eid == select_equip_id:
+			sel = idx
+	opt_btn.select(sel)
+
+
+func _populate_item_dropdown(opt_btn: OptionButton, select_item_id: String = "") -> void:
+	opt_btn.clear()
+	opt_btn.add_item("(없음)")
+	opt_btn.set_item_metadata(0, "")
+	var sel: int = 0
+	for i in range(DataManager.items.size()):
+		var it: Dictionary = DataManager.items[i]
+		var iid: String = str(it.get("id", ""))
+		var idx: int = i + 1
+		opt_btn.add_item("[%s] %s (%s)" % [DataManager.normalize_rarity(it.get("rarity", "N")), str(it.get("name", iid)), iid])
+		opt_btn.set_item_metadata(idx, iid)
+		if not select_item_id.is_empty() and iid == select_item_id:
+			sel = idx
+	opt_btn.select(sel)
 
 
 func _populate_element_options(select_element_id: String = "") -> void:
@@ -564,6 +653,8 @@ func _on_hero_named_pressed() -> void:
 	if hero_named_check.button_pressed:
 		if hero_named_source_option.selected <= 0:
 			hero_named_source_option.select(2)
+		if hero_lock_temp_check != null:
+			hero_lock_temp_check.button_pressed = true
 	else:
 		hero_named_source_option.select(0)
 
@@ -621,19 +712,157 @@ func _on_data_reloaded() -> void:
 		_get_selected_dropdown_skill_id(equip_passive_option),
 		_get_selected_dropdown_skill_id(equip_resonance_option)
 	)
+	_populate_event_reward_options(
+		_get_selected_dropdown_skill_id(opt_a_hero_option),
+		_get_selected_dropdown_skill_id(opt_a_equip_option),
+		_get_selected_dropdown_skill_id(opt_a_item_option),
+		_get_selected_dropdown_skill_id(opt_b_hero_option),
+		_get_selected_dropdown_skill_id(opt_b_equip_option),
+		_get_selected_dropdown_skill_id(opt_b_item_option)
+	)
 	_refresh_lists()
 
 
-func _populate_job_options(category: String, select_job: String = "") -> void:
+func _build_dynamic_hierarchy_and_enemy_controls() -> void:
+	# 영웅 편집기: 8대 병과 OptionButton 동적 추가 (2열 GridContainer 정렬 유지)
+	var job_parent := hero_job_option.get_parent()
+	if job_parent != null:
+		hero_class_group_option = OptionButton.new()
+		hero_class_group_option.name = "HeroClassGroupOption"
+		hero_class_group_option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var job_idx: int = hero_job_option.get_index()
+		if job_parent is GridContainer:
+			var cg_lbl := Label.new()
+			cg_lbl.text = "8대 병과:"
+			var insert_at: int = maxi(0, job_idx - 1)
+			job_parent.add_child(cg_lbl)
+			job_parent.move_child(cg_lbl, insert_at)
+			job_parent.add_child(hero_class_group_option)
+			job_parent.move_child(hero_class_group_option, insert_at + 1)
+		else:
+			job_parent.add_child(hero_class_group_option)
+			job_parent.move_child(hero_class_group_option, job_idx)
+		hero_class_group_option.item_selected.connect(_on_hero_class_group_changed)
+
+	# 적 편집기: 진영(MONSTER/HUMANOID), 아키타입(14종), 팔레트 스왑 버튼 동적 추가
+	var en_parent := enemy_type_option.get_parent()
+	if en_parent != null:
+		enemy_category_option = OptionButton.new()
+		enemy_category_option.name = "EnemyCategoryOption"
+		enemy_category_option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		enemy_archetype_option = OptionButton.new()
+		enemy_archetype_option.name = "EnemyArchetypeOption"
+		enemy_archetype_option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var en_idx: int = enemy_type_option.get_index()
+		if en_parent is GridContainer:
+			var cat_lbl := Label.new()
+			cat_lbl.text = "적 진영:"
+			var arch_lbl := Label.new()
+			arch_lbl.text = "적 아키타입:"
+			var ins: int = maxi(0, en_idx - 1)
+			en_parent.add_child(cat_lbl)
+			en_parent.move_child(cat_lbl, ins)
+			en_parent.add_child(enemy_category_option)
+			en_parent.move_child(enemy_category_option, ins + 1)
+			en_parent.add_child(arch_lbl)
+			en_parent.move_child(arch_lbl, ins + 2)
+			en_parent.add_child(enemy_archetype_option)
+			en_parent.move_child(enemy_archetype_option, ins + 3)
+		else:
+			en_parent.add_child(enemy_category_option)
+			en_parent.add_child(enemy_archetype_option)
+		enemy_category_option.item_selected.connect(_on_enemy_category_changed)
+
+	var save_parent := enemy_save_button.get_parent()
+	if save_parent != null:
+		enemy_palette_swap_button = Button.new()
+		enemy_palette_swap_button.name = "EnemyPaletteSwapButton"
+		enemy_palette_swap_button.text = "선택 속성 팔레트 스왑 변종 생성"
+		save_parent.add_child(enemy_palette_swap_button)
+		enemy_palette_swap_button.pressed.connect(_on_enemy_palette_swap_pressed)
+
+	# 영웅 편집기: 고정 기질(fixed_temperaments) 및 일반 기질 잠금 체크 UI 동적 추가
+	var form_vbox := hero_skill_edit.get_parent()
+	if form_vbox != null:
+		var temp_panel := PanelContainer.new()
+		temp_panel.name = "HeroTemperamentConfigPanel"
+		var tv := VBoxContainer.new()
+		tv.add_theme_constant_override("separation", 4)
+		temp_panel.add_child(tv)
+
+		var t_head := HBoxContainer.new()
+		var t_lbl := Label.new()
+		t_lbl.text = "고정 기질 및 일반 기질 잠금 규칙:"
+		t_head.add_child(t_lbl)
+		hero_lock_temp_check = CheckBox.new()
+		hero_lock_temp_check.name = "HeroLockTempCheck"
+		hero_lock_temp_check.text = "일반 기질 추가 습득 잠금 (고정 기질 전용)"
+		t_head.add_child(hero_lock_temp_check)
+		tv.add_child(t_head)
+
+		var t_scroll := ScrollContainer.new()
+		t_scroll.custom_minimum_size = Vector2(0, 110)
+		var t_grid := GridContainer.new()
+		t_grid.columns = 3
+		t_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		t_scroll.add_child(t_grid)
+		tv.add_child(t_scroll)
+
+		_hero_fixed_temp_checks.clear()
+		for cat_name in ["POSITIVE", "MIXED"]:
+			for t_info in GlobalData.get_temperaments_by_category(cat_name):
+				var tid: String = str(t_info["id"])
+				var cb := CheckBox.new()
+				var star: String = "★" if cat_name == "POSITIVE" else ""
+				cb.text = "%s%s (%s)" % [star, str(t_info["name"]), str(t_info["summary"])]
+				cb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				t_grid.add_child(cb)
+				_hero_fixed_temp_checks[tid] = cb
+
+		form_vbox.add_child(temp_panel)
+		form_vbox.move_child(temp_panel, hero_skill_edit.get_index())
+
+
+func _populate_job_options(category: String, select_job: String = "", select_group: String = "") -> void:
+	var hier := DataManager.normalize_class_hierarchy(select_group, select_job, category)
+	var target_group: String = select_group if DataManager.CLASS_GROUPS.has(select_group) else str(hier["class_group"])
+	var target_sub: String = select_job if not select_job.is_empty() else str(hier["sub_class"])
+
+	if hero_class_group_option != null:
+		hero_class_group_option.clear()
+		var groups: Array = DataManager.get_class_groups_for_category(category)
+		if not groups.has(target_group):
+			target_group = str(groups[0])
+		var g_sel: int = 0
+		for i in range(groups.size()):
+			var g_name: String = str(groups[i])
+			var g_info: Dictionary = DataManager.get_class_group_info(g_name)
+			hero_class_group_option.add_item("%s (%s)" % [g_name, str(g_info.get("trait_name", ""))])
+			hero_class_group_option.set_item_metadata(i, g_name)
+			if g_name == target_group:
+				g_sel = i
+		hero_class_group_option.select(g_sel)
+
 	hero_job_option.clear()
-	var jobs: Array = DataManager.get_job_classes_for_category(category)
+	var subs: Array = DataManager.get_sub_classes_for_group(target_group)
 	var target_idx: int = 0
-	for i in range(jobs.size()):
-		var job_name: String = str(jobs[i])
-		hero_job_option.add_item(job_name)
-		if not select_job.is_empty() and job_name == select_job:
+	for i in range(subs.size()):
+		var sub_name: String = str(subs[i])
+		var sub_info: Dictionary = DataManager.get_sub_class_info(sub_name)
+		var trait_lbl: String = str(sub_info.get("sub_trait_label", ""))
+		hero_job_option.add_item("%s (%s)" % [sub_name, trait_lbl] if not trait_lbl.is_empty() else sub_name)
+		hero_job_option.set_item_metadata(i, sub_name)
+		if not target_sub.is_empty() and sub_name == target_sub:
 			target_idx = i
 	hero_job_option.select(target_idx)
+
+
+func _on_hero_class_group_changed(index: int) -> void:
+	if hero_class_group_option == null or index < 0 or index >= hero_class_group_option.item_count:
+		return
+	var cg: String = str(hero_class_group_option.get_item_metadata(index))
+	var cat: String = DataManager.ROLE_CATEGORIES[maxi(0, hero_category_option.selected)]
+	_populate_job_options(cat, "", cg)
 
 
 func _on_hero_category_changed(index: int) -> void:
@@ -686,7 +915,12 @@ func _refresh_lists() -> void:
 		var cat: String = str(ev.get("event_category", "NORMAL"))
 		var cat_tag: String = "[반란]" if cat == "REBELLION" else ""
 		var stage_tag: String = "[%d~%d단계]" % [int(ev.get("min_stage", 1)), int(ev.get("max_stage", 6))]
-		var idx: int = event_list.add_item("%s%s %s" % [cat_tag, stage_tag, str(ev.get("title", "이벤트"))])
+		var oa: Dictionary = ev.get("option_a", {})
+		var ob: Dictionary = ev.get("option_b", {})
+		var has_hero_rw: bool = not str(oa.get("recruit_hero_id", "")).is_empty() or not str(ob.get("recruit_hero_id", "")).is_empty()
+		var has_eq_rw: bool = not str(oa.get("grant_equip_id", "")).is_empty() or not str(ob.get("grant_equip_id", "")).is_empty()
+		var rw_tag: String = "★[영웅]" if has_hero_rw else ("★[장비]" if has_eq_rw else "")
+		var idx: int = event_list.add_item("%s%s%s %s" % [rw_tag, cat_tag, stage_tag, str(ev.get("title", "이벤트"))])
 		var path: String = str(ev.get("_file_path", ""))
 		event_list.set_item_metadata(idx, path)
 		if not _selected_event_path.is_empty() and path == _selected_event_path:
@@ -716,7 +950,9 @@ func _refresh_lists() -> void:
 	class_list.clear()
 	for c in DataManager.classes:
 		var cid: String = str(c.get("id", ""))
-		var idx: int = class_list.add_item("%s (이동+%d / 전투+%d)" % [
+		var cg: String = str(c.get("class_group", DataManager.get_class_group_for_sub_class(cid)))
+		var idx: int = class_list.add_item("[%s] %s (이동+%d / 전투+%d)" % [
+			cg,
 			str(c.get("name", cid)),
 			int(c.get("move_fatigue_cost", 4)),
 			int(c.get("battle_fatigue_cost", 10)),
@@ -750,8 +986,10 @@ func _refresh_lists() -> void:
 	for en in DataManager.enemies:
 		var eid: String = str(en.get("id", ""))
 		var etype: String = str(en.get("enemy_type", "NORMAL"))
+		var ecat: String = str(en.get("category", "MONSTER"))
+		var earch: String = str(en.get("archetype", "SWARMER"))
 		var el_name: String = DataManager.get_element_name(str(en.get("element", "FIRE")))
-		var idx: int = enemy_list.add_item("[%s][%s] %s (HP %d)" % [etype, el_name, str(en.get("name", eid)), int(en.get("max_hp", 50))])
+		var idx: int = enemy_list.add_item("[%s·%s][%s][%s] %s (HP %d)" % [ecat, earch, etype, el_name, str(en.get("name", eid)), int(en.get("max_hp", 50))])
 		enemy_list.set_item_metadata(idx, eid)
 		if not _selected_enemy_id.is_empty() and eid == _selected_enemy_id:
 			enemy_list.select(idx)
@@ -798,10 +1036,15 @@ func _on_hero_selected(index: int) -> void:
 	var r_idx: int = DataManager.RARITIES.find(DataManager.normalize_rarity(hero.get("rarity", "N")))
 	hero_rarity_option.select(maxi(0, r_idx))
 
-	var cat: String = DataManager.normalize_role_category(str(hero.get("role_category", "전위")), str(hero.get("job_class", "")))
+	var hier: Dictionary = DataManager.normalize_class_hierarchy(
+		str(hero.get("class_group", "")),
+		str(hero.get("sub_class", hero.get("job_class", ""))),
+		str(hero.get("role_category", "전위"))
+	)
+	var cat: String = str(hier["role_category"])
 	var cat_idx: int = DataManager.ROLE_CATEGORIES.find(cat)
 	hero_category_option.select(maxi(0, cat_idx))
-	_populate_job_options(cat, str(hero.get("job_class", "")))
+	_populate_job_options(cat, str(hier["sub_class"]), str(hier["class_group"]))
 
 	_populate_element_options(str(hero.get("element", "")))
 	_populate_hero_skill_options(
@@ -827,6 +1070,12 @@ func _on_hero_selected(index: int) -> void:
 	hero_zone_option.select(maxi(0, zone_idx))
 
 	hero_skill_edit.text = str(hero.get("skill_description", ""))
+	if hero_lock_temp_check != null:
+		hero_lock_temp_check.button_pressed = bool(hero.get("lock_general_temperaments", false))
+	var fixed_arr: Array = hero.get("fixed_temperaments", [])
+	for tid in _hero_fixed_temp_checks:
+		var cb: CheckBox = _hero_fixed_temp_checks[tid]
+		cb.button_pressed = fixed_arr.has(tid)
 	hero_delete_button.disabled = false
 	hero_status_label.text = ""
 
@@ -864,6 +1113,10 @@ func _clear_hero_form() -> void:
 	hero_rank_option.select(0)
 	hero_zone_option.select(1)
 	hero_skill_edit.text = ""
+	if hero_lock_temp_check != null:
+		hero_lock_temp_check.button_pressed = false
+	for tid in _hero_fixed_temp_checks:
+		(_hero_fixed_temp_checks[tid] as CheckBox).button_pressed = false
 	hero_delete_button.disabled = true
 
 
@@ -874,8 +1127,11 @@ func _on_hero_save_pressed() -> void:
 		return
 
 	var cat: String = DataManager.ROLE_CATEGORIES[hero_category_option.selected]
-	var jobs: Array = DataManager.get_job_classes_for_category(cat)
-	var job: String = str(jobs[clampi(hero_job_option.selected, 0, jobs.size() - 1)])
+	var cg: String = str(hero_class_group_option.get_item_metadata(maxi(0, hero_class_group_option.selected))) if hero_class_group_option != null and hero_class_group_option.item_count > 0 else ""
+	var job: String = str(hero_job_option.get_item_metadata(maxi(0, hero_job_option.selected))) if hero_job_option.item_count > 0 else "방패수호자"
+	if job.is_empty():
+		var jobs: Array = DataManager.get_job_classes_for_category(cat)
+		job = str(jobs[clampi(hero_job_option.selected, 0, jobs.size() - 1)])
 
 	var rarity: String = _get_selected_rarity()
 	var rules: Dictionary = DataManager.get_skill_slot_rules(rarity)
@@ -886,6 +1142,13 @@ func _on_hero_save_pressed() -> void:
 	elif named_source_val == "NONE":
 		named_source_val = "NON_STORY"
 
+	var fixed_temps_save: Array[String] = []
+	for tid in _hero_fixed_temp_checks:
+		var cb: CheckBox = _hero_fixed_temp_checks[tid]
+		if cb.button_pressed:
+			fixed_temps_save.append(str(tid))
+	var lock_temp_save: bool = (hero_lock_temp_check.button_pressed if hero_lock_temp_check != null else false) or is_named_hero or not fixed_temps_save.is_empty()
+
 	var payload: Dictionary = {
 		"name": h_name,
 		"is_named": is_named_hero,
@@ -893,8 +1156,12 @@ func _on_hero_save_pressed() -> void:
 		"named_title": hero_named_title_edit.text.strip_edges(),
 		"lore": hero_lore_edit.text.strip_edges(),
 		"signature_equip_id": _get_selected_dropdown_skill_id(hero_sig_equip_option),
+		"fixed_temperaments": fixed_temps_save,
+		"lock_general_temperaments": lock_temp_save,
 		"rarity": rarity,
 		"role_category": cat,
+		"class_group": cg if not cg.is_empty() else DataManager.get_class_group_for_sub_class(job),
+		"sub_class": job,
 		"job_class": job,
 		"element": _get_selected_element_id(),
 		"max_hp": int(hero_hp_spin.value),
@@ -912,6 +1179,7 @@ func _on_hero_save_pressed() -> void:
 		"skill_id": _get_selected_dropdown_skill_id(hero_skill_option) if bool(rules["active1"]) else "",
 		"skill2_id": _get_selected_dropdown_skill_id(hero_skill2_option) if bool(rules["active2"]) else "",
 		"ultimate_id": _get_selected_dropdown_skill_id(hero_ultimate_option) if bool(rules["ultimate"]) else "",
+		"passive_skill_id": _get_existing_hero_passive_skill_id(_selected_hero_path),
 		"skill_description": hero_skill_edit.text.strip_edges(),
 	}
 
@@ -925,6 +1193,15 @@ func _on_hero_save_pressed() -> void:
 	hero_file_label.text = "파일: %s" % saved_path.get_file()
 	hero_delete_button.disabled = false
 	hero_status_label.text = "저장 완료: %s" % saved_path
+
+
+func _get_existing_hero_passive_skill_id(file_path: String) -> String:
+	if file_path.is_empty():
+		return ""
+	for h in DataManager.heroes:
+		if str(h.get("_file_path", "")) == file_path:
+			return str(h.get("passive_skill_id", "")).strip_edges()
+	return ""
 
 
 func _on_hero_delete_pressed() -> void:
@@ -973,6 +1250,15 @@ func _on_event_selected(index: int) -> void:
 	opt_b_gold_spin.value = int(deltas_b.get("gold", 0))
 	opt_b_unrest_spin.value = int(deltas_b.get("unrest", 0))
 
+	_populate_event_reward_options(
+		str(opt_a.get("recruit_hero_id", "")),
+		str(opt_a.get("grant_equip_id", "")),
+		str(opt_a.get("grant_item_id", "")),
+		str(opt_b.get("recruit_hero_id", "")),
+		str(opt_b.get("grant_equip_id", "")),
+		str(opt_b.get("grant_item_id", ""))
+	)
+
 	event_delete_button.disabled = false
 	event_status_label.text = ""
 
@@ -1003,6 +1289,7 @@ func _clear_event_form() -> void:
 	opt_b_morale_spin.value = 0
 	opt_b_gold_spin.value = 0
 	opt_b_unrest_spin.value = 0
+	_populate_event_reward_options("", "", "", "", "", "")
 	event_delete_button.disabled = true
 
 
@@ -1045,10 +1332,16 @@ func _on_event_save_pressed() -> void:
 		"option_a": {
 			"text": opt_a_text_edit.text.strip_edges(),
 			"deltas": deltas_a,
+			"recruit_hero_id": _get_selected_dropdown_skill_id(opt_a_hero_option),
+			"grant_equip_id": _get_selected_dropdown_skill_id(opt_a_equip_option),
+			"grant_item_id": _get_selected_dropdown_skill_id(opt_a_item_option),
 		},
 		"option_b": {
 			"text": opt_b_text_edit.text.strip_edges(),
 			"deltas": deltas_b,
+			"recruit_hero_id": _get_selected_dropdown_skill_id(opt_b_hero_option),
+			"grant_equip_id": _get_selected_dropdown_skill_id(opt_b_equip_option),
+			"grant_item_id": _get_selected_dropdown_skill_id(opt_b_item_option),
 		},
 	}
 
@@ -1398,8 +1691,10 @@ func _on_class_selected(index: int) -> void:
 		return
 	var cls: Dictionary = DataManager.classes[index]
 	_selected_class_id = str(cls.get("id", ""))
-	class_id_label.text = "직군 ID: %s (classes.json)" % _selected_class_id
-	class_name_label.text = "직군명: %s" % str(cls.get("name", _selected_class_id))
+	var cg: String = str(cls.get("class_group", DataManager.get_class_group_for_sub_class(_selected_class_id)))
+	var cg_info: Dictionary = DataManager.get_class_group_info(cg)
+	class_id_label.text = "세부직군 ID: %s (병과: %s · %s)" % [_selected_class_id, cg, str(cg_info.get("trait_name", ""))]
+	class_name_label.text = "직군명: %s  |  고유 특성: %s" % [str(cls.get("name", _selected_class_id)), str(cls.get("sub_trait_label", "-"))]
 	class_move_fatigue_spin.value = int(cls.get("move_fatigue_cost", 4))
 	class_battle_fatigue_spin.value = int(cls.get("battle_fatigue_cost", 10))
 	class_desc_edit.text = str(cls.get("description", ""))
@@ -1422,11 +1717,14 @@ func _on_class_save_pressed() -> void:
 	if _selected_class_id.is_empty():
 		class_status_label.text = "오류: 먼저 왼쪽 목록에서 직군을 선택하세요."
 		return
+	var existing_cls: Dictionary = DataManager.class_map.get(_selected_class_id, {})
 	var payload: Dictionary = {
 		"id": _selected_class_id,
 		"name": _selected_class_id,
 		"move_fatigue_cost": int(class_move_fatigue_spin.value),
 		"battle_fatigue_cost": int(class_battle_fatigue_spin.value),
+		"vision_bonus": int(existing_cls.get("vision_bonus", 1 if _selected_class_id == "척후병" else 0)),
+		"danger_sense": bool(existing_cls.get("danger_sense", _selected_class_id == "척후병")),
 		"description": class_desc_edit.text.strip_edges(),
 	}
 	var saved_id: String = DataManager.save_class_data(payload, _selected_class_id)
@@ -1808,6 +2106,11 @@ func _on_enemy_selected(index: int) -> void:
 	enemy_id_label.text = "적 ID: %s (enemies.json)" % _selected_enemy_id
 	enemy_name_edit.text = str(en.get("name", ""))
 	_populate_element_dropdown(enemy_element_option, str(en.get("element", "FIRE")))
+	var cat_val: String = str(en.get("category", "MONSTER"))
+	if enemy_category_option != null:
+		var c_idx: int = DataManager.ENEMY_CATEGORIES.find(cat_val)
+		enemy_category_option.select(maxi(0, c_idx))
+	_populate_enemy_archetype_options(cat_val, str(en.get("archetype", "SWARMER")))
 	var t_idx: int = DataManager.ENEMY_TYPES.find(str(en.get("enemy_type", "NORMAL")))
 	enemy_type_option.select(maxi(0, t_idx))
 	enemy_hp_spin.value = int(en.get("max_hp", 50))
@@ -1835,6 +2138,9 @@ func _clear_enemy_form() -> void:
 	enemy_id_label.text = "적 ID: (새 적 유닛으로 저장됨)"
 	enemy_name_edit.text = ""
 	_populate_element_dropdown(enemy_element_option, "FIRE")
+	if enemy_category_option != null:
+		enemy_category_option.select(0)
+	_populate_enemy_archetype_options(DataManager.ENEMY_CATEGORIES[0])
 	enemy_type_option.select(0)
 	enemy_hp_spin.value = 60
 	enemy_atk_spin.value = 14
@@ -1869,9 +2175,14 @@ func _on_enemy_save_pressed() -> void:
 	if seasons.is_empty():
 		seasons.append("ALL")
 
+	var cat_id: String = str(enemy_category_option.get_item_metadata(maxi(0, enemy_category_option.selected))) if enemy_category_option != null and enemy_category_option.item_count > 0 else "MONSTER"
+	var arch_id: String = str(enemy_archetype_option.get_item_metadata(maxi(0, enemy_archetype_option.selected))) if enemy_archetype_option != null and enemy_archetype_option.item_count > 0 else "SWARMER"
+
 	var payload: Dictionary = {
 		"name": e_name,
 		"description": enemy_desc_edit.text.strip_edges(),
+		"category": cat_id,
+		"archetype": arch_id,
 		"element": _get_selected_dropdown_skill_id(enemy_element_option),
 		"enemy_type": enemy_type_option.get_item_text(enemy_type_option.selected),
 		"max_hp": int(enemy_hp_spin.value),
@@ -1892,6 +2203,45 @@ func _on_enemy_save_pressed() -> void:
 	enemy_id_label.text = "적 ID: %s (enemies.json)" % saved_id
 	enemy_delete_button.disabled = false
 	enemy_status_label.text = "저장 완료: %s (%s)" % [DataManager.ENEMIES_FILE, saved_id]
+
+
+func _populate_enemy_archetype_options(category: String, select_arch: String = "") -> void:
+	if enemy_archetype_option == null:
+		return
+	enemy_archetype_option.clear()
+	var archs: Array = DataManager.get_archetypes_for_enemy_category(category)
+	var sel: int = 0
+	for i in range(archs.size()):
+		var aid: String = str(archs[i])
+		enemy_archetype_option.add_item(str(DataManager.ENEMY_ARCHETYPE_LABELS.get(aid, aid)))
+		enemy_archetype_option.set_item_metadata(i, aid)
+		if not select_arch.is_empty() and aid == select_arch:
+			sel = i
+	enemy_archetype_option.select(sel)
+
+
+func _on_enemy_category_changed(index: int) -> void:
+	if enemy_category_option == null or index < 0 or index >= enemy_category_option.item_count:
+		return
+	var cat_id: String = str(enemy_category_option.get_item_metadata(index))
+	_populate_enemy_archetype_options(cat_id)
+
+
+func _on_enemy_palette_swap_pressed() -> void:
+	if _selected_enemy_id.is_empty():
+		enemy_status_label.text = "먼저 왼쪽 목록에서 복제할 원본 적을 선택하세요."
+		return
+	var target_elem: String = _get_selected_dropdown_skill_id(enemy_element_option)
+	var variant: Dictionary = DataManager.create_palette_swapped_enemy(_selected_enemy_id, target_elem, true)
+	if variant.is_empty():
+		enemy_status_label.text = "팔레트 스왑 변종 생성 실패."
+		return
+	_selected_enemy_id = str(variant["id"])
+	_refresh_lists()
+	enemy_id_label.text = "적 ID: %s (enemies.json)" % _selected_enemy_id
+	enemy_name_edit.text = str(variant.get("name", ""))
+	_apply_enemy_skill_checks(variant.get("passive_skill_ids", []), variant.get("active_skill_ids", []))
+	enemy_status_label.text = "★ 팔레트 스왑 변종 생성·저장 완료: %s (%s)" % [variant["name"], _selected_enemy_id]
 
 
 func _on_enemy_delete_pressed() -> void:
